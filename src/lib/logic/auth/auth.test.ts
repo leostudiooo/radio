@@ -43,6 +43,7 @@ function createProfile(overrides: Partial<Profile> = {}): Profile {
 		callsign: 'K1ABC',
 		grid_square: 'FN31',
 		qth: 'New York',
+		role: 'admin',
 		created_at: '2026-01-01T00:00:00.000Z',
 		...overrides
 	};
@@ -222,7 +223,7 @@ describe('auth logic helpers', () => {
 
 		await expect(getProfile(supabase, 'user-1')).resolves.toEqual(profile);
 		expect(from).toHaveBeenCalledWith('profiles');
-		expect(query.select).toHaveBeenCalledWith('id, callsign, grid_square, qth, created_at');
+		expect(query.select).toHaveBeenCalledWith('id, callsign, grid_square, qth, role, created_at');
 		expect(query.eq).toHaveBeenCalledWith('id', 'user-1');
 	});
 
@@ -243,7 +244,7 @@ describe('auth logic helpers', () => {
 		);
 		expect(query.update).toHaveBeenCalledWith({ callsign: 'N0CALL' });
 		expect(query.eq).toHaveBeenCalledWith('id', 'user-1');
-		expect(query.select).toHaveBeenCalledWith('id, callsign, grid_square, qth, created_at');
+		expect(query.select).toHaveBeenCalledWith('id, callsign, grid_square, qth, role, created_at');
 	});
 
 	it('throws profile update errors', async () => {

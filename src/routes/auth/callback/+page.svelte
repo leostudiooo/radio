@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import { supabase } from '$lib/supabase';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   onMount(async () => {
     const { data } = await supabase.auth.getSession();
@@ -16,7 +17,7 @@
 </script>
 
 <svelte:head>
-  <title>BA4VUN</title>
+  <title>{SITE_CONFIG.callsign}</title>
 </svelte:head>
 
 <div class="flex items-center justify-center min-h-[60vh]">

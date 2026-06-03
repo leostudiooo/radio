@@ -12,6 +12,7 @@
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { Cpu } from 'lucide-svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
 
@@ -62,7 +63,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.equipment.title} - BA4VUN</title>
+  <title>{t.equipment.title}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
 <PageHeader title={t.equipment.title}>

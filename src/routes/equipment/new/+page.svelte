@@ -14,6 +14,7 @@
   import FormToggle from '$lib/ui/components/FormToggle.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   const typeOptions = EQUIPMENT_TYPES.map((t) => ({ value: t, label: t }));
 
@@ -54,7 +55,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.equipment.newEquipment} - BA4VUN</title>
+  <title>{t.equipment.newEquipment}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
 <PageHeader title={t.equipment.newEquipment} />

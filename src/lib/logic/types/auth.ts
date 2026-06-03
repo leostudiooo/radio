@@ -13,5 +13,6 @@ export interface Profile {
 	callsign: string;
 	grid_square?: string;
 	qth?: string;
+	role?: 'admin' | 'user';
 	created_at: string;
 }

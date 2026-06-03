@@ -4,10 +4,11 @@
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
   import EmptyState from '$lib/ui/components/EmptyState.svelte';
   import { Radio } from 'lucide-svelte';
+  import { SITE_CONFIG } from '$lib/config';
 </script>
 
 <svelte:head>
-  <title>BA4VUN QSO Log</title>
+  <title>{SITE_CONFIG.siteTitle}</title>
 </svelte:head>
 
 <PageHeader

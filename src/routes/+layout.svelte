@@ -12,6 +12,7 @@
   import { Menu, X, Radio, Cpu, Mail, Settings, Download, User, LogOut, ChevronDown } from 'lucide-svelte';
   import { supabase } from '$lib/supabase';
   import { signOut } from '$lib/logic/auth';
+  import { SITE_CONFIG } from '$lib/config';
 
   let { children } = $props();
 
@@ -54,7 +55,7 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
-  <title>BA4VUN QSO Log</title>
+  <title>{SITE_CONFIG.siteTitle}</title>
 </svelte:head>
 
 <Toast />
@@ -75,7 +76,7 @@
     </button>
 
     <a href="/" class="font-[var(--font-mono)] text-lg font-bold tracking-[0.05em] text-[var(--color-accent)] uppercase mr-8">
-      BA4VUN
+      {SITE_CONFIG.callsign}
     </a>
 
     <nav class="hidden lg:flex items-center gap-1 flex-1">

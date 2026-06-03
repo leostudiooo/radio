@@ -13,6 +13,7 @@ function createAuthStore() {
 
   let isAuthenticated = $derived(!!session && !!user);
   let callsign = $derived(profile?.callsign ?? null);
+  let isAdmin = $derived(profile?.role === 'admin');
 
   async function refreshProfile() {
     if (user?.id) {
@@ -52,6 +53,7 @@ function createAuthStore() {
     get profile() { return profile; },
     get isAuthenticated() { return isAuthenticated; },
     get callsign() { return callsign; },
+    get isAdmin() { return isAdmin; },
     init,
     cleanup,
   };

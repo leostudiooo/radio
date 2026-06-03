@@ -10,6 +10,7 @@
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { LogOut, Save } from 'lucide-svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
 
@@ -76,7 +77,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.auth.settings} - BA4VUN</title>
+  <title>{t.auth.settings}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
 {#if authStore.isAuthenticated}
@@ -92,7 +93,7 @@
       <FormInput
         label={t.auth.callsign}
         value={callsign}
-        placeholder="e.g. BA4VUN"
+        placeholder="e.g. {SITE_CONFIG.callsign}"
         required={true}
         oninput={(v) => { callsign = v; }}
       />

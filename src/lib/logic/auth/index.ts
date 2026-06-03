@@ -121,7 +121,7 @@ export async function getProfile(
 ): Promise<Profile | null> {
 	const { data, error } = await supabase
 		.from('profiles')
-		.select('id, callsign, grid_square, qth, created_at')
+		.select('id, callsign, grid_square, qth, role, created_at')
 		.eq('id', userId)
 		.single();
 
@@ -141,7 +141,7 @@ export async function updateProfile(
 		.from('profiles')
 		.update(data)
 		.eq('id', userId)
-		.select('id, callsign, grid_square, qth, created_at')
+		.select('id, callsign, grid_square, qth, role, created_at')
 		.single();
 
 	if (error) {

@@ -16,6 +16,7 @@
   import FormSelect from '$lib/ui/components/FormSelect.svelte';
   import FormDate from '$lib/ui/components/FormDate.svelte';
   import CollapsibleSection from '$lib/ui/components/CollapsibleSection.svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   const bandOptions = [{ value: '', label: 'All bands' }, ...BANDS.map((b) => ({ value: b, label: b }))];
   const modeOptions = [{ value: '', label: 'All modes' }, ...MODES.map((m) => ({ value: m, label: m }))];
@@ -124,7 +125,7 @@
         String(now.getMonth() + 1).padStart(2, '0'),
         String(now.getDate()).padStart(2, '0'),
       ].join('');
-      const filename = `BA4VUN_qso_${dateStr}.adif`;
+      const filename = `${SITE_CONFIG.callsign}_qso_${dateStr}.adif`;
 
       const blob = new Blob([adifContent], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -144,7 +145,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.adif.importTitle} / {t.adif.exportTitle} - BA4VUN</title>
+  <title>{t.adif.importTitle} / {t.adif.exportTitle}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
 <PageHeader title="ADIF Import / Export" />

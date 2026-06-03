@@ -7,6 +7,7 @@
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { KeyRound, Github, Mail } from 'lucide-svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
 
@@ -75,7 +76,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.auth.loginTitle} - BA4VUN</title>
+  <title>{t.auth.loginTitle}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
 <div class="flex flex-col items-center justify-center min-h-[60vh]">

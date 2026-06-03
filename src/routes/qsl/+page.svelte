@@ -13,6 +13,7 @@
   import EmptyState from '$lib/ui/components/EmptyState.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { ArrowUpDown, Mail } from 'lucide-svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
 
@@ -131,7 +132,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.qsl.management} - BA4VUN</title>
+  <title>{t.qsl.management}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
 <PageHeader title={t.qsl.management} />

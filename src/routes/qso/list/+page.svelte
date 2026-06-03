@@ -18,6 +18,7 @@
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { Radio } from 'lucide-svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   const PAGE_SIZE = 25;
 
@@ -116,7 +117,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.qso.title} - BA4VUN</title>
+  <title>{t.qso.title}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
 <PageHeader title={t.qso.title}>

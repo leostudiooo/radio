@@ -20,6 +20,7 @@
   import ValidationErrors from '$lib/ui/components/ValidationErrors.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
+  import { SITE_CONFIG } from '$lib/config';
 
   const PHONE_MODES = new Set(['SSB', 'FM', 'AM']);
 
@@ -215,7 +216,7 @@
 </script>
 
 <svelte:head>
-  <title>{t.qso.newQSO} - BA4VUN</title>
+  <title>{t.qso.newQSO}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
 <PageHeader title={t.qso.newQSO} />
