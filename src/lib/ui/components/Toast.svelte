@@ -1,0 +1,48 @@
+<script lang="ts">
+  import { toastStore } from '$lib/ui/stores/toast.svelte';
+  import { X, CheckCircle, AlertCircle, Info } from 'lucide-svelte';
+
+  const iconMap = {
+    success: CheckCircle,
+    error: AlertCircle,
+    info: Info,
+  };
+
+  const bgMap = {
+    success: 'var(--color-status-received-bg)',
+    error: 'var(--color-status-invalid-bg)',
+    info: 'var(--color-status-sent-bg)',
+  };
+
+  const borderMap = {
+    success: 'var(--color-status-received-border)',
+    error: 'var(--color-status-invalid-border)',
+    info: 'var(--color-status-sent-border)',
+  };
+
+  const textMap = {
+    success: 'var(--color-status-received)',
+    error: 'var(--color-status-invalid)',
+    info: 'var(--color-status-sent)',
+  };
+</script>
+
+<div class="fixed top-4 right-4 z-50 flex flex-col gap-2 w-[320px]">
+  {#each toastStore.toasts as toast (toast.id)}
+    <div
+      class="flex items-start gap-3 p-4 border text-sm"
+      style="background-color: {bgMap[toast.type]}; border-color: {borderMap[toast.type]}; color: {textMap[toast.type]};"
+    >
+      <svelte:component this={iconMap[toast.type]} size={18} />
+      <span class="flex-1">{toast.message}</span>
+      <button
+        type="button"
+        class="opacity-70 hover:opacity-100 transition-opacity"
+        aria-label="Dismiss"
+        onclick={() => toastStore.remove(toast.id)}
+      >
+        <X size={14} />
+      </button>
+    </div>
+  {/each}
+</div>

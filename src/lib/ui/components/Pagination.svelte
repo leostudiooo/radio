@@ -1,0 +1,87 @@
+<script lang="ts">
+  import Button from './Button.svelte';
+
+  interface Props {
+    currentPage: number;
+    totalPages: number;
+    onpage?: (page: number) => void;
+  }
+
+  let {
+    currentPage,
+    totalPages,
+    onpage,
+  }: Props = $props();
+
+  function goToPage(page: number) {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    onpage?.(page);
+  }
+
+  function getPageNumbers(): (number | string)[] {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const pages: (number | string)[] = [];
+    pages.push(1);
+
+    if (currentPage > 3) {
+      pages.push('...');
+    }
+
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (currentPage < totalPages - 2) {
+      pages.push('...');
+    }
+
+    pages.push(totalPages);
+    return pages;
+  }
+</script>
+
+<div class="flex items-center justify-center gap-2 mt-6">
+  <Button
+    variant="ghost"
+    size="sm"
+    disabled={currentPage <= 1}
+    onclick={() => goToPage(currentPage - 1)}
+  >
+    Prev
+  </Button>
+
+  <div class="hidden sm:flex items-center gap-1">
+    {#each getPageNumbers() as page}
+      {#if page === '...'}
+        <span class="px-2 text-xs text-[var(--color-text-muted)]">...</span>
+      {:else if typeof page === 'number'}
+        <button
+          type="button"
+          onclick={() => goToPage(page)}
+          class="min-w-[28px] h-[28px] px-1.5 text-xs font-[var(--font-mono)] transition-colors duration-100 {page === currentPage ? 'bg-[var(--color-accent)] text-[var(--color-base)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+        >
+          {page}
+        </button>
+      {/if}
+    {/each}
+  </div>
+
+  <span class="sm:hidden text-xs text-[var(--color-text-muted)] font-[var(--font-mono)]">
+    {currentPage} / {totalPages}
+  </span>
+
+  <Button
+    variant="ghost"
+    size="sm"
+    disabled={currentPage >= totalPages}
+    onclick={() => goToPage(currentPage + 1)}
+  >
+    Next
+  </Button>
+</div>

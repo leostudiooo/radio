@@ -2,6 +2,13 @@ export const locales = ['en', 'zh'] as const;
 
 export type Locale = (typeof locales)[number];
 
+export type ValidationMessages = {
+  INVALID_FORMAT?: string;
+  REQUIRED?: string;
+  INVALID_BAND?: string;
+  INVALID_RST?: string;
+};
+
 export type BaseTranslation = {
   common: {
     appName: string;
@@ -58,6 +65,15 @@ export type BaseTranslation = {
     invalidCallsign: string;
     invalidBand: string;
     invalidRST: string;
+    validation: {
+      callsign: { INVALID_FORMAT?: string; REQUIRED?: string };
+      band: { INVALID_BAND?: string; REQUIRED?: string };
+      freq: { INVALID_FORMAT?: string };
+      rst: { INVALID_RST?: string; REQUIRED?: string };
+      gridSquare: { INVALID_FORMAT?: string };
+      qsoDate: { REQUIRED?: string };
+      timeOn: { REQUIRED?: string };
+    };
   };
   adif: {
     import: string;

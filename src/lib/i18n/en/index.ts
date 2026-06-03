@@ -1,94 +1,20 @@
 import type { BaseTranslation } from '../i18n-types';
+import common from './common';
+import nav from './nav';
+import auth from './auth';
+import qso from './qso';
+import adif from './adif';
+import equipment from './equipment';
+import qsl from './qsl';
 
 const en: BaseTranslation = {
-  common: {
-    appName: 'Radio Log',
-    loading: 'Loading...',
-    save: 'Save',
-    cancel: 'Cancel',
-    delete: 'Delete',
-    edit: 'Edit',
-    create: 'Create',
-    search: 'Search',
-    filter: 'Filter',
-    confirm: 'Confirm',
-    yes: 'Yes',
-    no: 'No',
-    error: 'Error',
-    success: 'Success',
-  },
-  nav: {
-    qsoLog: 'QSO Log',
-    equipment: 'Equipment',
-    qsl: 'QSL',
-    settings: 'Settings',
-    logout: 'Log out',
-  },
-  auth: {
-    login: 'Log in',
-    logout: 'Log out',
-    signInWithWebAuthn: 'Sign in with WebAuthn',
-    signInWithGitHub: 'Sign in with GitHub',
-    signInWithMagicLink: 'Sign in with magic link',
-    emailPlaceholder: 'Enter your email',
-    sendMagicLink: 'Send magic link',
-    profile: 'Profile',
-  },
-  qso: {
-    title: 'QSO Log',
-    newQSO: 'New QSO',
-    callsign: 'Callsign',
-    date: 'Date',
-    time: 'Time',
-    band: 'Band',
-    freq: 'Frequency',
-    mode: 'Mode',
-    rstSent: 'RST Sent',
-    rstRcvd: 'RST Received',
-    name: 'Name',
-    qth: 'QTH',
-    gridSquare: 'Grid Square',
-    comment: 'Comment',
-    power: 'Power',
-    eyeball: 'Eyeball',
-    eyeballDescription: 'In-person contact',
-    required: 'Required',
-    invalidCallsign: 'Invalid callsign',
-    invalidBand: 'Invalid band',
-    invalidRST: 'Invalid RST',
-  },
-  adif: {
-    import: 'Import',
-    export: 'Export',
-    importDescription: 'Import ADIF logs',
-    exportDescription: 'Export ADIF logs',
-    uploadFile: 'Upload file',
-    downloadFile: 'Download file',
-    parseError: 'Failed to parse ADIF file',
-  },
-  equipment: {
-    title: 'Equipment',
-    newEquipment: 'New equipment',
-    name: 'Name',
-    type: 'Type',
-    manufacturer: 'Manufacturer',
-    model: 'Model',
-    serialNumber: 'Serial number',
-    description: 'Description',
-    active: 'Active',
-  },
-  qsl: {
-    title: 'QSL',
-    method: 'Method',
-    paper: 'Paper',
-    lotw: 'LoTW',
-    eqsl: 'eQSL',
-    sent: 'Sent',
-    received: 'Received',
-    confirmed: 'Confirmed',
-    pending: 'Pending',
-    status: 'Status',
-  },
+  common,
+  nav,
+  auth,
+  qso,
+  adif,
+  equipment,
+  qsl,
 };
 
 export default en;

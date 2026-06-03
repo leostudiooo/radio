@@ -1,1 +1,65 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-base: oklch(0.145 0 0);
+  --color-surface: oklch(0.191 0 0);
+  --color-elevated: oklch(0.218 0 0);
+  --color-overlay: oklch(0.239 0 0);
+  --color-border: oklch(0.285 0 0);
+  --color-border-hover: oklch(0.348 0 0);
+  --color-text-primary: oklch(0.931 0 0);
+  --color-text-secondary: oklch(0.706 0 0);
+  --color-text-muted: oklch(0.510 0 0);
+
+  --color-accent: oklch(0.958 0.207 108);
+  --color-accent-subtle: oklch(0.958 0.207 108 / 0.10);
+  --color-accent-light: oklch(0.958 0.207 108 / 0.15);
+  --color-accent-medium: oklch(0.958 0.207 108 / 0.30);
+  --color-accent-hover: oklch(0.900 0.207 108);
+
+  --color-status-pending: oklch(0.958 0.207 108);
+  --color-status-pending-bg: oklch(0.958 0.207 108 / 0.15);
+  --color-status-pending-border: oklch(0.958 0.207 108 / 0.30);
+
+  --color-status-sent: oklch(0.804 0.146 220);
+  --color-status-sent-bg: oklch(0.804 0.146 220 / 0.15);
+  --color-status-sent-border: oklch(0.804 0.146 220 / 0.30);
+
+  --color-status-received: oklch(0.876 0.228 153);
+  --color-status-received-bg: oklch(0.876 0.228 153 / 0.15);
+  --color-status-received-border: oklch(0.876 0.228 153 / 0.30);
+
+  --color-status-confirmed: oklch(0.887 0.182 95);
+  --color-status-confirmed-bg: oklch(0.887 0.182 95 / 0.15);
+  --color-status-confirmed-border: oklch(0.887 0.182 95 / 0.30);
+
+  --color-status-invalid: oklch(0.664 0.223 26);
+  --color-status-invalid-bg: oklch(0.664 0.223 26 / 0.15);
+  --color-status-invalid-border: oklch(0.664 0.223 26 / 0.30);
+
+  --font-body: 'Iosevka Aile', 'Source Han Sans SC', sans-serif;
+  --font-mono: 'Iosevka', 'Source Han Sans SC', monospace;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+body {
+  background-color: var(--color-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: rgba(255, 250, 0, 0.2);
+  color: var(--color-text-primary);
+}

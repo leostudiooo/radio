@@ -41,6 +41,7 @@
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.106.2",
+		"lucide-svelte": "^1.0.0",
 		"simple-git-hooks": "^2.13.1",
 		"typesafe-i18n": "^5.27.1"
 	},

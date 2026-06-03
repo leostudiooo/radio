@@ -1,94 +1,20 @@
 import type { Translation } from '../i18n-types';
+import common from './common';
+import nav from './nav';
+import auth from './auth';
+import qso from './qso';
+import adif from './adif';
+import equipment from './equipment';
+import qsl from './qsl';
 
 const zh: Translation = {
-  common: {
-    appName: '无线电日志',
-    loading: '加载中…',
-    save: '保存',
-    cancel: '取消',
-    delete: '删除',
-    edit: '编辑',
-    create: '创建',
-    search: '搜索',
-    filter: '筛选',
-    confirm: '确认',
-    yes: '是',
-    no: '否',
-    error: '错误',
-    success: '成功',
-  },
-  nav: {
-    qsoLog: '通联日志',
-    equipment: '设备',
-    qsl: 'QSL',
-    settings: '设置',
-    logout: '退出登录',
-  },
-  auth: {
-    login: '登录',
-    logout: '退出登录',
-    signInWithWebAuthn: '使用 WebAuthn 登录',
-    signInWithGitHub: '使用 GitHub 登录',
-    signInWithMagicLink: '使用魔法链接登录',
-    emailPlaceholder: '请输入邮箱',
-    sendMagicLink: '发送魔法链接',
-    profile: '个人资料',
-  },
-  qso: {
-    title: 'QSO 日志',
-    newQSO: '新建 QSO',
-    callsign: '呼号',
-    date: '日期',
-    time: '时间',
-    band: '波段',
-    freq: '频率',
-    mode: '模式',
-    rstSent: '发送 RST',
-    rstRcvd: '接收 RST',
-    name: '姓名',
-    qth: '所在地',
-    gridSquare: '网格定位',
-    comment: '备注',
-    power: '功率',
-    eyeball: '面联',
-    eyeballDescription: '线下面对面通联',
-    required: '必填',
-    invalidCallsign: '呼号无效',
-    invalidBand: '波段无效',
-    invalidRST: 'RST 无效',
-  },
-  adif: {
-    import: '导入',
-    export: '导出',
-    importDescription: '导入 ADIF 日志',
-    exportDescription: '导出 ADIF 日志',
-    uploadFile: '上传文件',
-    downloadFile: '下载文件',
-    parseError: 'ADIF 文件解析失败',
-  },
-  equipment: {
-    title: '设备',
-    newEquipment: '新建设备',
-    name: '名称',
-    type: '类型',
-    manufacturer: '制造商',
-    model: '型号',
-    serialNumber: '序列号',
-    description: '描述',
-    active: '启用',
-  },
-  qsl: {
-    title: 'QSL',
-    method: '方式',
-    paper: '纸卡',
-    lotw: 'LoTW',
-    eqsl: 'eQSL',
-    sent: '已发送',
-    received: '已收到',
-    confirmed: '已确认',
-    pending: '待处理',
-    status: '状态',
-  },
+  common,
+  nav,
+  auth,
+  qso,
+  adif,
+  equipment,
+  qsl,
 };
 
 export default zh;
