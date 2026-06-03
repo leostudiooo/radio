@@ -94,6 +94,21 @@ export type BaseTranslation = {
     uploadFile: string;
     downloadFile: string;
     parseError: string;
+    importTitle: string;
+    exportTitle: string;
+    foundInFile: string;
+    importAll: string;
+    importResult: string;
+    noQSOsToExport: string;
+    exported: string;
+    selectFile: string;
+    previewDescription: string;
+    filterDescription: string;
+    importStep1: string;
+    importStep2: string;
+    importStep3: string;
+    exportADIF: string;
+    done: string;
   };
   equipment: {
     title: string;

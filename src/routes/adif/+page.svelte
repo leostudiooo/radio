@@ -1,0 +1,299 @@
+<script lang="ts">
+  import { supabase } from '$lib/supabase';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
+  import { toastStore } from '$lib/ui/stores/toast.svelte';
+  import { parseADIF, exportADIF } from '$lib/logic/adif';
+  import { bulkCreateQSOs, getQSOs } from '$lib/logic/data/qso';
+  import { BANDS, MODES } from '$lib/logic/types/qso';
+  import type { QSOInsert, QSO, QSOFilter } from '$lib/logic/types/qso';
+  import type { Column } from '$lib/ui/components/DataTable';
+
+  import PageHeader from '$lib/ui/components/PageHeader.svelte';
+  import DataTable from '$lib/ui/components/DataTable.svelte';
+  import FileUpload from '$lib/ui/components/FileUpload.svelte';
+  import Button from '$lib/ui/components/Button.svelte';
+  import FormInput from '$lib/ui/components/FormInput.svelte';
+  import FormSelect from '$lib/ui/components/FormSelect.svelte';
+  import FormDate from '$lib/ui/components/FormDate.svelte';
+  import CollapsibleSection from '$lib/ui/components/CollapsibleSection.svelte';
+
+  const bandOptions = [{ value: '', label: 'All bands' }, ...BANDS.map((b) => ({ value: b, label: b }))];
+  const modeOptions = [{ value: '', label: 'All modes' }, ...MODES.map((m) => ({ value: m, label: m }))];
+
+  const t = $derived(localeStore.translation);
+
+  type ImportStep = 'upload' | 'preview' | 'result';
+  type ActiveTab = 'import' | 'export';
+
+  let activeTab = $state<ActiveTab>('import');
+  let importStep = $state<ImportStep>('upload');
+  let parsedQSOs = $state<QSOInsert[]>([]);
+  let importSuccess = $state(0);
+  let importErrors = $state(0);
+  let importing = $state(false);
+
+  let filterCallsign = $state('');
+  let filterBand = $state('');
+  let filterMode = $state('');
+  let filterDateFrom = $state('');
+  let filterDateTo = $state('');
+  let exporting = $state(false);
+
+  const previewColumns: Column[] = $derived([
+    { key: 'callsign', header: t.qso.callsign },
+    { key: 'qso_date', header: t.qso.date },
+    { key: 'time_on', header: t.qso.time, format: (v: unknown) => String(v ?? '').slice(0, 5) },
+    { key: 'band', header: t.qso.band },
+    { key: 'mode', header: t.qso.mode },
+  ]);
+
+  function handleFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      try {
+        const qsos = parseADIF(text);
+        if (qsos.length === 0) {
+          toastStore.error(t.adif.parseError);
+          return;
+        }
+        parsedQSOs = qsos;
+        importStep = 'preview';
+      } catch {
+        toastStore.error(t.adif.parseError);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  async function handleImport() {
+    importing = true;
+    try {
+      const result = await bulkCreateQSOs(supabase, parsedQSOs);
+      importSuccess = result.success.length;
+      importErrors = result.errors.length;
+      importStep = 'result';
+      toastStore.success(t.adif.importResult
+        .replace('{success}', String(importSuccess))
+        .replace('{errors}', String(importErrors)));
+    } catch {
+      toastStore.error(t.common.error);
+    } finally {
+      importing = false;
+    }
+  }
+
+  function resetImport() {
+    importStep = 'upload';
+    parsedQSOs = [];
+    importSuccess = 0;
+    importErrors = 0;
+  }
+
+  function buildExportFilter(): QSOFilter {
+    const f: QSOFilter = {};
+    if (filterCallsign.trim()) f.callsign = filterCallsign.trim();
+    if (filterBand) f.band = filterBand;
+    if (filterMode) f.mode = filterMode;
+    if (filterDateFrom) f.dateFrom = filterDateFrom;
+    if (filterDateTo) f.dateTo = filterDateTo;
+    return f;
+  }
+
+  async function handleExport() {
+    exporting = true;
+    try {
+      const result = await getQSOs(
+        supabase,
+        buildExportFilter(),
+        { field: 'qso_date', direction: 'desc' },
+        1,
+        10000,
+      );
+      const qsos = result.data as QSO[];
+
+      if (qsos.length === 0) {
+        toastStore.info(t.adif.noQSOsToExport);
+        return;
+      }
+
+      const adifContent = exportADIF(qsos);
+      const now = new Date();
+      const dateStr = [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0'),
+      ].join('');
+      const filename = `BA4VUN_qso_${dateStr}.adif`;
+
+      const blob = new Blob([adifContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toastStore.success(t.adif.exported.replace('{count}', String(qsos.length)));
+    } catch {
+      toastStore.error(t.common.error);
+    } finally {
+      exporting = false;
+    }
+  }
+</script>
+
+<svelte:head>
+  <title>{t.adif.importTitle} / {t.adif.exportTitle} - BA4VUN</title>
+</svelte:head>
+
+<PageHeader title="ADIF Import / Export" />
+
+<div class="flex gap-2 mb-6">
+  <button
+    type="button"
+    class="px-4 py-2 text-sm font-medium transition-colors duration-100"
+    class:bg-[var(--color-accent)]={activeTab === 'import'}
+    class:text-[var(--color-base)]={activeTab === 'import'}
+    class:bg-transparent={activeTab !== 'import'}
+    class:text-[var(--color-text-secondary)]={activeTab !== 'import'}
+    onclick={() => { activeTab = 'import'; }}
+  >
+    {t.adif.importTitle}
+  </button>
+  <button
+    type="button"
+    class="px-4 py-2 text-sm font-medium transition-colors duration-100"
+    class:bg-[var(--color-accent)]={activeTab === 'export'}
+    class:text-[var(--color-base)]={activeTab === 'export'}
+    class:bg-transparent={activeTab !== 'export'}
+    class:text-[var(--color-text-secondary)]={activeTab !== 'export'}
+    onclick={() => { activeTab = 'export'; }}
+  >
+    {t.adif.exportTitle}
+  </button>
+</div>
+
+{#if activeTab === 'import'}
+  <div class="flex gap-2 mb-6">
+    {#each [['upload', t.adif.importStep1], ['preview', t.adif.importStep2], ['result', t.adif.importStep3]] as [step, label], i}
+      <div class="flex items-center gap-2">
+        <span
+          class="inline-flex items-center justify-center w-6 h-6 text-xs font-medium"
+          class:bg-[var(--color-accent)]={importStep === step}
+          class:text-[var(--color-base)]={importStep === step}
+          class:bg-[var(--color-surface)]={importStep !== step}
+          class:text-[var(--color-text-muted)]={importStep !== step}
+          class:border={importStep !== step}
+          class:border-[var(--color-border)]={importStep !== step}
+        >{i + 1}</span>
+        <span
+          class="text-sm"
+          class:text-[var(--color-text-primary)]={importStep === step}
+          class:text-[var(--color-text-muted)]={importStep !== step}
+        >{label}</span>
+      </div>
+      {#if i < 2}
+        <span class="text-[var(--color-text-muted)] self-center mx-1">/</span>
+      {/if}
+    {/each}
+  </div>
+
+  {#if importStep === 'upload'}
+    <div class="max-w-lg">
+      <FileUpload accept=".adi,.adif" onfile={handleFile} />
+    </div>
+  {:else if importStep === 'preview'}
+    <div class="flex flex-col gap-4">
+      <p class="text-sm text-[var(--color-text-secondary)]">
+        {t.adif.foundInFile.replace('{count}', String(parsedQSOs.length))}
+      </p>
+
+      <DataTable
+        columns={previewColumns}
+        data={(parsedQSOs.slice(0, 10) as unknown) as Record<string, unknown>[]}
+        keyExtractor={(_row, i) => String(i)}
+        emptyMessage=""
+      />
+
+      {#if parsedQSOs.length > 10}
+        <p class="text-xs text-[var(--color-text-muted)]">
+          Showing first 10 of {parsedQSOs.length}
+        </p>
+      {/if}
+
+      <div class="flex gap-3">
+        <Button variant="primary" onclick={handleImport} disabled={importing}>
+          {importing ? t.common.loading : t.adif.importAll}
+        </Button>
+        <Button variant="secondary" onclick={resetImport}>
+          {t.common.cancel}
+        </Button>
+      </div>
+    </div>
+  {:else if importStep === 'result'}
+    <div class="flex flex-col gap-4">
+      <p class="text-sm text-[var(--color-text-secondary)]">
+        {t.adif.importResult
+          .replace('{success}', String(importSuccess))
+          .replace('{errors}', String(importErrors))}
+      </p>
+
+      <div class="flex gap-4">
+        <div class="flex flex-col gap-1 px-4 py-3 border border-[var(--color-border)] bg-[var(--color-surface)]">
+          <span class="text-2xl font-semibold text-[var(--color-text-primary)]">{importSuccess}</span>
+          <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wide">Imported</span>
+        </div>
+        {#if importErrors > 0}
+          <div class="flex flex-col gap-1 px-4 py-3 border border-[var(--color-border)] bg-[var(--color-surface)]">
+            <span class="text-2xl font-semibold text-[var(--color-status-invalid)]">{importErrors}</span>
+            <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wide">Errors</span>
+          </div>
+        {/if}
+      </div>
+
+      <Button variant="secondary" onclick={resetImport}>
+        {t.adif.done}
+      </Button>
+    </div>
+  {/if}
+{:else if activeTab === 'export'}
+  <div class="flex flex-col gap-6 max-w-2xl">
+    <CollapsibleSection title={t.adif.filterDescription}>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <FormInput
+          label={t.qso.callsign}
+          value={filterCallsign}
+          placeholder={t.common.search}
+          oninput={(v) => { filterCallsign = v; }}
+        />
+        <FormSelect
+          label={t.qso.band}
+          value={filterBand}
+          options={bandOptions}
+          onchange={(v) => { filterBand = v; }}
+        />
+        <FormSelect
+          label={t.qso.mode}
+          value={filterMode}
+          options={modeOptions}
+          onchange={(v) => { filterMode = v; }}
+        />
+        <FormDate
+          label="From"
+          value={filterDateFrom}
+          onchange={(v) => { filterDateFrom = v; }}
+        />
+        <FormDate
+          label="To"
+          value={filterDateTo}
+          onchange={(v) => { filterDateTo = v; }}
+        />
+      </div>
+    </CollapsibleSection>
+
+    <Button variant="primary" onclick={handleExport} disabled={exporting}>
+      {exporting ? t.common.loading : t.adif.exportADIF}
+    </Button>
+  </div>
+{/if}

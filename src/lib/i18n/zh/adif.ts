@@ -6,6 +6,21 @@ const adif = {
   uploadFile: '上传文件',
   downloadFile: '下载文件',
   parseError: 'ADIF 文件解析失败',
+  importTitle: '导入 ADIF',
+  exportTitle: '导出 ADIF',
+  foundInFile: '文件中找到 {count} 条通联',
+  importAll: '全部导入',
+  importResult: '{success} 条导入成功，{errors} 条错误',
+  noQSOsToExport: '没有可导出的通联',
+  exported: '已导出 {count} 条通联',
+  selectFile: '选择 .adi 或 .adif 文件',
+  previewDescription: '文件中找到的通联预览',
+  filterDescription: '筛选要导出的通联',
+  importStep1: '上传',
+  importStep2: '预览',
+  importStep3: '结果',
+  exportADIF: '导出 ADIF',
+  done: '完成',
 } as const;
 
 export default adif;

@@ -6,6 +6,21 @@ const adif = {
   uploadFile: 'Upload file',
   downloadFile: 'Download file',
   parseError: 'Failed to parse ADIF file',
+  importTitle: 'Import ADIF',
+  exportTitle: 'Export ADIF',
+  foundInFile: 'Found {count} QSOs in file',
+  importAll: 'Import All',
+  importResult: '{success} imported, {errors} errors',
+  noQSOsToExport: 'No QSOs to export',
+  exported: 'Exported {count} QSOs',
+  selectFile: 'Select .adi or .adif file',
+  previewDescription: 'Preview of QSOs found in the file',
+  filterDescription: 'Filter QSOs for export',
+  importStep1: 'Upload',
+  importStep2: 'Preview',
+  importStep3: 'Result',
+  exportADIF: 'Export ADIF',
+  done: 'Done',
 } as const;
 
 export default adif;
