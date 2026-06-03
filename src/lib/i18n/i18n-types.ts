@@ -46,6 +46,7 @@ export type BaseTranslation = {
   qso: {
     title: string;
     newQSO: string;
+    editQSO: string;
     callsign: string;
     date: string;
     time: string;
@@ -59,12 +60,22 @@ export type BaseTranslation = {
     gridSquare: string;
     comment: string;
     power: string;
+    propMode: string;
     eyeball: string;
     eyeballDescription: string;
     required: string;
     invalidCallsign: string;
     invalidBand: string;
     invalidRST: string;
+    noQSOsYet: string;
+    logYourFirst: string;
+    qsoSaved: string;
+    logAnother: string;
+    viewList: string;
+    saveFailed: string;
+    deleteConfirm: string;
+    deleteMessage: string;
+    optionalFields: string;
     validation: {
       callsign: { INVALID_FORMAT?: string; REQUIRED?: string };
       band: { INVALID_BAND?: string; REQUIRED?: string };
