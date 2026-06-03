@@ -42,6 +42,20 @@ export type BaseTranslation = {
     emailPlaceholder: string;
     sendMagicLink: string;
     profile: string;
+    loginTitle: string;
+    loginDescription: string;
+    checkEmail: string;
+    loginFailed: string;
+    settings: string;
+    callsign: string;
+    gridSquare: string;
+    qth: string;
+    profileSaved: string;
+    profileSaveFailed: string;
+    accountInfo: string;
+    email: string;
+    provider: string;
+    logoutConfirm: string;
   };
   qso: {
     title: string;

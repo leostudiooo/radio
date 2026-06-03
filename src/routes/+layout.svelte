@@ -10,6 +10,8 @@
   import Toast from '$lib/ui/components/Toast.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import { Menu, X, Radio, Cpu, Mail, Settings, Download, User, LogOut, ChevronDown } from 'lucide-svelte';
+  import { supabase } from '$lib/supabase';
+  import { signOut } from '$lib/logic/auth';
 
   let { children } = $props();
 
@@ -109,13 +111,13 @@
           <button
             type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-status-invalid)] transition-colors duration-100"
-            onclick={() => {}}
+            onclick={async () => { try { await signOut(supabase); goto('/auth/login'); } catch { /* ignore */ } } }
           >
             <LogOut size={14} />
           </button>
         </div>
       {:else}
-        <a href="/login" class="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100">
+        <a href="/auth/login" class="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100">
           {localeStore.translation.auth.login}
         </a>
       {/if}

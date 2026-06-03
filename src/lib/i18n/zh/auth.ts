@@ -7,6 +7,20 @@ const auth = {
   emailPlaceholder: '请输入邮箱',
   sendMagicLink: '发送魔法链接',
   profile: '个人资料',
+  loginTitle: '登录',
+  loginDescription: '登录以管理通联日志',
+  checkEmail: '请查看邮箱中的登录链接',
+  loginFailed: '登录失败',
+  settings: '设置',
+  callsign: '呼号',
+  gridSquare: '网格定位',
+  qth: '所在地',
+  profileSaved: '个人资料已保存',
+  profileSaveFailed: '保存个人资料失败',
+  accountInfo: '账户信息',
+  email: '邮箱',
+  provider: '登录方式',
+  logoutConfirm: '确认退出登录？',
 } as const;
 
 export default auth;

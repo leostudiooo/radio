@@ -7,6 +7,20 @@ const auth = {
   emailPlaceholder: 'Enter your email',
   sendMagicLink: 'Send magic link',
   profile: 'Profile',
+  loginTitle: 'Log In',
+  loginDescription: 'Sign in to manage your QSO log',
+  checkEmail: 'Check your email for a login link',
+  loginFailed: 'Login failed',
+  settings: 'Settings',
+  callsign: 'Callsign',
+  gridSquare: 'Grid Square',
+  qth: 'QTH',
+  profileSaved: 'Profile saved',
+  profileSaveFailed: 'Failed to save profile',
+  accountInfo: 'Account Info',
+  email: 'Email',
+  provider: 'Login Method',
+  logoutConfirm: 'Are you sure you want to log out?',
 } as const;
 
 export default auth;
