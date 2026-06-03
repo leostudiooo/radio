@@ -25,6 +25,26 @@ export type BaseTranslation = {
     no: string;
     error: string;
     success: string;
+    placeholder: {
+      callsign: string;
+      freq: string;
+      gridSquare: string;
+      qth: string;
+      serialNumber: string;
+      notes: string;
+      name: string;
+      manufacturer: string;
+      model: string;
+    };
+    unit: {
+      mhz: string;
+      watts: string;
+    };
+    select: {
+      band: string;
+      mode: string;
+      type: string;
+    };
   };
   nav: {
     qsoLog: string;
@@ -56,6 +76,9 @@ export type BaseTranslation = {
     email: string;
     provider: string;
     logoutConfirm: string;
+    adminOnly: string;
+    id: string;
+    createdAt: string;
   };
   qso: {
     title: string;
@@ -90,6 +113,11 @@ export type BaseTranslation = {
     deleteConfirm: string;
     deleteMessage: string;
     optionalFields: string;
+    welcome: string;
+    loggedInAs: string;
+    publicView: string;
+    recentQSOs: string;
+    viewAll: string;
     validation: {
       callsign: { INVALID_FORMAT?: string; REQUIRED?: string };
       band: { INVALID_BAND?: string; REQUIRED?: string };
@@ -123,6 +151,11 @@ export type BaseTranslation = {
     importStep3: string;
     exportADIF: string;
     done: string;
+    title: string;
+    importedLabel: string;
+    errorsLabel: string;
+    dateFrom: string;
+    dateTo: string;
   };
   equipment: {
     title: string;
@@ -141,6 +174,14 @@ export type BaseTranslation = {
     saveFailed: string;
     deleteConfirm: string;
     deleteMessage: string;
+    placeholder: {
+      name: string;
+      type: string;
+      manufacturer: string;
+      model: string;
+      serialNumber: string;
+      notes: string;
+    };
   };
   qsl: {
     title: string;
@@ -167,6 +208,9 @@ export type BaseTranslation = {
     all: string;
     allMethods: string;
     allStatuses: string;
+    cycleSentStatus: string;
+    cycleReceivedStatus: string;
+    qsoId: string;
   };
 };
 

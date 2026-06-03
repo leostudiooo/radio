@@ -29,7 +29,7 @@
   $effect(() => {
     if (!authStore.isAdmin) {
       goto('/');
-      toastStore.error('仅管理员可操作');
+      toastStore.error(t.auth.adminOnly);
       return;
     }
   });
@@ -160,7 +160,7 @@
 </svelte:head>
 
 {#if authStore.isAdmin}
-<PageHeader title="ADIF Import / Export" />
+<PageHeader title={t.adif.title} />
 
 <div class="flex gap-2 mb-6">
   <button
@@ -255,12 +255,12 @@
       <div class="flex gap-4">
         <div class="flex flex-col gap-1 px-4 py-3 border border-[var(--color-border)] bg-[var(--color-surface)]">
           <span class="text-2xl font-semibold text-[var(--color-text-primary)]">{importSuccess}</span>
-          <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wide">Imported</span>
+          <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wide">{t.adif.importedLabel}</span>
         </div>
         {#if importErrors > 0}
           <div class="flex flex-col gap-1 px-4 py-3 border border-[var(--color-border)] bg-[var(--color-surface)]">
             <span class="text-2xl font-semibold text-[var(--color-status-invalid)]">{importErrors}</span>
-            <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wide">Errors</span>
+            <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wide">{t.adif.errorsLabel}</span>
           </div>
         {/if}
       </div>
@@ -293,12 +293,12 @@
           onchange={(v) => { filterMode = v; }}
         />
         <FormDate
-          label="From"
+          label={t.adif.dateFrom}
           value={filterDateFrom}
           onchange={(v) => { filterDateFrom = v; }}
         />
         <FormDate
-          label="To"
+          label={t.adif.dateTo}
           value={filterDateTo}
           onchange={(v) => { filterDateTo = v; }}
         />

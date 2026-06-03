@@ -1,10 +1,52 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { supabase } from '$lib/supabase';
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
+  import { getQSOs } from '$lib/logic/data/qso';
+  import type { QSO } from '$lib/logic/types/qso';
+  import type { Column } from '$lib/ui/components/DataTable';
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
+  import DataTable from '$lib/ui/components/DataTable.svelte';
   import EmptyState from '$lib/ui/components/EmptyState.svelte';
+  import Button from '$lib/ui/components/Button.svelte';
+  import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { Radio } from 'lucide-svelte';
   import { SITE_CONFIG } from '$lib/config';
+
+  const t = $derived(localeStore.translation);
+
+  let data = $state<QSO[]>([]);
+  let loading = $state(true);
+  let initialLoaded = $state(false);
+
+  const columns: Column[] = $derived([
+    { key: 'qso_date', header: t.qso.date },
+    { key: 'time_on', header: t.qso.time, format: (v: unknown) => String(v ?? '').slice(0, 5) },
+    { key: 'callsign', header: t.qso.callsign },
+    { key: 'band', header: t.qso.band },
+    { key: 'mode', header: t.qso.mode },
+    { key: 'rst_sent', header: t.qso.rstSent },
+    { key: 'rst_rcvd', header: t.qso.rstRcvd },
+  ]);
+
+  async function loadRecentQSOs() {
+    loading = true;
+    try {
+      const result = await getQSOs(supabase, {}, { field: 'qso_date', direction: 'desc' }, 1, 10);
+      data = result.data;
+    } catch {
+      data = [];
+    } finally {
+      loading = false;
+      initialLoaded = true;
+    }
+  }
+
+  onMount(() => {
+    loadRecentQSOs();
+  });
 </script>
 
 <svelte:head>
@@ -12,19 +54,41 @@
 </svelte:head>
 
 <PageHeader
-  title={localeStore.translation.qso.title}
+  title={t.qso.recentQSOs}
   subtitle={authStore.isAuthenticated
-    ? `Logged in as ${authStore.callsign ?? authStore.user?.email ?? 'unknown'}`
-    : 'Public QSO log view'}
-/>
+    ? t.qso.loggedInAs.replace('{callsign}', authStore.callsign ?? authStore.user?.email ?? 'unknown')
+    : t.qso.publicView}
+>
+  {#snippet action()}
+    <Button variant="secondary" size="sm" onclick={() => goto('/qso/list')}>
+      {t.qso.viewAll}
+    </Button>
+  {/snippet}
+</PageHeader>
 
 {#if authStore.isAuthenticated}
-  <div class="text-sm text-[var(--color-text-secondary)]">
-    <p>Welcome back, operator. Navigate to QSO Log to manage your contacts.</p>
+  <div class="mb-6 text-sm text-[var(--color-text-secondary)]">
+    <p>{t.qso.welcome}</p>
   </div>
-{:else}
+{/if}
+
+{#if !initialLoaded}
+  <div class="flex justify-center py-12">
+    <LoadingSpinner size="lg" />
+  </div>
+{:else if data.length === 0}
   <EmptyState
     icon={Radio}
-    message="Public QSO log view coming soon. Log in to access your personal log."
+    message={t.qso.noQSOsYet}
   />
+{:else}
+  <div class="flex flex-col gap-4">
+    <DataTable
+      {columns}
+      data={data as unknown as Record<string, unknown>[]}
+      {loading}
+      keyExtractor={(row) => row.id as string}
+      emptyMessage={t.qso.noQSOsYet}
+    />
+  </div>
 {/if}

@@ -31,6 +31,11 @@ const qso = {
   deleteConfirm: '确认删除？',
   deleteMessage: '此通联记录将被永久删除。',
   optionalFields: '可选字段',
+  welcome: '欢迎回来，操作员。前往QSO日志管理您的通联。',
+  loggedInAs: '已登录：{callsign}',
+  publicView: '公共QSO日志视图',
+  recentQSOs: '最近通联',
+  viewAll: '查看全部',
   validation: {
     callsign: { INVALID_FORMAT: '呼号格式无效', REQUIRED: '呼号为必填项' },
     band: { INVALID_BAND: '波段无效', REQUIRED: '波段为必填项' },

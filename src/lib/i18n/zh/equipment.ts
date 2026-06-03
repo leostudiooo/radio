@@ -15,6 +15,14 @@ const equipment = {
   saveFailed: '保存设备失败',
   deleteConfirm: '确认删除？',
   deleteMessage: '此设备将被永久删除。',
+  placeholder: {
+    name: '例如 IC-7300',
+    type: '选择类型',
+    manufacturer: '例如 Icom',
+    model: '例如 IC-7300',
+    serialNumber: '例如 SN12345',
+    notes: '关于此设备的可选备注',
+  },
 } as const;
 
 export default equipment;

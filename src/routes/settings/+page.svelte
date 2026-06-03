@@ -93,7 +93,7 @@
       <FormInput
         label={t.auth.callsign}
         value={callsign}
-        placeholder="e.g. {SITE_CONFIG.callsign}"
+        placeholder={t.common.placeholder.callsign}
         required={true}
         oninput={(v) => { callsign = v; }}
       />
@@ -101,14 +101,14 @@
       <FormInput
         label={t.auth.gridSquare}
         value={gridSquare}
-        placeholder="e.g. OM89"
+        placeholder={t.common.placeholder.gridSquare}
         oninput={(v) => { gridSquare = v; }}
       />
 
       <FormInput
         label={t.auth.qth}
         value={qth}
-        placeholder="e.g. Shanghai"
+        placeholder={t.common.placeholder.qth}
         oninput={(v) => { qth = v; }}
       />
 
@@ -137,12 +137,12 @@
         <span class="text-[var(--color-text-secondary)]">{t.auth.provider}</span>
         <span class="text-[var(--color-text-primary)] capitalize">{provider}</span>
 
-        <span class="text-[var(--color-text-secondary)]">ID</span>
+        <span class="text-[var(--color-text-secondary)]">{t.auth.id}</span>
         <span class="text-[var(--color-text-primary)] font-[var(--font-mono)] text-xs">
           {authStore.user?.id?.slice(0, 8) ?? '-'}
         </span>
 
-        <span class="text-[var(--color-text-secondary)]">{t.common.create}</span>
+        <span class="text-[var(--color-text-secondary)]">{t.auth.createdAt}</span>
         <span class="text-[var(--color-text-primary)]">{createdAt}</span>
       </div>
     </div>

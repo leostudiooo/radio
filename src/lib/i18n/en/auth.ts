@@ -21,6 +21,9 @@ const auth = {
   email: 'Email',
   provider: 'Login Method',
   logoutConfirm: 'Are you sure you want to log out?',
+  adminOnly: 'Admin only',
+  id: 'ID',
+  createdAt: 'Created',
 } as const;
 
 export default auth;

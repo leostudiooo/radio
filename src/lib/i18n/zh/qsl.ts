@@ -23,6 +23,9 @@ const qsl = {
   all: '全部',
   allMethods: '所有方式',
   allStatuses: '所有状态',
+  cycleSentStatus: '点击切换发送状态',
+  cycleReceivedStatus: '点击切换接收状态',
+  qsoId: 'QSO',
 } as const;
 
 export default qsl;

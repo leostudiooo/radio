@@ -175,7 +175,7 @@
         <table class="w-full border-collapse">
           <thead>
             <tr class="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-              <th class="px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-left">QSO</th>
+              <th class="px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-left">{t.qsl.qsoId}</th>
               <th class="px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-left">{t.qsl.method}</th>
               <th class="px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-left">{t.qsl.sentStatus}</th>
               <th class="px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-left">{t.qsl.receivedStatus}</th>
@@ -199,7 +199,7 @@
                       type="button"
                       onclick={() => cycleSentStatus(card)}
                       class="cursor-pointer"
-                      title="Click to cycle sent status"
+                      title={t.qsl.cycleSentStatus}
                     >
                       <StatusBadge status={card.sent_status ?? 'pending'} />
                     </button>
@@ -213,7 +213,7 @@
                       type="button"
                       onclick={() => cycleReceivedStatus(card)}
                       class="cursor-pointer"
-                      title="Click to cycle received status"
+                      title={t.qsl.cycleReceivedStatus}
                     >
                       <StatusBadge status={card.received_status ?? 'pending'} />
                     </button>
@@ -234,7 +234,7 @@
         {#each data as card (card.id)}
           <div class="bg-[var(--color-surface)] border border-[var(--color-border)] p-4 flex flex-col gap-2" class:opacity-50={updatingId === card.id}>
             <div class="flex justify-between gap-2">
-              <span class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">QSO</span>
+              <span class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.qsoId}</span>
               <span class="text-[13px] font-[var(--font-mono)] text-[var(--color-text-primary)]">{card.qso_id.slice(0, 8)}</span>
             </div>
             <div class="flex justify-between gap-2">
@@ -244,7 +244,7 @@
             <div class="flex justify-between items-center gap-2">
               <span class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.sentStatus}</span>
               {#if authStore.isAdmin}
-                <button type="button" onclick={() => cycleSentStatus(card)} class="cursor-pointer" title="Click to cycle sent status">
+                <button type="button" onclick={() => cycleSentStatus(card)} class="cursor-pointer" title={t.qsl.cycleSentStatus}>
                   <StatusBadge status={card.sent_status ?? 'pending'} />
                 </button>
               {:else}
@@ -254,7 +254,7 @@
             <div class="flex justify-between items-center gap-2">
               <span class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.receivedStatus}</span>
               {#if authStore.isAdmin}
-                <button type="button" onclick={() => cycleReceivedStatus(card)} class="cursor-pointer" title="Click to cycle received status">
+                <button type="button" onclick={() => cycleReceivedStatus(card)} class="cursor-pointer" title={t.qsl.cycleReceivedStatus}>
                   <StatusBadge status={card.received_status ?? 'pending'} />
                 </button>
               {:else}

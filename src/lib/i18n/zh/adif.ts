@@ -21,6 +21,11 @@ const adif = {
   importStep3: '结果',
   exportADIF: '导出 ADIF',
   done: '完成',
+  title: 'ADIF 导入/导出',
+  importedLabel: '已导入',
+  errorsLabel: '错误',
+  dateFrom: '从',
+  dateTo: '到',
 } as const;
 
 export default adif;

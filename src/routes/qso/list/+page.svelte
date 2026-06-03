@@ -164,12 +164,12 @@
         onchange={(v) => { filterMode = v; applyFilters(); }}
       />
       <FormDate
-        label="From"
+        label={t.adif.dateFrom}
         value={filterDateFrom}
         onchange={(v) => { filterDateFrom = v; applyFilters(); }}
       />
       <FormDate
-        label="To"
+        label={t.adif.dateTo}
         value={filterDateTo}
         onchange={(v) => { filterDateTo = v; applyFilters(); }}
       />

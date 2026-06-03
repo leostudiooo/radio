@@ -21,6 +21,9 @@ const auth = {
   email: '邮箱',
   provider: '登录方式',
   logoutConfirm: '确认退出登录？',
+  adminOnly: '仅管理员可操作',
+  id: 'ID',
+  createdAt: '创建时间',
 } as const;
 
 export default auth;

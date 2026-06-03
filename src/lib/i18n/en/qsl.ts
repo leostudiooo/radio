@@ -23,6 +23,9 @@ const qsl = {
   all: 'All',
   allMethods: 'All methods',
   allStatuses: 'All statuses',
+  cycleSentStatus: 'Click to cycle sent status',
+  cycleReceivedStatus: 'Click to cycle received status',
+  qsoId: 'QSO',
 } as const;
 
 export default qsl;

@@ -15,6 +15,14 @@ const equipment = {
   saveFailed: 'Failed to save equipment',
   deleteConfirm: 'Are you sure?',
   deleteMessage: 'This equipment will be permanently deleted.',
+  placeholder: {
+    name: 'e.g. IC-7300',
+    type: 'Select type',
+    manufacturer: 'e.g. Icom',
+    model: 'e.g. IC-7300',
+    serialNumber: 'e.g. SN12345',
+    notes: 'Optional notes about this equipment',
+  },
 } as const;
 
 export default equipment;

@@ -78,7 +78,7 @@
   $effect(() => {
     if (!authStore.isAdmin) {
       goto('/');
-      toastStore.error('仅管理员可操作');
+      toastStore.error(t.auth.adminOnly);
       return;
     }
   });
@@ -250,7 +250,7 @@
         <FormInput
           label={t.qso.callsign}
           value={callsign}
-          placeholder="e.g. W1AW"
+          placeholder={t.common.placeholder.callsign}
           required={true}
           oninput={handleCallsignInput}
         />
@@ -280,7 +280,7 @@
           label={t.qso.band}
           value={band}
           options={bandOptions}
-          placeholder="Select band"
+          placeholder={t.common.select.band}
           required={true}
           onchange={handleBandChange}
         />
@@ -288,11 +288,11 @@
         <FormInput
           label={t.qso.freq}
           value={freq}
-          placeholder="e.g. 14.175"
+          placeholder={t.common.placeholder.freq}
           oninput={handleFreqInput}
         >
           {#snippet suffix()}
-            <span class="text-xs">MHz</span>
+            <span class="text-xs">{t.common.unit.mhz}</span>
           {/snippet}
         </FormInput>
       {/if}
@@ -301,7 +301,7 @@
         label={t.qso.mode}
         value={mode}
         options={modeOptions}
-        placeholder="Select mode"
+        placeholder={t.common.select.mode}
         onchange={handleModeChange}
       />
 
@@ -339,7 +339,7 @@
         <FormInput
           label={t.qso.power}
           value={optPower}
-          placeholder="Watts"
+          placeholder={t.common.unit.watts}
           oninput={(v) => { optPower = v; saved = false; }}
         />
         <FormInput

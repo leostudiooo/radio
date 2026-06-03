@@ -31,6 +31,11 @@ const qso = {
   deleteConfirm: 'Are you sure?',
   deleteMessage: 'This QSO record will be permanently deleted.',
   optionalFields: 'Optional fields',
+  welcome: 'Welcome back, operator. Navigate to QSO Log to manage your contacts.',
+  loggedInAs: 'Logged in as {callsign}',
+  publicView: 'Public QSO log view',
+  recentQSOs: 'Recent QSOs',
+  viewAll: 'View all',
   validation: {
     callsign: { INVALID_FORMAT: 'Invalid callsign format', REQUIRED: 'Callsign is required' },
     band: { INVALID_BAND: 'Invalid band', REQUIRED: 'Band is required' },

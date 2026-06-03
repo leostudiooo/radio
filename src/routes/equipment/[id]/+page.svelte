@@ -70,7 +70,7 @@
   $effect(() => {
     if (!authStore.isAdmin) {
       goto('/');
-      toastStore.error('仅管理员可操作');
+      toastStore.error(t.auth.adminOnly);
       return;
     }
   });
@@ -140,7 +140,7 @@
         <FormInput
           label={t.equipment.name}
           bind:value={name}
-          placeholder="e.g. IC-7300"
+          placeholder={t.equipment.placeholder.name}
           required={true}
         />
       </div>
@@ -149,33 +149,33 @@
         label={t.equipment.type}
         bind:value={type}
         options={typeOptions}
-        placeholder="Select type"
+        placeholder={t.common.select.type}
         required={true}
       />
 
       <FormInput
         label={t.equipment.manufacturer}
         bind:value={manufacturer}
-        placeholder="e.g. Icom"
+        placeholder={t.equipment.placeholder.manufacturer}
       />
 
       <FormInput
         label={t.equipment.model}
         bind:value={model}
-        placeholder="e.g. IC-7300"
+        placeholder={t.equipment.placeholder.model}
       />
 
       <FormInput
         label={t.equipment.serialNumber}
         bind:value={serialNumber}
-        placeholder="e.g. SN12345"
+        placeholder={t.equipment.placeholder.serialNumber}
       />
 
       <div class="sm:col-span-2">
         <FormTextarea
           label={t.equipment.description}
           bind:value={description}
-          placeholder="Optional notes about this equipment"
+          placeholder={t.equipment.placeholder.notes}
         />
       </div>
 

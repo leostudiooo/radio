@@ -13,6 +13,26 @@ const common = {
   no: '否',
   error: '错误',
   success: '成功',
+  placeholder: {
+    callsign: '例如 W1AW',
+    freq: '例如 14.175',
+    gridSquare: '例如 OM89',
+    qth: '例如 上海',
+    serialNumber: '例如 SN12345',
+    notes: '可选备注...',
+    name: '例如 IC-7300',
+    manufacturer: '例如 Icom',
+    model: '例如 IC-7300',
+  },
+  unit: {
+    mhz: 'MHz',
+    watts: '瓦',
+  },
+  select: {
+    band: '选择波段',
+    mode: '选择模式',
+    type: '选择类型',
+  },
 } as const;
 
 export default common;

@@ -23,7 +23,7 @@
   $effect(() => {
     if (!authStore.isAdmin) {
       goto('/');
-      toastStore.error('仅管理员可操作');
+      toastStore.error(t.auth.adminOnly);
       return;
     }
   });
@@ -75,7 +75,7 @@
       <FormInput
         label={t.equipment.name}
         value={name}
-        placeholder="e.g. IC-7300"
+        placeholder={t.equipment.placeholder.name}
         required={true}
         oninput={(v) => { name = v; }}
       />
@@ -85,7 +85,7 @@
       label={t.equipment.type}
       value={type}
       options={typeOptions}
-      placeholder="Select type"
+      placeholder={t.common.select.type}
       required={true}
       onchange={(v) => { type = v; }}
     />
@@ -93,21 +93,21 @@
     <FormInput
       label={t.equipment.manufacturer}
       value={manufacturer}
-      placeholder="e.g. Icom"
+      placeholder={t.equipment.placeholder.manufacturer}
       oninput={(v) => { manufacturer = v; }}
     />
 
     <FormInput
       label={t.equipment.model}
       value={model}
-      placeholder="e.g. IC-7300"
+      placeholder={t.equipment.placeholder.model}
       oninput={(v) => { model = v; }}
     />
 
     <FormInput
       label={t.equipment.serialNumber}
       value={serialNumber}
-      placeholder="e.g. SN12345"
+      placeholder={t.equipment.placeholder.serialNumber}
       oninput={(v) => { serialNumber = v; }}
     />
 
@@ -115,7 +115,7 @@
       <FormTextarea
         label={t.equipment.description}
         value={description}
-        placeholder="Optional notes about this equipment"
+        placeholder={t.equipment.placeholder.notes}
         oninput={(v) => { description = v; }}
       />
     </div>

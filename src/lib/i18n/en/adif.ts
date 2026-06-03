@@ -21,6 +21,11 @@ const adif = {
   importStep3: 'Result',
   exportADIF: 'Export ADIF',
   done: 'Done',
+  title: 'ADIF Import / Export',
+  importedLabel: 'Imported',
+  errorsLabel: 'Errors',
+  dateFrom: 'From',
+  dateTo: 'To',
 } as const;
 
 export default adif;
