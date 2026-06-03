@@ -223,6 +223,10 @@
   }
 </script>
 
+<svelte:head>
+  <title>{t.qso.newQSO}{SITE_CONFIG.pageTitleSuffix}</title>
+</svelte:head>
+
 {#if authStore.isAdmin}
 <PageHeader title={t.qso.newQSO} />
 
