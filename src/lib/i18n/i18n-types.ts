@@ -113,6 +113,7 @@ export type BaseTranslation = {
   equipment: {
     title: string;
     newEquipment: string;
+    editEquipment: string;
     name: string;
     type: string;
     manufacturer: string;
@@ -120,6 +121,12 @@ export type BaseTranslation = {
     serialNumber: string;
     description: string;
     active: string;
+    noEquipment: string;
+    addFirst: string;
+    equipmentSaved: string;
+    saveFailed: string;
+    deleteConfirm: string;
+    deleteMessage: string;
   };
   qsl: {
     title: string;

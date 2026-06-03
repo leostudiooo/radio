@@ -1,6 +1,7 @@
 const equipment = {
   title: '设备',
   newEquipment: '新建设备',
+  editEquipment: '编辑设备',
   name: '名称',
   type: '类型',
   manufacturer: '制造商',
@@ -8,6 +9,12 @@ const equipment = {
   serialNumber: '序列号',
   description: '描述',
   active: '启用',
+  noEquipment: '还没有设备',
+  addFirst: '添加第一个设备',
+  equipmentSaved: '设备已保存',
+  saveFailed: '保存设备失败',
+  deleteConfirm: '确认删除？',
+  deleteMessage: '此设备将被永久删除。',
 } as const;
 
 export default equipment;
