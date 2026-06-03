@@ -1,5 +1,6 @@
 <script lang="ts">
   import { supabase } from '$lib/supabase';
+  import { authStore } from '$lib/ui/stores/auth.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { QSL_METHODS, QSL_STATUSES } from '$lib/logic/types/qsl';
@@ -193,24 +194,32 @@
                   </span>
                 </td>
                 <td class="px-3 py-3">
-                  <button
-                    type="button"
-                    onclick={() => cycleSentStatus(card)}
-                    class="cursor-pointer"
-                    title="Click to cycle sent status"
-                  >
+                  {#if authStore.isAdmin}
+                    <button
+                      type="button"
+                      onclick={() => cycleSentStatus(card)}
+                      class="cursor-pointer"
+                      title="Click to cycle sent status"
+                    >
+                      <StatusBadge status={card.sent_status ?? 'pending'} />
+                    </button>
+                  {:else}
                     <StatusBadge status={card.sent_status ?? 'pending'} />
-                  </button>
+                  {/if}
                 </td>
                 <td class="px-3 py-3">
-                  <button
-                    type="button"
-                    onclick={() => cycleReceivedStatus(card)}
-                    class="cursor-pointer"
-                    title="Click to cycle received status"
-                  >
+                  {#if authStore.isAdmin}
+                    <button
+                      type="button"
+                      onclick={() => cycleReceivedStatus(card)}
+                      class="cursor-pointer"
+                      title="Click to cycle received status"
+                    >
+                      <StatusBadge status={card.received_status ?? 'pending'} />
+                    </button>
+                  {:else}
                     <StatusBadge status={card.received_status ?? 'pending'} />
-                  </button>
+                  {/if}
                 </td>
                 <td class="px-3 py-3 text-[13px] font-[var(--font-mono)] text-[var(--color-text-primary)]">{formatDate(card.sent_date)}</td>
                 <td class="px-3 py-3 text-[13px] font-[var(--font-mono)] text-[var(--color-text-primary)]">{formatDate(card.received_date)}</td>
@@ -234,15 +243,23 @@
             </div>
             <div class="flex justify-between items-center gap-2">
               <span class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.sentStatus}</span>
-              <button type="button" onclick={() => cycleSentStatus(card)} class="cursor-pointer" title="Click to cycle sent status">
+              {#if authStore.isAdmin}
+                <button type="button" onclick={() => cycleSentStatus(card)} class="cursor-pointer" title="Click to cycle sent status">
+                  <StatusBadge status={card.sent_status ?? 'pending'} />
+                </button>
+              {:else}
                 <StatusBadge status={card.sent_status ?? 'pending'} />
-              </button>
+              {/if}
             </div>
             <div class="flex justify-between items-center gap-2">
               <span class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.receivedStatus}</span>
-              <button type="button" onclick={() => cycleReceivedStatus(card)} class="cursor-pointer" title="Click to cycle received status">
+              {#if authStore.isAdmin}
+                <button type="button" onclick={() => cycleReceivedStatus(card)} class="cursor-pointer" title="Click to cycle received status">
+                  <StatusBadge status={card.received_status ?? 'pending'} />
+                </button>
+              {:else}
                 <StatusBadge status={card.received_status ?? 'pending'} />
-              </button>
+              {/if}
             </div>
             <div class="flex justify-between gap-2">
               <span class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.sentDate}</span>

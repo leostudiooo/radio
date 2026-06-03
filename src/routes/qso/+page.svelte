@@ -75,6 +75,14 @@
 
   const t = $derived(localeStore.translation);
 
+  $effect(() => {
+    if (!authStore.isAdmin) {
+      goto('/');
+      toastStore.error('仅管理员可操作');
+      return;
+    }
+  });
+
   let callsign = $state('');
   let qsoDate = $state(utcDate());
   let timeOn = $state(utcTime());
@@ -215,10 +223,7 @@
   }
 </script>
 
-<svelte:head>
-  <title>{t.qso.newQSO}{SITE_CONFIG.pageTitleSuffix}</title>
-</svelte:head>
-
+{#if authStore.isAdmin}
 <PageHeader title={t.qso.newQSO} />
 
 {#if saved}
@@ -358,4 +363,5 @@
       </Button>
     </div>
   </form>
+{/if}
 {/if}

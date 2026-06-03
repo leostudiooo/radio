@@ -4,6 +4,7 @@
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
+  import { authStore } from '$lib/ui/stores/auth.svelte';
   import { EQUIPMENT_TYPES } from '$lib/logic/types/equipment';
   import { getEquipmentById, updateEquipment, deleteEquipment } from '$lib/logic/data/equipment';
   import type { Equipment } from '$lib/logic/types/equipment';
@@ -67,6 +68,14 @@
   }
 
   $effect(() => {
+    if (!authStore.isAdmin) {
+      goto('/');
+      toastStore.error('仅管理员可操作');
+      return;
+    }
+  });
+
+  $effect(() => {
     if (id) loadEquipment();
   });
 
@@ -114,6 +123,10 @@
   </div>
 {:else if notFound}
   <p class="text-sm text-[var(--color-text-muted)]">Equipment not found.</p>
+{:else if !authStore.isAdmin}
+  <div class="flex justify-center py-12">
+    <LoadingSpinner size="lg" />
+  </div>
 {:else}
   <PageHeader title={t.equipment.editEquipment}>
     {#snippet action()}

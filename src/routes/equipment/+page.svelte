@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
+  import { authStore } from '$lib/ui/stores/auth.svelte';
   import { getEquipment } from '$lib/logic/data/equipment';
   import type { Equipment } from '$lib/logic/types/equipment';
   import type { Column } from '$lib/ui/components/DataTable';
@@ -49,6 +50,7 @@
   });
 
   function handleTableClick(e: MouseEvent) {
+    if (!authStore.isAdmin) return;
     const target = e.target as HTMLElement;
     const row = target.closest('tr');
     if (!row) return;
@@ -68,7 +70,9 @@
 
 <PageHeader title={t.equipment.title}>
   {#snippet action()}
-    <Button variant="secondary" size="sm" onclick={() => goto('/equipment/new')}>{t.equipment.newEquipment}</Button>
+    {#if authStore.isAdmin}
+      <Button variant="secondary" size="sm" onclick={() => goto('/equipment/new')}>{t.equipment.newEquipment}</Button>
+    {/if}
   {/snippet}
 </PageHeader>
 
@@ -79,11 +83,13 @@
 {:else if data.length === 0}
   <EmptyState icon={Cpu} message={t.equipment.noEquipment}>
     {#snippet cta()}
-      <Button variant="primary" onclick={() => goto('/equipment/new')}>{t.equipment.addFirst}</Button>
+      {#if authStore.isAdmin}
+        <Button variant="primary" onclick={() => goto('/equipment/new')}>{t.equipment.addFirst}</Button>
+      {/if}
     {/snippet}
   </EmptyState>
 {:else}
-  <div onclick={handleTableClick} class="cursor-pointer">
+  <div onclick={handleTableClick} class={authStore.isAdmin ? 'cursor-pointer' : ''}>
     <DataTable
       {columns}
       data={data as unknown as Record<string, unknown>[]}

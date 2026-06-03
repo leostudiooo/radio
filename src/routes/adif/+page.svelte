@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { supabase } from '$lib/supabase';
+  import { authStore } from '$lib/ui/stores/auth.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { parseADIF, exportADIF } from '$lib/logic/adif';
@@ -16,12 +18,21 @@
   import FormSelect from '$lib/ui/components/FormSelect.svelte';
   import FormDate from '$lib/ui/components/FormDate.svelte';
   import CollapsibleSection from '$lib/ui/components/CollapsibleSection.svelte';
+  import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const bandOptions = [{ value: '', label: 'All bands' }, ...BANDS.map((b) => ({ value: b, label: b }))];
   const modeOptions = [{ value: '', label: 'All modes' }, ...MODES.map((m) => ({ value: m, label: m }))];
 
   const t = $derived(localeStore.translation);
+
+  $effect(() => {
+    if (!authStore.isAdmin) {
+      goto('/');
+      toastStore.error('仅管理员可操作');
+      return;
+    }
+  });
 
   type ImportStep = 'upload' | 'preview' | 'result';
   type ActiveTab = 'import' | 'export';
@@ -148,6 +159,7 @@
   <title>{t.adif.importTitle} / {t.adif.exportTitle}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
+{#if authStore.isAdmin}
 <PageHeader title="ADIF Import / Export" />
 
 <div class="flex gap-2 mb-6">
@@ -296,5 +308,10 @@
     <Button variant="primary" onclick={handleExport} disabled={exporting}>
       {exporting ? t.common.loading : t.adif.exportADIF}
     </Button>
+  </div>
+{/if}
+{:else}
+  <div class="flex justify-center py-12">
+    <LoadingSpinner size="lg" />
   </div>
 {/if}

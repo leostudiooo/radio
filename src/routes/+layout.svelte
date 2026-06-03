@@ -22,10 +22,13 @@
 
   let drawerOpen = $state(false);
 
-  const navItems = [
+  const publicNavItems = [
     { path: '/qso', label: () => localeStore.translation.nav.qsoLog, icon: Radio },
     { path: '/equipment', label: () => localeStore.translation.nav.equipment, icon: Cpu },
     { path: '/qsl', label: () => localeStore.translation.nav.qsl, icon: Mail },
+  ];
+
+  const adminNavItems = [
     { path: '/adif', label: 'ADIF', icon: Download },
     { path: '/settings', label: () => localeStore.translation.nav.settings, icon: Settings },
   ];
@@ -80,7 +83,7 @@
     </a>
 
     <nav class="hidden lg:flex items-center gap-1 flex-1">
-      {#each navItems as item}
+      {#each publicNavItems as item}
         <a
           href={item.path}
           class="px-3 py-1.5 text-sm transition-colors duration-100 relative {isActive(item.path) ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'}"
@@ -91,6 +94,19 @@
           {typeof item.label === 'function' ? item.label() : item.label}
         </a>
       {/each}
+      {#if authStore.isAdmin}
+        {#each adminNavItems as item}
+          <a
+            href={item.path}
+            class="px-3 py-1.5 text-sm transition-colors duration-100 relative {isActive(item.path) ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'}"
+          >
+            {#if isActive(item.path)}
+              <span class="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-accent)]"></span>
+            {/if}
+            {typeof item.label === 'function' ? item.label() : item.label}
+          </a>
+        {/each}
+      {/if}
     </nav>
 
     <div class="flex items-center gap-3 ml-auto">
@@ -133,7 +149,7 @@
       onclick={closeDrawer}
     ></button>
     <aside class="fixed left-0 top-14 bottom-0 w-[240px] bg-[var(--color-surface)] border-r border-[var(--color-border)] z-50 lg:hidden flex flex-col py-4">
-      {#each navItems as item}
+      {#each publicNavItems as item}
         {@const Icon = item.icon}
         <button
           type="button"
@@ -147,6 +163,22 @@
           <span>{typeof item.label === 'function' ? item.label() : item.label}</span>
         </button>
       {/each}
+      {#if authStore.isAdmin}
+        {#each adminNavItems as item}
+          {@const Icon = item.icon}
+          <button
+            type="button"
+            onclick={() => handleNavClick(item.path)}
+            class="flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-100 relative text-left {isActive(item.path) ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'}"
+          >
+            {#if isActive(item.path)}
+              <span class="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-accent)]"></span>
+            {/if}
+            <Icon size={16} />
+            <span>{typeof item.label === 'function' ? item.label() : item.label}</span>
+          </button>
+        {/each}
+      {/if}
     </aside>
   {/if}
 

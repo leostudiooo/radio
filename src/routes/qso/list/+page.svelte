@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
+  import { authStore } from '$lib/ui/stores/auth.svelte';
   import { BANDS, MODES } from '$lib/logic/types/qso';
   import { getQSOs } from '$lib/logic/data/qso';
   import type { QSO, QSOFilter } from '$lib/logic/types/qso';
@@ -103,6 +104,7 @@
   }
 
   function handleTableClick(e: MouseEvent) {
+    if (!authStore.isAdmin) return;
     const target = e.target as HTMLElement;
     const row = target.closest('tr');
     if (!row) return;
@@ -122,7 +124,9 @@
 
 <PageHeader title={t.qso.title}>
   {#snippet action()}
-    <Button variant="secondary" size="sm" onclick={() => goto('/qso')}>{t.qso.newQSO}</Button>
+    {#if authStore.isAdmin}
+      <Button variant="secondary" size="sm" onclick={() => goto('/qso')}>{t.qso.newQSO}</Button>
+    {/if}
   {/snippet}
 </PageHeader>
 
@@ -133,7 +137,9 @@
 {:else if total === 0 && !filterCallsign && !filterBand && !filterMode && !filterDateFrom && !filterDateTo}
   <EmptyState icon={Radio} message={t.qso.noQSOsYet}>
     {#snippet cta()}
-      <Button variant="primary" onclick={() => goto('/qso')}>{t.qso.logYourFirst}</Button>
+      {#if authStore.isAdmin}
+        <Button variant="primary" onclick={() => goto('/qso')}>{t.qso.logYourFirst}</Button>
+      {/if}
     {/snippet}
   </EmptyState>
 {:else}
@@ -169,7 +175,7 @@
       />
     </FilterBar>
 
-    <div onclick={handleTableClick} class="cursor-pointer">
+    <div onclick={authStore.isAdmin ? handleTableClick : undefined} class={authStore.isAdmin ? 'cursor-pointer' : ''}>
       <DataTable
         {columns}
         data={data as unknown as Record<string, unknown>[]}

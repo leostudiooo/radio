@@ -4,6 +4,7 @@
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
+  import { authStore } from '$lib/ui/stores/auth.svelte';
   import { BANDS, MODES } from '$lib/logic/types/qso';
   import { validateQSO } from '$lib/logic/validation';
   import { getQSOById, updateQSO, deleteQSO } from '$lib/logic/data/qso';
@@ -27,6 +28,14 @@
 
   const t = $derived(localeStore.translation);
   const id: string = $derived($page.params.id);
+
+  $effect(() => {
+    if (!authStore.isAdmin) {
+      goto('/');
+      toastStore.error('仅管理员可操作');
+      return;
+    }
+  });
 
   let qso: QSO | null = $state(null);
   let loading = $state(true);
@@ -169,6 +178,8 @@
   <title>{t.qso.editQSO}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
+{#if authStore.isAdmin}
+
 {#if loading}
   <div class="flex justify-center py-12">
     <LoadingSpinner size="lg" />
@@ -304,4 +315,5 @@
     cancelLabel={t.common.cancel}
     onconfirm={handleDelete}
   />
+{/if}
 {/if}
