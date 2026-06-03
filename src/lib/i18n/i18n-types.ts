@@ -130,6 +130,7 @@ export type BaseTranslation = {
   };
   qsl: {
     title: string;
+    management: string;
     method: string;
     paper: string;
     lotw: string;
@@ -138,7 +139,20 @@ export type BaseTranslation = {
     received: string;
     confirmed: string;
     pending: string;
+    invalid: string;
     status: string;
+    totalCards: string;
+    sentStatus: string;
+    receivedStatus: string;
+    sentDate: string;
+    receivedDate: string;
+    notes: string;
+    noQSLCards: string;
+    statusUpdated: string;
+    updateFailed: string;
+    all: string;
+    allMethods: string;
+    allStatuses: string;
   };
 };
 

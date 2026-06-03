@@ -1,5 +1,6 @@
 const qsl = {
   title: 'QSL',
+  management: 'QSL 管理',
   method: '方式',
   paper: '纸卡',
   lotw: 'LoTW',
@@ -8,7 +9,20 @@ const qsl = {
   received: '已收到',
   confirmed: '已确认',
   pending: '待处理',
+  invalid: '无效',
   status: '状态',
+  totalCards: 'QSL 卡片总数',
+  sentStatus: '发送状态',
+  receivedStatus: '接收状态',
+  sentDate: '发送日期',
+  receivedDate: '接收日期',
+  notes: '备注',
+  noQSLCards: '还没有 QSL 卡片',
+  statusUpdated: '状态已更新',
+  updateFailed: '更新状态失败',
+  all: '全部',
+  allMethods: '所有方式',
+  allStatuses: '所有状态',
 } as const;
 
 export default qsl;

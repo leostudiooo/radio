@@ -1,5 +1,6 @@
 const qsl = {
   title: 'QSL',
+  management: 'QSL Management',
   method: 'Method',
   paper: 'Paper',
   lotw: 'LoTW',
@@ -8,7 +9,20 @@ const qsl = {
   received: 'Received',
   confirmed: 'Confirmed',
   pending: 'Pending',
+  invalid: 'Invalid',
   status: 'Status',
+  totalCards: 'Total QSL cards',
+  sentStatus: 'Sent Status',
+  receivedStatus: 'Received Status',
+  sentDate: 'Sent Date',
+  receivedDate: 'Received Date',
+  notes: 'Notes',
+  noQSLCards: 'No QSL cards yet',
+  statusUpdated: 'Status updated',
+  updateFailed: 'Failed to update status',
+  all: 'All',
+  allMethods: 'All methods',
+  allStatuses: 'All statuses',
 } as const;
 
 export default qsl;
