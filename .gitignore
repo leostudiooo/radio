@@ -43,3 +43,7 @@ src/lib/logic/types/database.ts
 
 # Design assets
 qsl-card/
+
+# Local Agents
+.sisyphus
+.playwright-mcp
