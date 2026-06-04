@@ -113,7 +113,7 @@
           </button>
           <button
             type="button"
-            class="inline-flex items-center justify-center p-[var(--space-1)] rounded-sm text-[var(--color-text-secondary)] hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+            class="inline-flex items-center justify-center p-[var(--space-1)] rounded-sm text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             onclick={() => { deleteTarget = row as unknown as Equipment; showDeleteConfirm = true; }}
             aria-label="Delete {String(row.name ?? '')}"
           >

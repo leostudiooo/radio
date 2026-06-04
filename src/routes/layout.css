@@ -38,6 +38,8 @@
   --color-status-invalid-border: oklch(0.664 0.223 26 / 0.30);
 
   --color-text-on-accent: var(--color-base);
+  --color-danger: oklch(0.664 0.223 26);
+  --color-success: oklch(0.876 0.228 153);
 
   --text-hero: 2em;
   --text-stat: 1.75em;

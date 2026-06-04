@@ -15,7 +15,7 @@
       <span class="text-[var(--text-aux)] text-[var(--color-text-secondary)] ml-[var(--space-2)]">{equipment.type}</span>
     </div>
     {#if equipment.is_active}
-      <span class="text-[var(--text-caption)] text-green-400">Active</span>
+      <span class="text-[var(--text-caption)] text-[var(--color-success)]">Active</span>
     {/if}
   </div>
 </div>

@@ -232,7 +232,7 @@
               <Pencil size={16} />
             </button>
             <button
-              class="p-[var(--space-1)] rounded-sm text-[var(--color-text-muted)] hover:text-[var(--color-danger,red)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+              class="p-[var(--space-1)] rounded-sm text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
               aria-label="Delete QSO"
               onclick={() => confirmDelete(row.id as string)}
             >
