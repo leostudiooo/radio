@@ -5,7 +5,7 @@
   import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
-  import { BANDS, MODES } from '$lib/logic/types/qso';
+  import { BANDS, MODES, CONTINENTS, ADIF_QSL_STATUS } from '$lib/logic/types/qso';
   import { validateQSO } from '$lib/logic/validation';
   import { createQSO } from '$lib/logic/data/qso';
   import { lookupCallsign } from '$lib/logic/data/callsign';
@@ -67,6 +67,15 @@
 
   const bandOptions = BANDS.map((b) => ({ value: b, label: b }));
   const modeOptions = MODES.map((m) => ({ value: m, label: m }));
+  const contOptions = CONTINENTS.map((c) => ({ value: c, label: c }));
+  const qslStatusOptions = ADIF_QSL_STATUS.map((s) => ({ value: s, label: s }));
+  const qslViaOptions = [
+    { value: '', label: '\u2014' },
+    { value: 'B', label: 'Bureau' },
+    { value: 'D', label: 'Direct' },
+    { value: 'E', label: 'Electronic' },
+    { value: 'M', label: 'Manager' },
+  ];
 
   const t = $derived(localeStore.translation);
 
@@ -122,12 +131,86 @@
     saved = false;
   }
 
+  let datePartOff = $derived.by(() => {
+    if (!timeOff) return '';
+    if (!settingsStore.useLocalTime) return timeOff.slice(0, 10);
+    const d = new Date(timeOff);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  let timePartOff = $derived.by(() => {
+    if (!timeOff) return '';
+    if (!settingsStore.useLocalTime) return timeOff.slice(11, 16);
+    const d = new Date(timeOff);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  });
+
+  function handleDateOffChange(newDate: string) {
+    if (!timeOff) {
+      timeOff = `${newDate}T00:00:00Z`;
+    } else if (!settingsStore.useLocalTime) {
+      timeOff = `${newDate}T${timePartOff}:00Z`;
+    } else {
+      const d = new Date(timeOff);
+      const [y, m, day] = newDate.split('-').map(Number);
+      d.setFullYear(y, m - 1, day);
+      timeOff = d.toISOString().slice(0, 19) + 'Z';
+    }
+    saved = false;
+  }
+
+  function handleTimeOffChange(newTime: string) {
+    if (!timeOff) {
+      const today = new Date().toISOString().slice(0, 10);
+      timeOff = `${today}T${newTime}:00Z`;
+    } else if (!settingsStore.useLocalTime) {
+      timeOff = `${datePartOff}T${newTime}:00Z`;
+    } else {
+      const d = new Date(timeOff);
+      const [h, m] = newTime.split(':').map(Number);
+      d.setHours(h, m, 0, 0);
+      timeOff = d.toISOString().slice(0, 19) + 'Z';
+    }
+    saved = false;
+  }
+
   let optName = $state('');
   let optQth = $state('');
   let optGrid = $state('');
   let optPower = $state('');
   let optComment = $state('');
   let optPropMode = $state('');
+
+  // Time off
+  let timeOff = $state('');
+
+  // Details section
+  let optSubmode = $state('');
+  let optSatName = $state('');
+  let optOperator = $state('');
+
+  // Location section
+  let optLatitude = $state('');
+  let optLongitude = $state('');
+  let optAntAz = $state('');
+  let optAntEl = $state('');
+  let optDistance = $state('');
+
+  // Geography section
+  let optDxcc = $state('');
+  let optCountry = $state('');
+  let optCqZone = $state('');
+  let optItuZone = $state('');
+  let optCont = $state('');
+
+  // QSL section
+  let optQslSent = $state('');
+  let optQslSentVia = $state('');
+  let optQslRcvd = $state('');
+  let optQslRcvdVia = $state('');
+  let optLotwQslSent = $state('');
+  let optLotwQslRcvd = $state('');
+  let optEqslQslSent = $state('');
+  let optEqslQslRcvd = $state('');
 
   let errors = $state<ValidationResult['errors']>([]);
   let submitting = $state(false);
@@ -191,6 +274,7 @@
       profile_id: authStore.user?.id ?? '',
       callsign: callsign.trim().toUpperCase(),
       time_on: timeOn,
+      time_off: timeOff || undefined,
       band: isEyeball ? undefined : (band || undefined),
       freq: isEyeball ? undefined : (freq ? parseFloat(freq) : undefined),
       mode: mode || undefined,
@@ -203,6 +287,27 @@
       tx_pwr: optPower ? parseInt(optPower, 10) : undefined,
       comment: optComment || undefined,
       prop_mode: optPropMode || undefined,
+      submode: optSubmode || undefined,
+      sat_name: optSatName || undefined,
+      operator: optOperator || undefined,
+      latitude: optLatitude ? parseFloat(optLatitude) : undefined,
+      longitude: optLongitude ? parseFloat(optLongitude) : undefined,
+      ant_az: optAntAz ? parseFloat(optAntAz) : undefined,
+      ant_el: optAntEl ? parseFloat(optAntEl) : undefined,
+      distance: optDistance ? parseFloat(optDistance) : undefined,
+      dxcc: optDxcc ? parseInt(optDxcc, 10) : undefined,
+      country: optCountry || undefined,
+      cq_zone: optCqZone ? parseInt(optCqZone, 10) : undefined,
+      itu_zone: optItuZone ? parseInt(optItuZone, 10) : undefined,
+      cont: optCont || undefined,
+      qsl_sent: optQslSent || undefined,
+      qsl_sent_via: optQslSentVia || undefined,
+      qsl_rcvd: optQslRcvd || undefined,
+      qsl_rcvd_via: optQslRcvdVia || undefined,
+      lotw_qsl_sent: optLotwQslSent || undefined,
+      lotw_qsl_rcvd: optLotwQslRcvd || undefined,
+      eqsl_qsl_sent: optEqslQslSent || undefined,
+      eqsl_qsl_rcvd: optEqslQslRcvd || undefined,
     };
   }
 
@@ -244,6 +349,28 @@
     optPower = '';
     optComment = '';
     optPropMode = '';
+    timeOff = '';
+    optSubmode = '';
+    optSatName = '';
+    optOperator = '';
+    optLatitude = '';
+    optLongitude = '';
+    optAntAz = '';
+    optAntEl = '';
+    optDistance = '';
+    optDxcc = '';
+    optCountry = '';
+    optCqZone = '';
+    optItuZone = '';
+    optCont = '';
+    optQslSent = '';
+    optQslSentVia = '';
+    optQslRcvd = '';
+    optQslRcvdVia = '';
+    optLotwQslSent = '';
+    optLotwQslRcvd = '';
+    optEqslQslSent = '';
+    optEqslQslRcvd = '';
     timeOn = utcNow();
     errors = [];
     saved = false;
@@ -302,6 +429,18 @@
         onchange={handleTimeChange}
       />
 
+      <FormDate
+        label={t.qso.timeOff}
+        value={datePartOff}
+        onchange={handleDateOffChange}
+      />
+
+      <FormTime
+        label={t.qso.timeOff}
+        value={timePartOff}
+        onchange={handleTimeOffChange}
+      />
+
       {#if !isEyeball}
         <FormSelect
           label={t.qso.band}
@@ -346,41 +485,151 @@
       </div>
     </div>
 
-    <CollapsibleSection title={t.qso.optionalFields}>
+    <CollapsibleSection title={t.qso.sectionDetails}>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormInput
           label={t.qso.name}
-          value={optName}
-          oninput={(v) => { optName = v; saved = false; }}
+          bind:value={optName}
         />
         <FormInput
           label={t.qso.qth}
-          value={optQth}
-          oninput={(v) => { optQth = v; saved = false; }}
+          bind:value={optQth}
         />
         <FormInput
           label={t.qso.gridSquare}
-          value={optGrid}
-          oninput={(v) => { optGrid = v; saved = false; }}
+          bind:value={optGrid}
         />
         <FormInput
           label={t.qso.power}
-          value={optPower}
+          bind:value={optPower}
           placeholder={t.common.unit.watts}
-          oninput={(v) => { optPower = v; saved = false; }}
         />
         <FormInput
           label={t.qso.propMode}
-          value={optPropMode}
-          oninput={(v) => { optPropMode = v; saved = false; }}
+          bind:value={optPropMode}
+        />
+        <FormInput
+          label={t.qso.submode}
+          bind:value={optSubmode}
+        />
+        <FormInput
+          label={t.qso.satName}
+          bind:value={optSatName}
+        />
+        <FormInput
+          label={t.qso.operator}
+          bind:value={optOperator}
         />
         <div class="sm:col-span-2">
           <FormInput
             label={t.qso.comment}
-            value={optComment}
-            oninput={(v) => { optComment = v; saved = false; }}
+            bind:value={optComment}
           />
         </div>
+      </div>
+    </CollapsibleSection>
+
+    <CollapsibleSection title={t.qso.sectionLocation}>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <FormInput
+          label={t.qso.latitude}
+          type="number"
+          bind:value={optLatitude}
+        />
+        <FormInput
+          label={t.qso.longitude}
+          type="number"
+          bind:value={optLongitude}
+        />
+        <FormInput
+          label={t.qso.antAz}
+          type="number"
+          bind:value={optAntAz}
+        />
+        <FormInput
+          label={t.qso.antEl}
+          type="number"
+          bind:value={optAntEl}
+        />
+        <FormInput
+          label={t.qso.distance}
+          type="number"
+          bind:value={optDistance}
+        />
+      </div>
+    </CollapsibleSection>
+
+    <CollapsibleSection title={t.qso.sectionGeography}>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <FormInput
+          label={t.qso.dxcc}
+          type="number"
+          bind:value={optDxcc}
+        />
+        <FormInput
+          label={t.qso.country}
+          bind:value={optCountry}
+        />
+        <FormInput
+          label={t.qso.cqZone}
+          type="number"
+          bind:value={optCqZone}
+        />
+        <FormInput
+          label={t.qso.ituZone}
+          type="number"
+          bind:value={optItuZone}
+        />
+        <FormSelect
+          label={t.qso.continent}
+          bind:value={optCont}
+          options={contOptions}
+        />
+      </div>
+    </CollapsibleSection>
+
+    <CollapsibleSection title={t.qso.sectionQsl}>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <FormSelect
+          label={t.qso.qslSent}
+          bind:value={optQslSent}
+          options={qslStatusOptions}
+        />
+        <FormSelect
+          label={t.qso.qslSentVia}
+          bind:value={optQslSentVia}
+          options={qslViaOptions}
+        />
+        <FormSelect
+          label={t.qso.qslRcvd}
+          bind:value={optQslRcvd}
+          options={qslStatusOptions}
+        />
+        <FormSelect
+          label={t.qso.qslRcvdVia}
+          bind:value={optQslRcvdVia}
+          options={qslViaOptions}
+        />
+        <FormSelect
+          label={t.qso.lotwQslSent}
+          bind:value={optLotwQslSent}
+          options={qslStatusOptions}
+        />
+        <FormSelect
+          label={t.qso.lotwQslRcvd}
+          bind:value={optLotwQslRcvd}
+          options={qslStatusOptions}
+        />
+        <FormSelect
+          label={t.qso.eqslQslSent}
+          bind:value={optEqslQslSent}
+          options={qslStatusOptions}
+        />
+        <FormSelect
+          label={t.qso.eqslQslRcvd}
+          bind:value={optEqslQslRcvd}
+          options={qslStatusOptions}
+        />
       </div>
     </CollapsibleSection>
 
