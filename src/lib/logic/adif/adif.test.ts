@@ -27,7 +27,6 @@ function comparable(qso: QSOInsert): Omit<QSOInsert, 'profile_id'> {
 describe('ADIF field mappings', () => {
 	it('maps ADIF fields to database fields', () => {
 		expect(ADIF_TO_DB_MAP.CALL).toBe('callsign');
-		expect(ADIF_TO_DB_MAP.QSO_DATE).toBe('qso_date');
 		expect(ADIF_TO_DB_MAP.PROP_MODE).toBe('prop_mode');
 	});
 
@@ -45,18 +44,17 @@ describe('parseADIF', () => {
 		expect(qsos).toHaveLength(3);
 		expect(qsos[0]).toMatchObject({
 			callsign: 'K1ABC',
-			qso_date: '2026-01-01',
-			time_on: '12:30:45',
+			time_on: '2026-01-01T12:30:45Z',
 			band: '20m',
 			mode: 'SSB',
 			is_eyeball: false
 		});
 	});
 
-	it('normalizes HHMM times to HH:MM:SS', () => {
+	it('normalizes HHMM times to ISO timestamps', () => {
 		const qsos = parseADIF(fixture('simple.adi'));
 
-		expect(qsos[1]?.time_on).toBe('08:15:00');
+		expect(qsos[1]?.time_on).toBe('2026-01-02T08:15:00Z');
 	});
 
 	it('parses multimode fixture modes', () => {
@@ -69,8 +67,8 @@ describe('parseADIF', () => {
 		const qsos = parseADIF(fixture('minimal.adi'));
 
 		expect(qsos).toEqual([
-			expect.objectContaining({ callsign: 'K2XYZ', qso_date: '2026-03-01', time_on: '09:00:00' }),
-			expect.objectContaining({ callsign: 'G4AB', qso_date: '2026-03-02', time_on: '10:15:00' })
+			expect.objectContaining({ callsign: 'K2XYZ', time_on: '2026-03-01T09:00:00Z' }),
+			expect.objectContaining({ callsign: 'G4AB', time_on: '2026-03-02T10:15:00Z' })
 		]);
 	});
 
@@ -79,9 +77,8 @@ describe('parseADIF', () => {
 
 		expect(qso).toMatchObject({
 			callsign: 'BA4VUN',
-			qso_date: '2026-04-05',
-			time_on: '13:44:55',
-			time_off: '13:55:00',
+			time_on: '2026-04-05T13:44:55Z',
+			time_off: '2026-04-05T13:55:00Z',
 			freq: 14.07425,
 			tx_pwr: 50,
 			dxcc: 318,
@@ -100,7 +97,7 @@ describe('parseADIF', () => {
 			'<EOH><CALL:5>K1ABC <UNKNOWN:4>skip <QSO_DATE:8>20260101 <TIME_ON:6>010203 <BAND:3>20m <EOR>'
 		);
 
-		expect(qsos[0]).toMatchObject({ callsign: 'K1ABC', qso_date: '2026-01-01' });
+		expect(qsos[0]).toMatchObject({ callsign: 'K1ABC', time_on: '2026-01-01T01:02:03Z' });
 	});
 
 	it('skips records missing required parser fields', () => {
@@ -121,14 +118,14 @@ describe('parseADIF', () => {
 		expect(qsos[1]).toMatchObject({ callsign: 'K4EYE', is_eyeball: true });
 	});
 
-	it('deduplicates records by callsign date time and band', () => {
+	it('deduplicates records by callsign time_on and band', () => {
 		const content =
 			'<EOH><CALL:5>K1ABC <QSO_DATE:8>20260101 <TIME_ON:6>010203 <BAND:3>20m <EOR><CALL:5>K1ABC <QSO_DATE:8>20260101 <TIME_ON:6>010203 <BAND:3>20m <COMMENT:9>duplicate <EOR>';
 
 		expect(parseADIF(content)).toHaveLength(1);
 	});
 
-	it('keeps records with same callsign date and time on different bands', () => {
+	it('keeps records with same callsign and time on different bands', () => {
 		const content =
 			'<EOH><CALL:5>K1ABC <QSO_DATE:8>20260101 <TIME_ON:6>010203 <BAND:3>20m <EOR><CALL:5>K1ABC <QSO_DATE:8>20260101 <TIME_ON:6>010203 <BAND:3>40m <EOR>';
 
@@ -141,6 +138,28 @@ describe('parseADIF', () => {
 
 	it('throws when declared length exceeds the record', () => {
 		expect(() => parseADIF('<EOH><CALL:99>K1ABC<EOR>')).toThrow('declared length exceeds record');
+	});
+});
+
+describe('parseADIF cross-day handling', () => {
+	it('parses QSO_DATE_OFF into time_off on a different day', () => {
+		const content =
+			'<EOH><QSO_DATE:8>20260101<TIME_ON:4>2330<QSO_DATE_OFF:8>20260102<TIME_OFF:4>0015<CALL:6>TESTOP<BAND:3>20M<MODE:2>FT8<EOR>';
+
+		const [qso] = parseADIF(content);
+
+		expect(qso.time_on).toBe('2026-01-01T23:30:00Z');
+		expect(qso.time_off).toBe('2026-01-02T00:15:00Z');
+	});
+
+	it('defaults time_off date to QSO_DATE when QSO_DATE_OFF is absent', () => {
+		const content =
+			'<EOH><QSO_DATE:8>20260101<TIME_ON:4>1200<TIME_OFF:4>1230<CALL:6>TESTOP<BAND:3>20M<MODE:2>FT8<EOR>';
+
+		const [qso] = parseADIF(content);
+
+		expect(qso.time_on).toBe('2026-01-01T12:00:00Z');
+		expect(qso.time_off).toBe('2026-01-01T12:30:00Z');
 	});
 });
 
@@ -178,12 +197,30 @@ describe('exportADIF', () => {
 		const qso = asQSO({
 			profile_id: '',
 			callsign: 'K5EYE',
-			qso_date: '2026-05-03',
-			time_on: '14:00:00',
+			time_on: '2026-05-03T14:00:00Z',
 			is_eyeball: true
 		});
 
 		expect(exportADIF([qso])).toContain('<IS_EYEBALL:1>Y');
+	});
+
+	it('exports cross-day QSO with separate QSO_DATE_OFF', () => {
+		const qso = asQSO({
+			profile_id: '',
+			callsign: 'TESTOP',
+			time_on: '2026-01-01T23:30:00Z',
+			time_off: '2026-01-02T00:15:00Z',
+			band: '20m',
+			mode: 'FT8',
+			is_eyeball: false
+		});
+
+		const adif = exportADIF([qso]);
+
+		expect(adif).toContain('<QSO_DATE:8>20260101');
+		expect(adif).toContain('<TIME_ON:6>233000');
+		expect(adif).toContain('<QSO_DATE_OFF:8>20260102');
+		expect(adif).toContain('<TIME_OFF:6>001500');
 	});
 
 	it('round-trips parsed fixture data without data loss', () => {

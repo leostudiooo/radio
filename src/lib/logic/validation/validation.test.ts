@@ -12,8 +12,7 @@ function createQSO(overrides: Partial<QSOInsert> = {}): QSOInsert {
 	return {
 		profile_id: 'profile-1',
 		callsign: 'K1ABC',
-		qso_date: '2026-01-15',
-		time_on: '12:34:56',
+		time_on: '2026-01-15T12:34:56Z',
 		band: '20m',
 		mode: 'SSB',
 		rst_sent: '59',
@@ -22,6 +21,33 @@ function createQSO(overrides: Partial<QSOInsert> = {}): QSOInsert {
 		...overrides
 	};
 }
+
+describe('isValidISOTimestamp (via validateQSO)', () => {
+	it('accepts valid ISO timestamps with Z suffix', () => {
+		const result = validateQSO(createQSO({ time_on: '2026-01-15T12:30:00Z' }));
+		expect(result.errors.find((e) => e.field === 'timeOn')).toBeUndefined();
+	});
+
+	it('accepts valid ISO timestamps with timezone offset', () => {
+		const result = validateQSO(createQSO({ time_on: '2026-01-15T12:30:00+00:00' }));
+		expect(result.errors.find((e) => e.field === 'timeOn')).toBeUndefined();
+	});
+
+	it('rejects non-date strings', () => {
+		const result = validateQSO(createQSO({ time_on: 'not-a-date' }));
+		expect(result.errors).toContainEqual({ field: 'timeOn', code: 'INVALID_FORMAT' });
+	});
+
+	it('rejects time-only strings', () => {
+		const result = validateQSO(createQSO({ time_on: '12:30:00' }));
+		expect(result.errors).toContainEqual({ field: 'timeOn', code: 'INVALID_FORMAT' });
+	});
+
+	it('rejects empty strings as required', () => {
+		const result = validateQSO(createQSO({ time_on: '' }));
+		expect(result.errors).toContainEqual({ field: 'timeOn', code: 'REQUIRED' });
+	});
+});
 
 describe('QSO validation helpers', () => {
 	it('validates standard callsigns and portable/mobile suffixes', () => {
@@ -68,15 +94,14 @@ describe('QSO validation helpers', () => {
 
 	it('returns required field errors for missing core fields and missing band/frequency', () => {
 		const result = validateQSO(
-			createQSO({ callsign: '', qso_date: '', time_on: '', band: undefined, freq: undefined })
+			createQSO({ callsign: '', time_on: '', band: undefined, freq: undefined })
 		);
 
 		expect(result.valid).toBe(false);
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				{ field: 'callsign', code: 'REQUIRED' },
-				{ field: 'qso_date', code: 'REQUIRED' },
-				{ field: 'time_on', code: 'REQUIRED' },
+				{ field: 'timeOn', code: 'REQUIRED' },
 				{ field: 'band', code: 'REQUIRED' }
 			])
 		);
@@ -86,8 +111,7 @@ describe('QSO validation helpers', () => {
 		const result = validateQSO(
 			createQSO({
 				callsign: 'BAD',
-				qso_date: '2026-02-31',
-				time_on: '24:00:00',
+				time_on: 'not-a-date',
 				band: '11m',
 				mode: 'LASER',
 				grid_square: 'ZZ99',
@@ -99,12 +123,11 @@ describe('QSO validation helpers', () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				{ field: 'callsign', code: 'INVALID_FORMAT' },
-				{ field: 'qso_date', code: 'INVALID_FORMAT' },
-				{ field: 'time_on', code: 'INVALID_FORMAT' },
+				{ field: 'timeOn', code: 'INVALID_FORMAT' },
 				{ field: 'band', code: 'INVALID_BAND' },
 				{ field: 'mode', code: 'INVALID_MODE' },
-				{ field: 'grid_square', code: 'INVALID_GRID' },
-				{ field: 'rst_sent', code: 'INVALID_RST' }
+				{ field: 'gridSquare', code: 'INVALID_GRID' },
+				{ field: 'rstSent', code: 'INVALID_RST' }
 			])
 		);
 	});

@@ -53,6 +53,10 @@ class QueryMock<T> {
 		this.filters.push({ method: 'lte', field, value });
 		return this;
 	});
+	lt = vi.fn((field: string, value: string): this => {
+		this.filters.push({ method: 'lt', field, value });
+		return this;
+	});
 	order = vi.fn((field: string, options: { ascending: boolean }): this => {
 		this.ordered = { field, ascending: options.ascending };
 		return this;
@@ -75,8 +79,7 @@ function createQSOInsert(overrides: Partial<QSOInsert> = {}): QSOInsert {
 	return {
 		profile_id: 'profile-1',
 		callsign: 'K1ABC',
-		qso_date: '2026-01-15',
-		time_on: '12:34:56',
+		time_on: '2026-01-15T12:34:56Z',
 		band: '20m',
 		mode: 'SSB',
 		rst_sent: '59',
@@ -148,8 +151,8 @@ describe('QSO data helpers', () => {
 		).resolves.toEqual({ data: [qso], total: 12, page: 2, limit: 5, totalPages: 3 });
 		expect(query.filters).toEqual([
 			{ method: 'ilike', field: 'callsign', value: '%K1%' },
-			{ method: 'gte', field: 'qso_date', value: '2026-01-01' },
-			{ method: 'lte', field: 'qso_date', value: '2026-01-31' },
+			{ method: 'gte', field: 'time_on', value: '2026-01-01T00:00:00Z' },
+			{ method: 'lt', field: 'time_on', value: '2026-02-01T00:00:00Z' },
 			{ method: 'eq', field: 'band', value: '20m' },
 			{ method: 'eq', field: 'mode', value: 'SSB' },
 			{ method: 'eq', field: 'country', value: 'United States' }
