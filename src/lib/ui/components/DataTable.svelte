@@ -1,8 +1,9 @@
 <script lang="ts">
   import LoadingSpinner from './LoadingSpinner.svelte';
   import EmptyState from './EmptyState.svelte';
-  import { ArrowUpDown } from 'lucide-svelte';
+  import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-svelte';
   import type { Column } from './DataTable';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     columns: Column[];
@@ -10,6 +11,9 @@
     loading?: boolean;
     keyExtractor: (row: Record<string, unknown>) => string;
     emptyMessage?: string;
+    actions?: Snippet<[row: Record<string, unknown>]>;
+    onsort?: (key: string, dir: 'asc' | 'desc') => void;
+    sort?: { key: string; dir: 'asc' | 'desc' };
   }
 
   let {
@@ -18,19 +22,24 @@
     loading = false,
     keyExtractor,
     emptyMessage = 'No data found',
+    actions,
+    onsort,
+    sort,
   }: Props = $props();
 
   let sortKey = $state<string | null>(null);
   let sortDir = $state<'asc' | 'desc'>('asc');
 
+  const effectiveSortKey = $derived(sort?.key ?? sortKey);
+  const effectiveSortDir = $derived(sort?.dir ?? sortDir);
+
   function handleSort(column: Column) {
     if (!column.sortable) return;
-    if (sortKey === column.key) {
-      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      sortKey = column.key;
-      sortDir = 'asc';
-    }
+    const key = column.key;
+    const newDir = effectiveSortKey === key && effectiveSortDir === 'asc' ? 'desc' : 'asc';
+    sortKey = key;
+    sortDir = newDir;
+    onsort?.(key, newDir);
   }
 
   function getCellValue(row: Record<string, unknown>, column: Column): string {
@@ -64,18 +73,42 @@
           {#each columns as column}
             <th
               class="px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] {alignClasses[column.align ?? 'left']}"
-              class:cursor-pointer={column.sortable}
-              class:hover:text-[var(--color-text-secondary)]={column.sortable}
-              onclick={() => handleSort(column)}
+              aria-sort={column.sortable && effectiveSortKey === column.key
+                ? (effectiveSortDir === 'asc' ? 'ascending' : 'descending')
+                : undefined}
             >
-              <span class="inline-flex items-center gap-[var(--space-1)]">
-                {column.header}
-                {#if column.sortable}
-                  <ArrowUpDown size={12} class="opacity-50" />
-                {/if}
-              </span>
+              {#if column.sortable}
+                <button
+                  class="inline-flex items-center gap-[var(--space-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded-sm cursor-pointer hover:text-[var(--color-text-secondary)]"
+                  onclick={() => handleSort(column)}
+                  aria-label="Sort by {column.header}"
+                >
+                  {column.header}
+                  {#if effectiveSortKey === column.key}
+                    {#if effectiveSortDir === 'asc'}
+                      <ArrowUp size={12} />
+                    {:else}
+                      <ArrowDown size={12} />
+                    {/if}
+                  {:else}
+                    <ArrowUpDown size={12} class="opacity-50" />
+                  {/if}
+                </button>
+              {:else}
+                <span class="inline-flex items-center gap-[var(--space-1)]">
+                  {column.header}
+                </span>
+              {/if}
             </th>
           {/each}
+          {#if actions}
+            <th
+              class="px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-right"
+              aria-label="Actions"
+            >
+              Actions
+            </th>
+          {/if}
         </tr>
       </thead>
       <tbody>
@@ -86,6 +119,11 @@
                 {getCellValue(row, column)}
               </td>
             {/each}
+            {#if actions}
+              <td class="px-[var(--space-3)] py-[var(--space-3)] text-right">
+                {@render actions(row)}
+              </td>
+            {/if}
           </tr>
         {/each}
       </tbody>
@@ -101,6 +139,11 @@
             <span class="text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">{getCellValue(row, column)}</span>
           </div>
         {/each}
+        {#if actions}
+          <div class="flex justify-end gap-[var(--space-2)] pt-[var(--space-2)] border-t border-[var(--color-border)]">
+            {@render actions(row)}
+          </div>
+        {/if}
       </div>
     {/each}
   </div>

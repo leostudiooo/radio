@@ -1,25 +1,15 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { supabase } from '$lib/supabase';
-  import { localeStore } from '$lib/ui/stores/locale.svelte';
-  import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
-  import { getQSOById, updateQSO, deleteQSO } from '$lib/logic/data/qso';
-  import type { QSO, QSOInsert } from '$lib/logic/types/qso';
-  import QSOForm from '$lib/ui/components/QSOForm.svelte';
+  import { getQSOById } from '$lib/logic/data/qso';
+  import type { QSO } from '$lib/logic/types/qso';
+  import PageHeader from '$lib/ui/components/PageHeader.svelte';
+  import QSODetail from '$lib/ui/components/QSODetail.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
+  import EmptyState from '$lib/ui/components/EmptyState.svelte';
 
-  const t = $derived(localeStore.translation);
   const id: string = $derived($page.params.id);
-
-  $effect(() => {
-    if (!authStore.isAdmin) {
-      goto('/');
-      toastStore.error(t.auth.adminOnly);
-      return;
-    }
-  });
 
   let qso: QSO | null = $state(null);
   let loading = $state(true);
@@ -46,43 +36,59 @@
     if (id) loadQSO();
   });
 
-  async function handleSubmit(data: QSOInsert) {
+  function formatDate(iso: string): string {
     try {
-      const { profile_id, ...update } = data;
-      await updateQSO(supabase, id, update);
-      toastStore.success(t.qso.qsoSaved);
-      goto('/qso/list');
-    } catch (err) {
-      toastStore.error(t.qso.saveFailed);
-      throw err;
+      return new Date(iso).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return '';
     }
   }
 
-  async function handleDelete() {
+  function formatTime(iso: string): string {
     try {
-      await deleteQSO(supabase, id);
-      toastStore.success(t.common.success);
-      goto('/qso/list');
+      return new Date(iso).toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     } catch {
-      toastStore.error(t.qso.saveFailed);
+      return '';
     }
   }
+
+  let subtitle: string = $derived.by(() => {
+    if (!qso) return '';
+    const parts: string[] = [];
+    const d = formatDate(qso.time_on);
+    const t = formatTime(qso.time_on);
+    if (d || t) parts.push([d, t].filter(Boolean).join(' '));
+    if (qso.band) parts.push(qso.band);
+    if (qso.mode) parts.push(qso.mode);
+    return parts.join(' \u00B7 ');
+  });
 </script>
 
-{#if authStore.isAdmin}
-  {#if loading}
-    <div class="flex justify-center py-12">
-      <LoadingSpinner size="lg" />
-    </div>
-  {:else if notFound}
-    <p class="text-sm text-[var(--color-text-muted)]">QSO not found.</p>
-  {:else if qso}
-    <QSOForm
-      formMode="edit"
-      initialData={qso}
-      profileId={qso.profile_id}
-      onsubmit={handleSubmit}
-      ondelete={handleDelete}
-    />
-  {/if}
+{#if loading}
+  <div class="flex justify-center py-12">
+    <LoadingSpinner size="lg" />
+  </div>
+{:else if notFound}
+  <EmptyState message="QSO not found." />
+{:else if qso}
+  <PageHeader title={qso.callsign} {subtitle}>
+    {#snippet action()}
+      {#if authStore.isAdmin}
+        <a
+          href="/qso/{id}/edit"
+          class="inline-flex items-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-label)] font-medium bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90 transition-opacity"
+        >
+          Edit
+        </a>
+      {/if}
+    {/snippet}
+  </PageHeader>
+  <QSODetail {qso} isAdmin={authStore.isAdmin} />
 {/if}

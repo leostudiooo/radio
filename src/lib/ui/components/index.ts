@@ -25,3 +25,4 @@ export { default as StationIdentityCard } from './StationIdentityCard.svelte';
 export { default as EquipmentCard } from './EquipmentCard.svelte';
 export { default as AppHeader } from './AppHeader.svelte';
 export { default as MobileNavDrawer } from './MobileNavDrawer.svelte';
+export { default as QSODetail } from './QSODetail.svelte';
