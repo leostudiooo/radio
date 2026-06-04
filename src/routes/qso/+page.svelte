@@ -56,14 +56,8 @@
     return '';
   }
 
-  function utcDate(): string {
-    const now = new Date();
-    return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`;
-  }
-
-  function utcTime(): string {
-    const now = new Date();
-    return `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}:00`;
+  function utcNow(): string {
+    return new Date().toISOString().slice(0, 19) + 'Z';
   }
 
   function defaultRST(mode: string): string {
@@ -84,14 +78,26 @@
   });
 
   let callsign = $state('');
-  let qsoDate = $state(utcDate());
-  let timeOn = $state(utcTime());
+  let timeOn = $state(utcNow());
   let band = $state('');
   let freq = $state('');
   let mode = $state('');
   let rstSent = $state('');
   let rstRcvd = $state('');
   let isEyeball = $state(false);
+
+  let datePart = $derived(timeOn.slice(0, 10));
+  let timePart = $derived(timeOn.slice(11, 16));
+
+  function handleDateChange(newDate: string) {
+    timeOn = `${newDate}T${timePart}:00Z`;
+    saved = false;
+  }
+
+  function handleTimeChange(newTime: string) {
+    timeOn = `${datePart}T${newTime}:00Z`;
+    saved = false;
+  }
 
   let optName = $state('');
   let optQth = $state('');
@@ -161,7 +167,6 @@
     return {
       profile_id: authStore.user?.id ?? '',
       callsign: callsign.trim().toUpperCase(),
-      qso_date: qsoDate,
       time_on: timeOn,
       band: isEyeball ? undefined : (band || undefined),
       freq: isEyeball ? undefined : (freq ? parseFloat(freq) : undefined),
@@ -216,8 +221,7 @@
     optPower = '';
     optComment = '';
     optPropMode = '';
-    qsoDate = utcDate();
-    timeOn = utcTime();
+    timeOn = utcNow();
     errors = [];
     saved = false;
   }
@@ -263,16 +267,16 @@
 
       <FormDate
         label={t.qso.date}
-        value={qsoDate}
+        value={datePart}
         required={true}
-        onchange={(v) => { qsoDate = v; saved = false; }}
+        onchange={handleDateChange}
       />
 
       <FormTime
         label={t.qso.time}
-        value={timeOn}
+        value={timePart}
         required={true}
-        onchange={(v) => { timeOn = v; saved = false; }}
+        onchange={handleTimeChange}
       />
 
       {#if !isEyeball}

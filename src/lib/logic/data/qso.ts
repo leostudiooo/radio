@@ -3,7 +3,7 @@ import type { PaginatedResult, QSO, QSOFilter, QSOInsert, QSOSort, QSOStats, QSO
 import { validateQSO } from '$lib/logic/validation';
 
 const QSO_COLUMNS =
-	'id, profile_id, callsign, qso_date, time_on, time_off, band, freq, mode, submode, rst_sent, rst_rcvd, tx_pwr, name, qth, grid_square, comment, dxcc, country, cq_zone, itu_zone, cont, qsl_sent, qsl_sent_via, qsl_rcvd, qsl_rcvd_via, lotw_qsl_sent, lotw_qsl_rcvd, eqsl_qsl_sent, eqsl_qsl_rcvd, prop_mode, sat_name, ant_az, ant_el, distance, operator, is_eyeball, latitude, longitude, created_at, updated_at';
+	'id, profile_id, callsign, time_on, time_off, band, freq, mode, submode, rst_sent, rst_rcvd, tx_pwr, name, qth, grid_square, comment, dxcc, country, cq_zone, itu_zone, cont, qsl_sent, qsl_sent_via, qsl_rcvd, qsl_rcvd_via, lotw_qsl_sent, lotw_qsl_rcvd, eqsl_qsl_sent, eqsl_qsl_rcvd, prop_mode, sat_name, ant_az, ant_el, distance, operator, is_eyeball, latitude, longitude, created_at, updated_at';
 
 function validationError(qso: QSOInsert): Error | null {
 	const result = validateQSO(qso);
@@ -45,10 +45,16 @@ export async function createQSO(supabase: SupabaseClient, qso: QSOInsert): Promi
 	return data as QSO;
 }
 
+function nextDay(dateStr: string): string {
+	const [y, m, d] = dateStr.split('-').map(Number);
+	const date = new Date(Date.UTC(y, m - 1, d + 1));
+	return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+}
+
 export async function getQSOs(
 	supabase: SupabaseClient,
 	filter: QSOFilter = {},
-	sort: QSOSort = { field: 'qso_date', direction: 'desc' },
+	sort: QSOSort = { field: 'time_on', direction: 'desc' },
 	page?: number,
 	limit?: number
 ): Promise<PaginatedResult<QSO>> {
@@ -64,11 +70,11 @@ export async function getQSOs(
 	}
 
 	if (filter.dateFrom) {
-		query = query.gte('qso_date', filter.dateFrom);
+		query = query.gte('time_on', `${filter.dateFrom}T00:00:00Z`);
 	}
 
 	if (filter.dateTo) {
-		query = query.lte('qso_date', filter.dateTo);
+		query = query.lt('time_on', `${nextDay(filter.dateTo)}T00:00:00Z`);
 	}
 
 	if (filter.band) {

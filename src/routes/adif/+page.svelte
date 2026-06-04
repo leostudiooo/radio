@@ -53,8 +53,8 @@
 
   const previewColumns: Column[] = $derived([
     { key: 'callsign', header: t.qso.callsign },
-    { key: 'qso_date', header: t.qso.date },
-    { key: 'time_on', header: t.qso.time, format: (v: unknown) => String(v ?? '').slice(0, 5) },
+    { key: 'time_on', header: t.qso.date, format: (v: unknown) => String(v ?? '').slice(0, 10) },
+    { key: 'time_on', header: t.qso.time, format: (v: unknown) => { const m = String(v ?? '').match(/T(\d{2}:\d{2})/); return m ? m[1] : ''; } },
     { key: 'band', header: t.qso.band },
     { key: 'mode', header: t.qso.mode },
   ]);
@@ -118,7 +118,7 @@
       const result = await getQSOs(
         supabase,
         buildExportFilter(),
-        { field: 'qso_date', direction: 'desc' },
+        { field: 'time_on', direction: 'desc' },
         1,
         10000,
       );

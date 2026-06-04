@@ -42,7 +42,6 @@
   let notFound = $state(false);
 
   let callsign = $state('');
-  let qsoDate = $state('');
   let timeOn = $state('');
   let band = $state('');
   let freq = $state('');
@@ -62,10 +61,20 @@
   let submitting = $state(false);
   let showDeleteConfirm = $state(false);
 
+  let datePart = $derived(timeOn.slice(0, 10));
+  let timePart = $derived(timeOn.slice(11, 16));
+
+  function handleDateChange(newDate: string) {
+    timeOn = `${newDate}T${timePart}:00Z`;
+  }
+
+  function handleTimeChange(newTime: string) {
+    timeOn = `${datePart}T${newTime}:00Z`;
+  }
+
   function populateForm(data: QSO) {
     qso = data;
     callsign = data.callsign ?? '';
-    qsoDate = data.qso_date ?? '';
     timeOn = data.time_on ?? '';
     band = data.band ?? '';
     freq = data.freq != null ? String(data.freq) : '';
@@ -105,7 +114,6 @@
   function buildUpdate(): QSOUpdate {
     return {
       callsign: callsign.trim().toUpperCase(),
-      qso_date: qsoDate,
       time_on: timeOn,
       band: isEyeball ? undefined : (band || undefined),
       freq: isEyeball ? undefined : (freq ? parseFloat(freq) : undefined),
@@ -129,7 +137,6 @@
     const insert = {
       profile_id: qso?.profile_id ?? '',
       callsign: callsign.trim().toUpperCase(),
-      qso_date: qsoDate,
       time_on: timeOn,
       band: isEyeball ? undefined : (band || undefined),
       freq: isEyeball ? undefined : (freq ? parseFloat(freq) : undefined),
@@ -214,14 +221,16 @@
 
       <FormDate
         label={t.qso.date}
-        bind:value={qsoDate}
+        value={datePart}
         required={true}
+        onchange={handleDateChange}
       />
 
       <FormTime
         label={t.qso.time}
-        bind:value={timeOn}
+        value={timePart}
         required={true}
+        onchange={handleTimeChange}
       />
 
       {#if !isEyeball}

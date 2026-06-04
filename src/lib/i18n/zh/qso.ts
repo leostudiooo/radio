@@ -40,10 +40,10 @@ const qso = {
     callsign: { INVALID_FORMAT: '呼号格式无效', REQUIRED: '呼号为必填项' },
     band: { INVALID_BAND: '波段无效', REQUIRED: '波段为必填项' },
     freq: { INVALID_FORMAT: '频率格式无效' },
-    rst: { INVALID_RST: 'RST 无效', REQUIRED: 'RST 为必填项' },
+    rstSent: { INVALID_RST: '发送 RST 无效' },
+    rstRcvd: { INVALID_RST: '接收 RST 无效' },
     gridSquare: { INVALID_FORMAT: '网格定位格式无效' },
-    qsoDate: { REQUIRED: '日期为必填项' },
-    timeOn: { REQUIRED: '时间为必填项' },
+    timeOn: { REQUIRED: '时间为必填项', INVALID_FORMAT: '时间戳格式无效' },
   },
 } as const;
 

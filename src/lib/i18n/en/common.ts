@@ -13,6 +13,8 @@ const common = {
   no: 'No',
   error: 'Error',
   success: 'Success',
+  useUtc: 'Use UTC',
+  useLocalTime: 'Use local time',
   placeholder: {
     callsign: 'e.g. W1AW',
     freq: 'e.g. 14.175',

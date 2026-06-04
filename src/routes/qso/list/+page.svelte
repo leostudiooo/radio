@@ -42,8 +42,8 @@
   let initialLoaded = $state(false);
 
   const columns: Column[] = $derived([
-    { key: 'qso_date', header: t.qso.date, sortable: true },
-    { key: 'time_on', header: t.qso.time, format: (v: unknown) => String(v ?? '').slice(0, 5) },
+    { key: 'time_on', header: t.qso.date, sortable: true, format: (v: unknown) => String(v ?? '').slice(0, 10) },
+    { key: 'time_on', header: t.qso.time, format: (v: unknown) => { const m = String(v ?? '').match(/T(\d{2}:\d{2})/); return m ? m[1] : ''; } },
     { key: 'callsign', header: t.qso.callsign, sortable: true },
     { key: 'band', header: t.qso.band, sortable: true },
     { key: 'mode', header: t.qso.mode, sortable: true },
@@ -65,7 +65,7 @@
   async function loadData() {
     loading = true;
     try {
-      const result = await getQSOs(supabase, buildFilter(), { field: 'qso_date', direction: 'desc' }, currentPage, PAGE_SIZE);
+      const result = await getQSOs(supabase, buildFilter(), { field: 'time_on', direction: 'desc' }, currentPage, PAGE_SIZE);
       data = result.data;
       total = result.total;
       totalPages = result.totalPages;

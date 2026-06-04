@@ -25,6 +25,8 @@ export type BaseTranslation = {
     no: string;
     error: string;
     success: string;
+    useUtc: string;
+    useLocalTime: string;
     placeholder: {
       callsign: string;
       freq: string;
@@ -122,10 +124,10 @@ export type BaseTranslation = {
       callsign: { INVALID_FORMAT?: string; REQUIRED?: string };
       band: { INVALID_BAND?: string; REQUIRED?: string };
       freq: { INVALID_FORMAT?: string };
-      rst: { INVALID_RST?: string; REQUIRED?: string };
+      rstSent: { INVALID_RST?: string };
+      rstRcvd: { INVALID_RST?: string };
       gridSquare: { INVALID_FORMAT?: string };
-      qsoDate: { REQUIRED?: string };
-      timeOn: { REQUIRED?: string };
+      timeOn: { REQUIRED?: string; INVALID_FORMAT?: string };
     };
   };
   adif: {

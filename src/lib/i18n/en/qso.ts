@@ -40,10 +40,10 @@ const qso = {
     callsign: { INVALID_FORMAT: 'Invalid callsign format', REQUIRED: 'Callsign is required' },
     band: { INVALID_BAND: 'Invalid band', REQUIRED: 'Band is required' },
     freq: { INVALID_FORMAT: 'Invalid frequency' },
-    rst: { INVALID_RST: 'Invalid RST', REQUIRED: 'RST is required' },
+    rstSent: { INVALID_RST: 'Invalid RST sent' },
+    rstRcvd: { INVALID_RST: 'Invalid RST received' },
     gridSquare: { INVALID_FORMAT: 'Invalid grid square' },
-    qsoDate: { REQUIRED: 'Date is required' },
-    timeOn: { REQUIRED: 'Time is required' },
+    timeOn: { REQUIRED: 'Timestamp is required', INVALID_FORMAT: 'Invalid timestamp format' },
   },
 } as const;
 
