@@ -54,7 +54,7 @@
       onclick={handleCancel}
     ></button>
     <div class="relative w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-6)] mx-[var(--space-4)]">
-      <h2 id="confirm-title" class="text-lg font-semibold text-[var(--color-text-primary)] border-b border-[var(--color-border)] pb-[var(--space-3)] mb-[var(--space-4)]">
+      <h2 id="confirm-title" class="text-[var(--text-heading)] font-semibold text-[var(--color-text-primary)] border-b border-[var(--color-border)] pb-[var(--space-3)] mb-[var(--space-4)]">
         {title}
       </h2>
       <p class="text-[var(--text-body)] text-[var(--color-text-secondary)] mb-[var(--space-6)]">{message}</p>

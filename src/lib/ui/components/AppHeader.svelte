@@ -75,7 +75,7 @@
     {/if}
   </button>
 
-  <a href="/" class="font-[var(--font-mono)] text-lg font-bold tracking-[0.05em] text-[var(--color-accent)] uppercase mr-8">
+  <a href="/" class="font-[var(--font-mono)] text-[var(--text-heading)] font-bold tracking-[0.05em] text-[var(--color-accent)] uppercase mr-8">
     {SITE_CONFIG.callsign}
   </a>
 
@@ -83,7 +83,7 @@
     {#each publicNavItems as item}
       <a
         href={item.path}
-        class="px-3 py-1.5 text-[var(--text-caption)] rounded-md transition-colors duration-100 text-sm {isActive(item.path) ? 'text-[var(--color-text-primary)] bg-[var(--color-accent-subtle)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+        class="px-3 py-1.5 rounded-md transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] bg-[var(--color-accent-subtle)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
       >
         {typeof item.label === 'function' ? item.label() : item.label}
       </a>
@@ -92,7 +92,7 @@
       {#each adminNavItems as item}
         <a
           href={item.path}
-          class="px-3 py-1.5 text-[var(--text-caption)] rounded-md transition-colors duration-100 text-sm {isActive(item.path) ? 'text-[var(--color-text-primary)] bg-[var(--color-accent-subtle)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+          class="px-3 py-1.5 rounded-md transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] bg-[var(--color-accent-subtle)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
         >
           {typeof item.label === 'function' ? item.label() : item.label}
         </a>
@@ -116,7 +116,7 @@
       {#if authStore.isAuthenticated}
         <UserDropdown callsign={authStore.callsign ?? ''} onlogout={handleLogout} />
       {:else}
-        <a href="/auth/login" class="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100">
+        <a href="/auth/login" class="text-[var(--text-caption)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100">
           {localeStore.translation.auth.login}
         </a>
       {/if}

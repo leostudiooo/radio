@@ -194,7 +194,7 @@
         <span
           class="inline-flex items-center justify-center w-6 h-6 text-xs font-medium"
           class:bg-[var(--color-accent)]={importStep === step}
-          class:text-[var(--color-base)]={importStep === step}
+          class:text-[var(--color-text-on-accent)]={importStep === step}
           class:bg-[var(--color-surface)]={importStep !== step}
           class:text-[var(--color-text-muted)]={importStep !== step}
           class:border={importStep !== step}
