@@ -30,7 +30,18 @@ export type BaseTranslation = {
     placeholder: {
       callsign: string;
       freq: string;
-      gridSquare: string;
+    gridSquare: string;
+    operator: string;
+    latitude: string;
+    longitude: string;
+    antAz: string;
+    antEl: string;
+    distance: string;
+    dxcc: string;
+    country: string;
+    cqZone: string;
+    ituZone: string;
+    continent: string;
       qth: string;
       serialNumber: string;
       notes: string;
@@ -44,7 +55,9 @@ export type BaseTranslation = {
     };
     select: {
       band: string;
-      mode: string;
+    mode: string;
+    submode: string;
+    satName: string;
       type: string;
     };
   };
@@ -89,6 +102,7 @@ export type BaseTranslation = {
     callsign: string;
     date: string;
     time: string;
+    timeOff: string;
     band: string;
     freq: string;
     mode: string;
@@ -100,6 +114,14 @@ export type BaseTranslation = {
     comment: string;
     power: string;
     propMode: string;
+    qslSent: string;
+    qslSentVia: string;
+    qslRcvd: string;
+    qslRcvdVia: string;
+    lotwQslSent: string;
+    lotwQslRcvd: string;
+    eqslQslSent: string;
+    eqslQslRcvd: string;
     eyeball: string;
     eyeballDescription: string;
     required: string;
@@ -115,6 +137,10 @@ export type BaseTranslation = {
     deleteConfirm: string;
     deleteMessage: string;
     optionalFields: string;
+    sectionDetails: string;
+    sectionLocation: string;
+    sectionGeography: string;
+    sectionQsl: string;
     welcome: string;
     loggedInAs: string;
     publicView: string;
