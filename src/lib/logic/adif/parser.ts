@@ -18,6 +18,8 @@ const NUMERIC_FIELDS = new Set<keyof QSOInsert>([
 
 const EYEBALL_FLAG_FIELDS = new Set(['EYE_QSO', 'IS_EYEBALL', 'EYEBALL']);
 
+const SPECIAL_DATE_FIELDS = new Set(['QSO_DATE', 'TIME_ON', 'QSO_DATE_OFF', 'TIME_OFF']);
+
 function bodyAfterHeader(content: string): string {
 	const headerEnd = content.search(/<EOH>/i);
 
@@ -52,6 +54,10 @@ function normalizeTime(value: string): string {
 	return trimmed;
 }
 
+function combineDateTime(date: string, time: string): string {
+	return `${date}T${time}Z`;
+}
+
 function numericValue(value: string): number | undefined {
 	const parsed = Number(value.trim());
 
@@ -62,7 +68,7 @@ function booleanFlag(value: string): boolean {
 	return ['1', 'T', 'TRUE', 'Y', 'YES'].includes(value.trim().toUpperCase());
 }
 
-function assignField(qso: MutableQSOInsert, dbField: keyof QSOInsert, rawValue: string): void {
+function assignGenericField(qso: MutableQSOInsert, dbField: keyof QSOInsert, rawValue: string): void {
 	if (rawValue.length === 0) {
 		return;
 	}
@@ -115,15 +121,6 @@ function assignField(qso: MutableQSOInsert, dbField: keyof QSOInsert, rawValue: 
 	switch (dbField) {
 		case 'callsign':
 			qso.callsign = value.toUpperCase();
-			break;
-		case 'qso_date':
-			qso.qso_date = normalizeDate(value);
-			break;
-		case 'time_on':
-			qso.time_on = normalizeTime(value);
-			break;
-		case 'time_off':
-			qso.time_off = normalizeTime(value);
 			break;
 		case 'band':
 			qso.band = value.toLowerCase();
@@ -195,16 +192,18 @@ function assignField(qso: MutableQSOInsert, dbField: keyof QSOInsert, rawValue: 
 }
 
 function duplicateKey(qso: QSOInsert): string {
-	return [qso.callsign, qso.qso_date, qso.time_on, qso.band ?? ''].join('\u0000');
+	return [qso.callsign, qso.time_on, qso.band ?? ''].join('\u0000');
 }
 
 function hasRequiredFields(qso: MutableQSOInsert): qso is QSOInsert {
-	return Boolean(qso.callsign && qso.qso_date && qso.time_on);
+	return Boolean(qso.callsign && qso.time_on);
 }
 
 function parseRecord(record: string): QSOInsert | undefined {
 	const qso: MutableQSOInsert = { profile_id: '', is_eyeball: false };
 	let offset = 0;
+	let pendingDate = '';
+	let pendingDateOff = '';
 
 	while (offset < record.length) {
 		const nextStart = record.indexOf('<', offset);
@@ -236,12 +235,36 @@ function parseRecord(record: string): QSOInsert | undefined {
 		}
 
 		const value = record.slice(valueStart, valueEnd);
-		const mappedField = ADIF_TO_DB_MAP[fieldName] as keyof QSOInsert | undefined;
 
-		if (mappedField) {
-			assignField(qso, mappedField, value);
-		} else if (EYEBALL_FLAG_FIELDS.has(fieldName) && booleanFlag(value)) {
-			qso.is_eyeball = true;
+		if (SPECIAL_DATE_FIELDS.has(fieldName)) {
+			switch (fieldName) {
+				case 'QSO_DATE':
+					pendingDate = normalizeDate(value);
+					break;
+				case 'TIME_ON':
+					if (pendingDate) {
+						qso.time_on = combineDateTime(pendingDate, normalizeTime(value));
+					}
+					break;
+				case 'QSO_DATE_OFF':
+					pendingDateOff = normalizeDate(value);
+					break;
+				case 'TIME_OFF': {
+					const dateOff = pendingDateOff || pendingDate;
+					if (dateOff) {
+						qso.time_off = combineDateTime(dateOff, normalizeTime(value));
+					}
+					break;
+				}
+			}
+		} else {
+			const mappedField = ADIF_TO_DB_MAP[fieldName] as keyof QSOInsert | undefined;
+
+			if (mappedField) {
+				assignGenericField(qso, mappedField, value);
+			} else if (EYEBALL_FLAG_FIELDS.has(fieldName) && booleanFlag(value)) {
+				qso.is_eyeball = true;
+			}
 		}
 
 		offset = valueEnd;

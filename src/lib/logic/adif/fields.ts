@@ -1,8 +1,5 @@
 export const ADIF_TO_DB_MAP: Record<string, string> = {
 	CALL: 'callsign',
-	QSO_DATE: 'qso_date',
-	TIME_ON: 'time_on',
-	TIME_OFF: 'time_off',
 	BAND: 'band',
 	FREQ: 'freq',
 	MODE: 'mode',

@@ -1,26 +1,16 @@
 import type { QSO } from '$lib/logic/types/qso';
-import { ADIF_TO_DB_MAP } from './fields';
+import { DB_TO_ADIF_MAP } from './fields';
 
-function adifDate(value: string): string {
-	return value.replaceAll('-', '');
+function adifDate(isoTs: string): string {
+	const match = isoTs.match(/^(\d{4})-(\d{2})-(\d{2})/);
+	if (!match) return '';
+	return `${match[1]}${match[2]}${match[3]}`;
 }
 
-function adifTime(value: string): string {
-	return value.replaceAll(':', '').slice(0, 6);
-}
-
-function formatValue(field: string, value: string | number | boolean): string {
-	const text = String(value);
-
-	if (field === 'QSO_DATE') {
-		return adifDate(text);
-	}
-
-	if (field === 'TIME_ON' || field === 'TIME_OFF') {
-		return adifTime(text);
-	}
-
-	return text;
+function adifTime(isoTs: string): string {
+	const match = isoTs.match(/T(\d{2}):(\d{2}):(\d{2})/);
+	if (!match) return '';
+	return `${match[1]}${match[2]}${match[3]}`;
 }
 
 function fieldRecord(field: string, value: string): string {
@@ -40,16 +30,32 @@ export function exportADIF(qsos: QSO[]): string {
 	for (const qso of qsos) {
 		const fields: string[] = [];
 
-		for (const [adifField, dbFieldName] of Object.entries(ADIF_TO_DB_MAP)) {
-			const dbField = dbFieldName as keyof QSO;
-			const value = qso[dbField];
+		if (qso.time_on) {
+			const date = adifDate(qso.time_on);
+			const time = adifTime(qso.time_on);
+			if (date) fields.push(fieldRecord('QSO_DATE', date));
+			if (time) fields.push(fieldRecord('TIME_ON', time));
+		}
+
+		if (qso.time_off) {
+			const dateOff = adifDate(qso.time_off);
+			const timeOff = adifTime(qso.time_off);
+			if (dateOff) fields.push(fieldRecord('QSO_DATE_OFF', dateOff));
+			if (timeOff) fields.push(fieldRecord('TIME_OFF', timeOff));
+		}
+
+		const skipFields = new Set(['time_on', 'time_off']);
+		for (const [dbField, adifField] of Object.entries(DB_TO_ADIF_MAP)) {
+			if (skipFields.has(dbField)) continue;
+
+			const value = qso[dbField as keyof QSO];
 
 			if (value === undefined || value === null || value === '') {
 				continue;
 			}
 
 			if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-				fields.push(fieldRecord(adifField, formatValue(adifField, value)));
+				fields.push(fieldRecord(adifField, String(value)));
 			}
 		}
 

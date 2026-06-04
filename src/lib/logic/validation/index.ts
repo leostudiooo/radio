@@ -1,5 +1,6 @@
 import type { QSOInsert, ValidationResult } from '$lib/logic/types/qso';
 import { BANDS, MODES } from '$lib/logic/types/qso';
+import { isValid as dfnsIsValid, parseISO } from 'date-fns';
 
 const PHONE_MODES = new Set(['SSB', 'FM', 'AM']);
 
@@ -11,23 +12,9 @@ function hasValue(value: string | number | undefined): boolean {
 	return value !== undefined && value !== '';
 }
 
-function isValidDate(value: string): boolean {
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-		return false;
-	}
-
-	const [year, month, day] = value.split('-').map(Number);
-	const date = new Date(Date.UTC(year, month - 1, day));
-
-	return (
-		date.getUTCFullYear() === year &&
-		date.getUTCMonth() === month - 1 &&
-		date.getUTCDate() === day
-	);
-}
-
-function isValidTime(value: string): boolean {
-	return /^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(value);
+function isValidISOTimestamp(value: string): boolean {
+	const parsed = parseISO(value);
+	return dfnsIsValid(parsed);
 }
 
 function isValidMode(mode: string): boolean {
@@ -72,16 +59,10 @@ export function validateQSO(qso: QSOInsert): ValidationResult {
 		errors.push({ field: 'callsign', code: 'INVALID_FORMAT' });
 	}
 
-	if (!qso.qso_date?.trim()) {
-		errors.push({ field: 'qso_date', code: 'REQUIRED' });
-	} else if (!isValidDate(qso.qso_date)) {
-		errors.push({ field: 'qso_date', code: 'INVALID_FORMAT' });
-	}
-
 	if (!qso.time_on?.trim()) {
-		errors.push({ field: 'time_on', code: 'REQUIRED' });
-	} else if (!isValidTime(qso.time_on)) {
-		errors.push({ field: 'time_on', code: 'INVALID_FORMAT' });
+		errors.push({ field: 'timeOn', code: 'REQUIRED' });
+	} else if (!isValidISOTimestamp(qso.time_on)) {
+		errors.push({ field: 'timeOn', code: 'INVALID_FORMAT' });
 	}
 
 	if (!qso.is_eyeball && !hasValue(qso.band) && !hasValue(qso.freq)) {
@@ -97,17 +78,17 @@ export function validateQSO(qso: QSOInsert): ValidationResult {
 	}
 
 	if (qso.grid_square && !validateGridSquare(qso.grid_square)) {
-		errors.push({ field: 'grid_square', code: 'INVALID_GRID' });
+		errors.push({ field: 'gridSquare', code: 'INVALID_GRID' });
 	}
 
 	const mode = qso.mode ?? 'CW';
 
 	if (qso.rst_sent && !validateRST(qso.rst_sent, mode)) {
-		errors.push({ field: 'rst_sent', code: 'INVALID_RST' });
+		errors.push({ field: 'rstSent', code: 'INVALID_RST' });
 	}
 
 	if (qso.rst_rcvd && !validateRST(qso.rst_rcvd, mode)) {
-		errors.push({ field: 'rst_rcvd', code: 'INVALID_RST' });
+		errors.push({ field: 'rstRcvd', code: 'INVALID_RST' });
 	}
 
 	return {

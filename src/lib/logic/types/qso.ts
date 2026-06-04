@@ -2,7 +2,6 @@ export interface QSO {
 	id: string;
 	profile_id: string;
 	callsign: string;
-	qso_date: string;
 	time_on: string;
 	time_off?: string;
 	band?: string;
