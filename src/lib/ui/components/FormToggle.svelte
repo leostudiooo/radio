@@ -20,7 +20,7 @@
   }
 </script>
 
-<label class="inline-flex items-center gap-2 cursor-pointer select-none group">
+<label class="inline-flex items-center gap-[var(--space-2)] cursor-pointer select-none group">
   <input
     type="checkbox"
     {disabled}
@@ -28,10 +28,10 @@
     onchange={handleChange}
     class="sr-only"
   />
-  <span class="font-mono text-sm text-[var(--color-accent)] transition-colors duration-100">
+  <span class="font-mono text-[var(--text-body)] text-[var(--color-accent)] transition-colors duration-100">
     {checked ? '[x]' : '[ ]'}
   </span>
-  <span class="text-sm text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors duration-100">
+  <span class="text-[var(--text-body)] text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors duration-100">
     {label}
   </span>
 </label>

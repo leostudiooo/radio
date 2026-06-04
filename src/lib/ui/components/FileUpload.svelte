@@ -52,20 +52,20 @@
 </script>
 
 <div
-  class="flex flex-col gap-3"
+  class="flex flex-col gap-[var(--space-3)]"
   ondragover={handleDragOver}
   ondragleave={handleDragLeave}
   ondrop={handleDrop}
 >
   <label
-    class="flex flex-col items-center justify-center gap-2 p-8 border-2 border-dashed transition-colors duration-150 cursor-pointer"
+    class="flex flex-col items-center justify-center gap-[var(--space-2)] p-[var(--space-8)] border-2 border-dashed transition-colors duration-150 cursor-pointer"
     class:border-[var(--color-accent)]={dragOver}
     class:bg-[var(--color-accent-subtle)]={dragOver}
     class:border-[var(--color-border)]={!dragOver}
     class:bg-[var(--color-elevated)]={!dragOver}
   >
     <Upload size={24} class="text-[var(--color-text-muted)]" />
-    <span class="text-sm text-[var(--color-text-secondary)]">Drag & drop or click to upload</span>
+    <span class="text-[var(--text-body)] text-[var(--color-text-secondary)]">Drag & drop or click to upload</span>
     <input
       type="file"
       {accept}
@@ -75,10 +75,10 @@
     />
   </label>
   {#if selectedFile}
-    <div class="flex items-center gap-2 px-3 py-2 bg-[var(--color-elevated)] border border-[var(--color-border)]">
+    <div class="flex items-center gap-[var(--space-2)] px-[var(--space-3)] py-[var(--space-2)] bg-[var(--color-elevated)] border border-[var(--color-border)]">
       <FileIcon size={16} class="text-[var(--color-text-muted)]" />
-      <span class="flex-1 text-sm text-[var(--color-text-primary)] truncate">{selectedFile.name}</span>
-      <span class="text-xs text-[var(--color-text-muted)]">{formatSize(selectedFile.size)}</span>
+      <span class="flex-1 text-[var(--text-body)] text-[var(--color-text-primary)] truncate">{selectedFile.name}</span>
+      <span class="text-[var(--text-caption)] text-[var(--color-text-muted)]">{formatSize(selectedFile.size)}</span>
     </div>
   {/if}
 </div>

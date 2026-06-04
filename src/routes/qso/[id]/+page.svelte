@@ -3,38 +3,12 @@
   import { page } from '$app/stores';
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
-  import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
-  import { BANDS, MODES, CONTINENTS, ADIF_QSL_STATUS } from '$lib/logic/types/qso';
-  import { validateQSO } from '$lib/logic/validation';
   import { getQSOById, updateQSO, deleteQSO } from '$lib/logic/data/qso';
-  import type { QSO, QSOUpdate, ValidationResult } from '$lib/logic/types/qso';
-
-  import PageHeader from '$lib/ui/components/PageHeader.svelte';
-  import FormInput from '$lib/ui/components/FormInput.svelte';
-  import FormSelect from '$lib/ui/components/FormSelect.svelte';
-  import FormDate from '$lib/ui/components/FormDate.svelte';
-  import FormTime from '$lib/ui/components/FormTime.svelte';
-  import FormToggle from '$lib/ui/components/FormToggle.svelte';
-  import CollapsibleSection from '$lib/ui/components/CollapsibleSection.svelte';
-  import ValidationErrors from '$lib/ui/components/ValidationErrors.svelte';
-  import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
-  import Button from '$lib/ui/components/Button.svelte';
+  import type { QSO, QSOInsert } from '$lib/logic/types/qso';
+  import QSOForm from '$lib/ui/components/QSOForm.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { SITE_CONFIG } from '$lib/config';
-
-  const bandOptions = BANDS.map((b) => ({ value: b, label: b }));
-  const modeOptions = MODES.map((m) => ({ value: m, label: m }));
-  const contOptions = CONTINENTS.map((c) => ({ value: c, label: c }));
-  const qslStatusOptions = ADIF_QSL_STATUS.map((s) => ({ value: s, label: s }));
-  const qslViaOptions = [
-    { value: '', label: '\u2014' },
-    { value: 'B', label: 'Bureau' },
-    { value: 'D', label: 'Direct' },
-    { value: 'E', label: 'Electronic' },
-    { value: 'M', label: 'Manager' },
-  ];
 
   const t = $derived(localeStore.translation);
   const id: string = $derived($page.params.id);
@@ -51,178 +25,13 @@
   let loading = $state(true);
   let notFound = $state(false);
 
-  let callsign = $state('');
-  let timeOn = $state('');
-  let band = $state('');
-  let freq = $state('');
-  let mode = $state('');
-  let rstSent = $state('');
-  let rstRcvd = $state('');
-  let isEyeball = $state(false);
-
-  let optName = $state('');
-  let optQth = $state('');
-  let optGrid = $state('');
-  let optPower = $state('');
-  let optComment = $state('');
-  let optPropMode = $state('');
-
-  // Time off
-  let timeOff = $state('');
-
-  // Details section
-  let optSubmode = $state('');
-  let optSatName = $state('');
-  let optOperator = $state('');
-
-  // Location section
-  let optLatitude = $state('');
-  let optLongitude = $state('');
-  let optAntAz = $state('');
-  let optAntEl = $state('');
-  let optDistance = $state('');
-
-  // Geography section
-  let optDxcc = $state('');
-  let optCountry = $state('');
-  let optCqZone = $state('');
-  let optItuZone = $state('');
-  let optCont = $state('');
-
-  // QSL section
-  let optQslSent = $state('');
-  let optQslSentVia = $state('');
-  let optQslRcvd = $state('');
-  let optQslRcvdVia = $state('');
-  let optLotwQslSent = $state('');
-  let optLotwQslRcvd = $state('');
-  let optEqslQslSent = $state('');
-  let optEqslQslRcvd = $state('');
-
-  let errors = $state<ValidationResult['errors']>([]);
-  let submitting = $state(false);
-  let showDeleteConfirm = $state(false);
-
-  let datePart = $derived.by(() => {
-    if (!settingsStore.useLocalTime) return timeOn.slice(0, 10);
-    const d = new Date(timeOn);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  });
-  let timePart = $derived.by(() => {
-    if (!settingsStore.useLocalTime) return timeOn.slice(11, 16);
-    const d = new Date(timeOn);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  });
-
-  function handleDateChange(newDate: string) {
-    if (!settingsStore.useLocalTime) {
-      timeOn = `${newDate}T${timePart}:00Z`;
-    } else {
-      const d = new Date(timeOn);
-      const [y, m, day] = newDate.split('-').map(Number);
-      d.setFullYear(y, m - 1, day);
-      timeOn = d.toISOString().slice(0, 19) + 'Z';
-    }
-  }
-
-  function handleTimeChange(newTime: string) {
-    if (!settingsStore.useLocalTime) {
-      timeOn = `${datePart}T${newTime}:00Z`;
-    } else {
-      const d = new Date(timeOn);
-      const [h, m] = newTime.split(':').map(Number);
-      d.setHours(h, m, 0, 0);
-      timeOn = d.toISOString().slice(0, 19) + 'Z';
-    }
-  }
-
-  let datePartOff = $derived.by(() => {
-    if (!timeOff) return '';
-    if (!settingsStore.useLocalTime) return timeOff.slice(0, 10);
-    const d = new Date(timeOff);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  });
-  let timePartOff = $derived.by(() => {
-    if (!timeOff) return '';
-    if (!settingsStore.useLocalTime) return timeOff.slice(11, 16);
-    const d = new Date(timeOff);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  });
-
-  function handleDateOffChange(newDate: string) {
-    if (!timeOff) {
-      timeOff = `${newDate}T00:00:00Z`;
-    } else if (!settingsStore.useLocalTime) {
-      timeOff = `${newDate}T${timePartOff}:00Z`;
-    } else {
-      const d = new Date(timeOff);
-      const [y, m, day] = newDate.split('-').map(Number);
-      d.setFullYear(y, m - 1, day);
-      timeOff = d.toISOString().slice(0, 19) + 'Z';
-    }
-  }
-
-  function handleTimeOffChange(newTime: string) {
-    if (!timeOff) {
-      const today = new Date().toISOString().slice(0, 10);
-      timeOff = `${today}T${newTime}:00Z`;
-    } else if (!settingsStore.useLocalTime) {
-      timeOff = `${datePartOff}T${newTime}:00Z`;
-    } else {
-      const d = new Date(timeOff);
-      const [h, m] = newTime.split(':').map(Number);
-      d.setHours(h, m, 0, 0);
-      timeOff = d.toISOString().slice(0, 19) + 'Z';
-    }
-  }
-
-  function populateForm(data: QSO) {
-    qso = data;
-    callsign = data.callsign ?? '';
-    timeOn = data.time_on ?? '';
-    band = data.band ?? '';
-    freq = data.freq != null ? String(data.freq) : '';
-    mode = data.mode ?? '';
-    rstSent = data.rst_sent ?? '';
-    rstRcvd = data.rst_rcvd ?? '';
-    isEyeball = data.is_eyeball ?? false;
-    optName = data.name ?? '';
-    optQth = data.qth ?? '';
-    optGrid = data.grid_square ?? '';
-    optPower = data.tx_pwr != null ? String(data.tx_pwr) : '';
-    optComment = data.comment ?? '';
-    optPropMode = data.prop_mode ?? '';
-    timeOff = data.time_off ?? '';
-    optSubmode = data.submode ?? '';
-    optSatName = data.sat_name ?? '';
-    optOperator = data.operator ?? '';
-    optLatitude = data.latitude != null ? String(data.latitude) : '';
-    optLongitude = data.longitude != null ? String(data.longitude) : '';
-    optAntAz = data.ant_az != null ? String(data.ant_az) : '';
-    optAntEl = data.ant_el != null ? String(data.ant_el) : '';
-    optDistance = data.distance != null ? String(data.distance) : '';
-    optDxcc = data.dxcc != null ? String(data.dxcc) : '';
-    optCountry = data.country ?? '';
-    optCqZone = data.cq_zone != null ? String(data.cq_zone) : '';
-    optItuZone = data.itu_zone != null ? String(data.itu_zone) : '';
-    optCont = data.cont ?? '';
-    optQslSent = data.qsl_sent ?? '';
-    optQslSentVia = data.qsl_sent_via ?? '';
-    optQslRcvd = data.qsl_rcvd ?? '';
-    optQslRcvdVia = data.qsl_rcvd_via ?? '';
-    optLotwQslSent = data.lotw_qsl_sent ?? '';
-    optLotwQslRcvd = data.lotw_qsl_rcvd ?? '';
-    optEqslQslSent = data.eqsl_qsl_sent ?? '';
-    optEqslQslRcvd = data.eqsl_qsl_rcvd ?? '';
-  }
-
   async function loadQSO() {
     loading = true;
     notFound = false;
     try {
       const result = await getQSOById(supabase, id);
       if (result) {
-        populateForm(result);
+        qso = result;
       } else {
         notFound = true;
       }
@@ -237,106 +46,15 @@
     if (id) loadQSO();
   });
 
-  function buildUpdate(): QSOUpdate {
-    return {
-      callsign: callsign.trim().toUpperCase(),
-      time_on: timeOn.includes('T') ? timeOn : `${timeOn.replace(/\//g, '-')}T00:00:00Z`,
-      time_off: timeOff || undefined,
-      band: isEyeball ? undefined : (band || undefined),
-      freq: isEyeball ? undefined : (freq ? parseFloat(freq) : undefined),
-      mode: mode || undefined,
-      rst_sent: rstSent || undefined,
-      rst_rcvd: rstRcvd || undefined,
-      is_eyeball: isEyeball,
-      name: optName || undefined,
-      qth: optQth || undefined,
-      grid_square: optGrid || undefined,
-      tx_pwr: optPower ? parseInt(optPower, 10) : undefined,
-      comment: optComment || undefined,
-      prop_mode: optPropMode || undefined,
-      submode: optSubmode || undefined,
-      sat_name: optSatName || undefined,
-      operator: optOperator || undefined,
-      latitude: optLatitude ? parseFloat(optLatitude) : undefined,
-      longitude: optLongitude ? parseFloat(optLongitude) : undefined,
-      ant_az: optAntAz ? parseFloat(optAntAz) : undefined,
-      ant_el: optAntEl ? parseFloat(optAntEl) : undefined,
-      distance: optDistance ? parseFloat(optDistance) : undefined,
-      dxcc: optDxcc ? parseInt(optDxcc, 10) : undefined,
-      country: optCountry || undefined,
-      cq_zone: optCqZone ? parseInt(optCqZone, 10) : undefined,
-      itu_zone: optItuZone ? parseInt(optItuZone, 10) : undefined,
-      cont: optCont || undefined,
-      qsl_sent: optQslSent || undefined,
-      qsl_sent_via: optQslSentVia || undefined,
-      qsl_rcvd: optQslRcvd || undefined,
-      qsl_rcvd_via: optQslRcvdVia || undefined,
-      lotw_qsl_sent: optLotwQslSent || undefined,
-      lotw_qsl_rcvd: optLotwQslRcvd || undefined,
-      eqsl_qsl_sent: optEqslQslSent || undefined,
-      eqsl_qsl_rcvd: optEqslQslRcvd || undefined,
-    };
-  }
-
-  async function handleSubmit(e: SubmitEvent) {
-    e.preventDefault();
-    errors = [];
-
-    const insert = {
-      profile_id: qso?.profile_id ?? '',
-      callsign: callsign.trim().toUpperCase(),
-      time_on: timeOn.includes('T') ? timeOn : `${timeOn.replace(/\//g, '-')}T00:00:00Z`,
-      time_off: timeOff || undefined,
-      band: isEyeball ? undefined : (band || undefined),
-      freq: isEyeball ? undefined : (freq ? parseFloat(freq) : undefined),
-      mode: mode || undefined,
-      rst_sent: rstSent || undefined,
-      rst_rcvd: rstRcvd || undefined,
-      is_eyeball: isEyeball,
-      name: optName || undefined,
-      qth: optQth || undefined,
-      grid_square: optGrid || undefined,
-      tx_pwr: optPower ? parseInt(optPower, 10) : undefined,
-      comment: optComment || undefined,
-      prop_mode: optPropMode || undefined,
-      submode: optSubmode || undefined,
-      sat_name: optSatName || undefined,
-      operator: optOperator || undefined,
-      latitude: optLatitude ? parseFloat(optLatitude) : undefined,
-      longitude: optLongitude ? parseFloat(optLongitude) : undefined,
-      ant_az: optAntAz ? parseFloat(optAntAz) : undefined,
-      ant_el: optAntEl ? parseFloat(optAntEl) : undefined,
-      distance: optDistance ? parseFloat(optDistance) : undefined,
-      dxcc: optDxcc ? parseInt(optDxcc, 10) : undefined,
-      country: optCountry || undefined,
-      cq_zone: optCqZone ? parseInt(optCqZone, 10) : undefined,
-      itu_zone: optItuZone ? parseInt(optItuZone, 10) : undefined,
-      cont: optCont || undefined,
-      qsl_sent: optQslSent || undefined,
-      qsl_sent_via: optQslSentVia || undefined,
-      qsl_rcvd: optQslRcvd || undefined,
-      qsl_rcvd_via: optQslRcvdVia || undefined,
-      lotw_qsl_sent: optLotwQslSent || undefined,
-      lotw_qsl_rcvd: optLotwQslRcvd || undefined,
-      eqsl_qsl_sent: optEqslQslSent || undefined,
-      eqsl_qsl_rcvd: optEqslQslRcvd || undefined,
-    };
-
-    const result = validateQSO(insert);
-    if (!result.valid) {
-      errors = result.errors;
-      return;
-    }
-
-    submitting = true;
+  async function handleSubmit(data: QSOInsert) {
     try {
-      await updateQSO(supabase, id, buildUpdate());
+      const { profile_id, ...update } = data;
+      await updateQSO(supabase, id, update);
       toastStore.success(t.qso.qsoSaved);
       goto('/qso/list');
-    } catch {
+    } catch (err) {
       toastStore.error(t.qso.saveFailed);
-    } finally {
-      submitting = false;
+      throw err;
     }
   }
 
@@ -351,273 +69,20 @@
   }
 </script>
 
-<svelte:head>
-  <title>{t.qso.editQSO}{SITE_CONFIG.pageTitleSuffix}</title>
-</svelte:head>
-
 {#if authStore.isAdmin}
-
-{#if loading}
-  <div class="flex justify-center py-12">
-    <LoadingSpinner size="lg" />
-  </div>
-{:else if notFound}
-  <p class="text-sm text-[var(--color-text-muted)]">QSO not found.</p>
-{:else}
-  <PageHeader title={t.qso.editQSO}>
-    {#snippet action()}
-      <Button variant="ghost" size="sm" onclick={() => { showDeleteConfirm = true; }}>{t.common.delete}</Button>
-    {/snippet}
-  </PageHeader>
-
-  <form onsubmit={handleSubmit} class="flex flex-col gap-6 pb-24 lg:pb-6">
-    <ValidationErrors {errors} namespace="qso" />
-
-    <FormToggle
-      label="{t.qso.eyeball} - {t.qso.eyeballDescription}"
-      checked={isEyeball}
-      onchange={(val) => { isEyeball = val; }}
+  {#if loading}
+    <div class="flex justify-center py-12">
+      <LoadingSpinner size="lg" />
+    </div>
+  {:else if notFound}
+    <p class="text-sm text-[var(--color-text-muted)]">QSO not found.</p>
+  {:else if qso}
+    <QSOForm
+      formMode="edit"
+      initialData={qso}
+      profileId={qso.profile_id}
+      onsubmit={handleSubmit}
+      ondelete={handleDelete}
     />
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="sm:col-span-2">
-        <FormInput
-          label={t.qso.callsign}
-          bind:value={callsign}
-          placeholder={t.common.placeholder.callsign}
-          required={true}
-        />
-      </div>
-
-      <FormDate
-        label={t.qso.date}
-        value={datePart}
-        required={true}
-        onchange={handleDateChange}
-      />
-
-      <FormTime
-        label={t.qso.time}
-        value={timePart}
-        required={true}
-        onchange={handleTimeChange}
-      />
-
-      <FormDate
-        label={t.qso.timeOff}
-        value={datePartOff}
-        onchange={handleDateOffChange}
-      />
-
-      <FormTime
-        label={t.qso.timeOff}
-        value={timePartOff}
-        onchange={handleTimeOffChange}
-      />
-
-      {#if !isEyeball}
-        <FormSelect
-          label={t.qso.band}
-          bind:value={band}
-          options={bandOptions}
-          placeholder={t.common.select.band}
-          required={true}
-        />
-
-        <FormInput
-          label={t.qso.freq}
-          bind:value={freq}
-          placeholder={t.common.placeholder.freq}
-        >
-          {#snippet suffix()}
-            <span class="text-xs">{t.common.unit.mhz}</span>
-          {/snippet}
-        </FormInput>
-      {/if}
-
-      <FormSelect
-        label={t.qso.mode}
-        bind:value={mode}
-        options={modeOptions}
-        placeholder={t.common.select.mode}
-      />
-
-      <div class="grid grid-cols-2 gap-4 sm:col-span-2">
-        <FormInput
-          label={t.qso.rstSent}
-          bind:value={rstSent}
-        />
-        <FormInput
-          label={t.qso.rstRcvd}
-          bind:value={rstRcvd}
-        />
-      </div>
-    </div>
-
-    <CollapsibleSection title={t.qso.optionalFields}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormInput
-          label={t.qso.name}
-          bind:value={optName}
-        />
-        <FormInput
-          label={t.qso.qth}
-          bind:value={optQth}
-        />
-        <FormInput
-          label={t.qso.gridSquare}
-          bind:value={optGrid}
-        />
-        <FormInput
-          label={t.qso.power}
-          bind:value={optPower}
-          placeholder={t.common.unit.watts}
-        />
-        <FormInput
-          label={t.qso.propMode}
-          bind:value={optPropMode}
-        />
-        <div class="sm:col-span-2">
-          <FormInput
-            label={t.qso.comment}
-            bind:value={optComment}
-          />
-        </div>
-      </div>
-    </CollapsibleSection>
-
-    <CollapsibleSection title={t.qso.sectionDetails}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormInput
-          label={t.qso.submode}
-          bind:value={optSubmode}
-        />
-        <FormInput
-          label={t.qso.satName}
-          bind:value={optSatName}
-        />
-        <FormInput
-          label={t.qso.operator}
-          bind:value={optOperator}
-        />
-      </div>
-    </CollapsibleSection>
-
-    <CollapsibleSection title={t.qso.sectionLocation}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormInput
-          label={t.qso.latitude}
-          bind:value={optLatitude}
-        />
-        <FormInput
-          label={t.qso.longitude}
-          bind:value={optLongitude}
-        />
-        <FormInput
-          label={t.qso.antAz}
-          bind:value={optAntAz}
-        />
-        <FormInput
-          label={t.qso.antEl}
-          bind:value={optAntEl}
-        />
-        <FormInput
-          label={t.qso.distance}
-          bind:value={optDistance}
-        />
-      </div>
-    </CollapsibleSection>
-
-    <CollapsibleSection title={t.qso.sectionGeography}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormInput
-          label={t.qso.dxcc}
-          bind:value={optDxcc}
-        />
-        <FormInput
-          label={t.qso.country}
-          bind:value={optCountry}
-        />
-        <FormInput
-          label={t.qso.cqZone}
-          bind:value={optCqZone}
-        />
-        <FormInput
-          label={t.qso.ituZone}
-          bind:value={optItuZone}
-        />
-        <FormSelect
-          label={t.qso.continent}
-          bind:value={optCont}
-          options={contOptions}
-        />
-      </div>
-    </CollapsibleSection>
-
-    <CollapsibleSection title={t.qso.sectionQsl}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormSelect
-          label={t.qso.qslSent}
-          bind:value={optQslSent}
-          options={qslStatusOptions}
-        />
-        <FormSelect
-          label={t.qso.qslSentVia}
-          bind:value={optQslSentVia}
-          options={qslViaOptions}
-        />
-        <FormSelect
-          label={t.qso.qslRcvd}
-          bind:value={optQslRcvd}
-          options={qslStatusOptions}
-        />
-        <FormSelect
-          label={t.qso.qslRcvdVia}
-          bind:value={optQslRcvdVia}
-          options={qslViaOptions}
-        />
-        <FormSelect
-          label={t.qso.lotwQslSent}
-          bind:value={optLotwQslSent}
-          options={qslStatusOptions}
-        />
-        <FormSelect
-          label={t.qso.lotwQslRcvd}
-          bind:value={optLotwQslRcvd}
-          options={qslStatusOptions}
-        />
-        <FormSelect
-          label={t.qso.eqslQslSent}
-          bind:value={optEqslQslSent}
-          options={qslStatusOptions}
-        />
-        <FormSelect
-          label={t.qso.eqslQslRcvd}
-          bind:value={optEqslQslRcvd}
-          options={qslStatusOptions}
-        />
-      </div>
-    </CollapsibleSection>
-
-    <div class="flex items-center gap-3">
-      <Button type="submit" variant="primary" disabled={submitting}>
-        {#if submitting}
-          <LoadingSpinner size="sm" />
-        {:else}
-          {t.common.save}
-        {/if}
-      </Button>
-      <Button variant="ghost" onclick={() => goto('/qso/list')}>{t.common.cancel}</Button>
-    </div>
-  </form>
-
-  <ConfirmDialog
-    bind:open={showDeleteConfirm}
-    title={t.qso.deleteConfirm}
-    message={t.qso.deleteMessage}
-    confirmLabel={t.common.delete}
-    cancelLabel={t.common.cancel}
-    onconfirm={handleDelete}
-  />
-{/if}
+  {/if}
 {/if}

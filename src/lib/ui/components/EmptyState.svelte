@@ -12,11 +12,11 @@
   let { icon: IconComponent, message, cta }: Props = $props();
 </script>
 
-<div class="flex flex-col items-center justify-center gap-4 py-16 text-center">
+<div class="flex flex-col items-center justify-center gap-[var(--space-4)] py-[var(--space-16)] text-center">
   {#if IconComponent}
     <IconComponent size={48} class="text-[var(--color-text-muted)]" />
   {/if}
-  <p class="text-sm text-[var(--color-text-secondary)]">{message}</p>
+  <p class="text-[var(--text-body)] text-[var(--color-text-secondary)]">{message}</p>
   {#if cta}
     <div>{@render cta()}</div>
   {/if}

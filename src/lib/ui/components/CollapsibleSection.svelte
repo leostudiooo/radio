@@ -22,13 +22,13 @@
   <button
     type="button"
     onclick={toggle}
-    class="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-[var(--color-elevated)] transition-colors duration-100"
+    class="w-full flex items-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] text-left hover:bg-[var(--color-elevated)] transition-colors duration-100"
   >
-    <span class="font-mono text-sm text-[var(--color-accent)]">{open ? '[-]' : '[+]'}</span>
-    <span class="text-sm font-medium text-[var(--color-text-primary)]">{title}</span>
+    <span class="font-mono text-[var(--text-body)] text-[var(--color-accent)]">{open ? '[-]' : '[+]'}</span>
+    <span class="text-[var(--text-body)] font-medium text-[var(--color-text-primary)]">{title}</span>
   </button>
   {#if open}
-    <div class="px-4 pb-4 pt-1 border-t border-[var(--color-border)]">
+    <div class="px-[var(--space-4)] pb-[var(--space-4)] pt-[var(--space-1)] border-t border-[var(--color-border)]">
       {@render children()}
     </div>
   {/if}

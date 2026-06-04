@@ -37,6 +37,17 @@
   --color-status-invalid-bg: oklch(0.664 0.223 26 / 0.15);
   --color-status-invalid-border: oklch(0.664 0.223 26 / 0.30);
 
+  --color-text-on-accent: var(--color-base);
+
+  --text-hero: 2em;
+  --text-stat: 1.75em;
+  --text-display: 1.5em;
+  --text-heading: 1.25em;
+  --text-body: 1em;
+  --text-aux: 0.875em;
+  --text-caption: 0.75em;
+  --text-label: 0.6875em;
+
   --font-body: 'Iosevka Aile', 'Source Han Sans SC', sans-serif;
   --font-mono: 'Iosevka', 'Source Han Sans SC', monospace;
   --spacing-1: 4px;
@@ -47,10 +58,29 @@
   --spacing-8: 32px;
   --spacing-12: 48px;
   --spacing-16: 64px;
+  --space-0-5: 0.125rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --height-control-sm: 2rem;
+  --height-control-md: 2.5rem;
+  --height-control-lg: 3rem;
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
+}
+
+html {
+  font-size: 100%;
+  color-scheme: dark;
 }
 
 body {

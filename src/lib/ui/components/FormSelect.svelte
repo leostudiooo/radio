@@ -37,8 +37,8 @@
   }
 </script>
 
-<div class="flex flex-col gap-1">
-  <label for={selectId} class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+<div class="flex flex-col gap-[var(--space-1)]">
+  <label for={selectId} class="text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
     {label}{#if required}<span class="text-[var(--color-status-invalid)]">*</span>{/if}
   </label>
   <div class="relative">
@@ -48,7 +48,7 @@
       {disabled}
       {value}
       onchange={handleChange}
-      class="w-full appearance-none bg-[var(--color-elevated)] border border-[var(--color-border)] focus:border-[var(--color-accent)] focus:shadow-[0_0_0_1px_var(--color-accent-medium)] px-3 py-2.5 pr-10 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-150 disabled:opacity-40"
+      class="w-full appearance-none bg-[var(--color-elevated)] border border-[var(--color-border)] focus:border-[var(--color-accent)] focus:shadow-[0_0_0_1px_var(--color-accent-medium)] px-[var(--space-3)] py-[var(--space-2)] pr-10 text-[var(--text-body)] text-[var(--color-text-primary)] outline-none transition-colors duration-150 disabled:opacity-40"
     >
       {#if placeholder}
         <option value="" disabled selected={!value}>{placeholder}</option>
@@ -57,11 +57,11 @@
         <option value={option.value}>{option.label}</option>
       {/each}
     </select>
-    <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-text-muted)]">
+    <span class="absolute right-[var(--space-3)] top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-text-muted)]">
       <ChevronDown size={16} />
     </span>
   </div>
   {#if error}
-    <span class="text-xs text-[var(--color-status-invalid)]">{error}</span>
+    <span class="text-[var(--text-caption)] text-[var(--color-status-invalid)]">{error}</span>
   {/if}
 </div>

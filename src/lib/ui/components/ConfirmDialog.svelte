@@ -53,12 +53,12 @@
       aria-label="Close dialog"
       onclick={handleCancel}
     ></button>
-    <div class="relative w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] p-6 mx-4">
-      <h2 id="confirm-title" class="text-lg font-semibold text-[var(--color-text-primary)] border-b border-[var(--color-border)] pb-3 mb-4">
+    <div class="relative w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-6)] mx-[var(--space-4)]">
+      <h2 id="confirm-title" class="text-lg font-semibold text-[var(--color-text-primary)] border-b border-[var(--color-border)] pb-[var(--space-3)] mb-[var(--space-4)]">
         {title}
       </h2>
-      <p class="text-sm text-[var(--color-text-secondary)] mb-6">{message}</p>
-      <div class="flex justify-end gap-3">
+      <p class="text-[var(--text-body)] text-[var(--color-text-secondary)] mb-[var(--space-6)]">{message}</p>
+      <div class="flex justify-end gap-[var(--space-3)]">
         <Button variant="ghost" onclick={handleCancel}>{cancelLabel}</Button>
         <Button variant="primary" onclick={handleConfirm}>{confirmLabel}</Button>
       </div>

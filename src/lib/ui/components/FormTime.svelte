@@ -26,8 +26,8 @@
   }
 </script>
 
-<div class="flex flex-col gap-1">
-  <label for={timeId} class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+<div class="flex flex-col gap-[var(--space-1)]">
+  <label for={timeId} class="text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
     {label}{#if required}<span class="text-[var(--color-status-invalid)]">*</span>{/if}
   </label>
   <input
@@ -37,9 +37,9 @@
     {disabled}
     {value}
     onchange={handleChange}
-    class="w-full bg-[var(--color-elevated)] border border-[var(--color-border)] focus:border-[var(--color-accent)] focus:shadow-[0_0_0_1px_var(--color-accent-medium)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-150 disabled:opacity-40"
+    class="w-full bg-[var(--color-elevated)] border border-[var(--color-border)] focus:border-[var(--color-accent)] focus:shadow-[0_0_0_1px_var(--color-accent-medium)] px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-body)] text-[var(--color-text-primary)] outline-none transition-colors duration-150 disabled:opacity-40"
   />
   {#if error}
-    <span class="text-xs text-[var(--color-status-invalid)]">{error}</span>
+    <span class="text-[var(--text-caption)] text-[var(--color-status-invalid)]">{error}</span>
   {/if}
 </div>

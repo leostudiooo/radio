@@ -10,14 +10,14 @@
   let { title, subtitle, action }: Props = $props();
 </script>
 
-<div class="flex flex-col gap-1 mb-6">
-  <div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-semibold text-[var(--color-text-primary)]">{title}</h1>
+<div class="flex flex-col gap-[var(--space-1)] mb-[var(--space-6)]">
+  <div class="flex items-center justify-between gap-[var(--space-4)]">
+    <h1 class="text-[var(--text-display)] font-semibold text-[var(--color-text-primary)]">{title}</h1>
     {#if action}
       {@render action()}
     {/if}
   </div>
   {#if subtitle}
-    <p class="text-sm text-[var(--color-text-secondary)]">{subtitle}</p>
+    <p class="text-[var(--text-body)] text-[var(--color-text-secondary)]">{subtitle}</p>
   {/if}
 </div>

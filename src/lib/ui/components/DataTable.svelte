@@ -49,7 +49,7 @@
 </script>
 
 {#if loading}
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-[var(--space-2)]">
     {#each Array(5) as _, i}
       <div class="h-10 bg-[var(--color-surface)] animate-pulse" style="animation-delay: {i * 100}ms"></div>
     {/each}
@@ -63,12 +63,12 @@
         <tr class="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
           {#each columns as column}
             <th
-              class="px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] {alignClasses[column.align ?? 'left']}"
+              class="px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] {alignClasses[column.align ?? 'left']}"
               class:cursor-pointer={column.sortable}
               class:hover:text-[var(--color-text-secondary)]={column.sortable}
               onclick={() => handleSort(column)}
             >
-              <span class="inline-flex items-center gap-1">
+              <span class="inline-flex items-center gap-[var(--space-1)]">
                 {column.header}
                 {#if column.sortable}
                   <ArrowUpDown size={12} class="opacity-50" />
@@ -82,7 +82,7 @@
         {#each data as row (keyExtractor(row))}
           <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors duration-100">
             {#each columns as column}
-              <td class="px-3 py-3 text-[13px] font-[var(--font-mono)] text-[var(--color-text-primary)] {alignClasses[column.align ?? 'left']}">
+              <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] {alignClasses[column.align ?? 'left']}">
                 {getCellValue(row, column)}
               </td>
             {/each}
@@ -92,13 +92,13 @@
     </table>
   </div>
 
-  <div class="lg:hidden flex flex-col gap-3">
+  <div class="lg:hidden flex flex-col gap-[var(--space-3)]">
     {#each data as row (keyExtractor(row))}
-      <div class="bg-[var(--color-surface)] border border-[var(--color-border)] p-4 flex flex-col gap-2">
+      <div class="bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-4)] flex flex-col gap-[var(--space-2)]">
         {#each columns as column}
-          <div class="flex justify-between gap-2">
-            <span class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>
-            <span class="text-[13px] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">{getCellValue(row, column)}</span>
+          <div class="flex justify-between gap-[var(--space-2)]">
+            <span class="text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>
+            <span class="text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">{getCellValue(row, column)}</span>
           </div>
         {/each}
       </div>

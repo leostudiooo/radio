@@ -43,13 +43,13 @@
   }
 </script>
 
-<div class="flex flex-col gap-1">
-  <label for={inputId} class="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+<div class="flex flex-col gap-[var(--space-1)]">
+  <label for={inputId} class="text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
     {label}{#if required}<span class="text-[var(--color-status-invalid)]">*</span>{/if}
   </label>
   <div class="flex items-center bg-[var(--color-elevated)] border border-[var(--color-border)] focus-within:border-[var(--color-accent)] focus-within:shadow-[0_0_0_1px_var(--color-accent-medium)] transition-colors duration-150">
     {#if prefix}
-      <span class="pl-3 text-[var(--color-text-muted)]">{@render prefix()}</span>
+      <span class="pl-[var(--space-3)] text-[var(--color-text-muted)]">{@render prefix()}</span>
     {/if}
     <input
       id={inputId}
@@ -60,13 +60,13 @@
       {value}
       oninput={handleInput}
       onchange={handleChange}
-      class="flex-1 bg-transparent px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none disabled:opacity-40"
+      class="flex-1 bg-transparent px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none disabled:opacity-40"
     />
     {#if suffix}
-      <span class="pr-3 text-[var(--color-text-muted)]">{@render suffix()}</span>
+      <span class="pr-[var(--space-3)] text-[var(--color-text-muted)]">{@render suffix()}</span>
     {/if}
   </div>
   {#if error}
-    <span class="text-xs text-[var(--color-status-invalid)]">{error}</span>
+    <span class="text-[var(--text-caption)] text-[var(--color-status-invalid)]">{error}</span>
   {/if}
 </div>

@@ -27,10 +27,10 @@
   };
 </script>
 
-<div class="fixed top-4 right-4 z-50 flex flex-col gap-2 w-[320px]">
+<div class="fixed top-[var(--space-4)] right-[var(--space-4)] z-50 flex flex-col gap-[var(--space-2)] w-[320px]">
   {#each toastStore.toasts as toast (toast.id)}
     <div
-      class="flex items-start gap-3 p-4 border text-sm"
+      class="flex items-start gap-[var(--space-3)] p-[var(--space-4)] border text-[var(--text-body)]"
       style="background-color: {bgMap[toast.type]}; border-color: {borderMap[toast.type]}; color: {textMap[toast.type]};"
     >
       <svelte:component this={iconMap[toast.type]} size={18} />
