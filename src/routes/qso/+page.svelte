@@ -5,7 +5,7 @@
   import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { BANDS, MODES } from '$lib/logic/types/qso';
-  import { getQSOs } from '$lib/logic/data/qso';
+  import { getQSOs, deleteQSO } from '$lib/logic/data/qso';
   import type { QSO, QSOFilter } from '$lib/logic/types/qso';
   import type { Column } from '$lib/ui/components/DataTable';
 
@@ -19,7 +19,8 @@
   import FormDate from '$lib/ui/components/FormDate.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { Radio } from 'lucide-svelte';
+  import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
+  import { Radio, Eye, Pencil, Trash2 } from 'lucide-svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const PAGE_SIZE = 25;
@@ -41,6 +42,12 @@
   let currentPage = $state(1);
   let loading = $state(true);
   let initialLoaded = $state(false);
+
+  let sortField = $state('time_on');
+  let sortDir = $state<'asc' | 'desc'>('desc');
+
+  let deleteTarget = $state<string | null>(null);
+  let deleteDialogOpen = $state(false);
 
   const columns: Column[] = $derived([
     { key: 'time_on', header: t.qso.date, sortable: true, format: (v: unknown) => {
@@ -81,7 +88,7 @@
   async function loadData() {
     loading = true;
     try {
-      const result = await getQSOs(supabase, buildFilter(), { field: 'time_on', direction: 'desc' }, currentPage, PAGE_SIZE);
+      const result = await getQSOs(supabase, buildFilter(), { field: sortField, direction: sortDir }, currentPage, PAGE_SIZE);
       data = result.data;
       total = result.total;
       totalPages = result.totalPages;
@@ -119,17 +126,24 @@
     loadData();
   }
 
-  function handleTableClick(e: MouseEvent) {
-    if (!authStore.isAdmin) return;
-    const target = e.target as HTMLElement;
-    const row = target.closest('tr');
-    if (!row) return;
-    const tbody = row.parentElement;
-    if (!tbody || tbody.tagName !== 'TBODY') return;
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    const idx = rows.indexOf(row);
-    if (idx >= 0 && idx < data.length && data[idx].id) {
-      goto(`/qso/${data[idx].id}`);
+  function handleSort(key: string, dir: 'asc' | 'desc') {
+    sortField = key;
+    sortDir = dir;
+    loadData();
+  }
+
+  function confirmDelete(id: string) {
+    deleteTarget = id;
+    deleteDialogOpen = true;
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    try {
+      await deleteQSO(supabase, deleteTarget);
+    } finally {
+      deleteTarget = null;
+      loadData();
     }
   }
 </script>
@@ -191,15 +205,43 @@
       />
     </FilterBar>
 
-    <div onclick={authStore.isAdmin ? handleTableClick : undefined} class={authStore.isAdmin ? 'cursor-pointer' : ''}>
-      <DataTable
-        {columns}
-        data={data as unknown as Record<string, unknown>[]}
-        {loading}
-        keyExtractor={(row) => row.id as string}
-        emptyMessage={t.qso.noQSOsYet}
-      />
-    </div>
+    <DataTable
+      {columns}
+      data={data as unknown as Record<string, unknown>[]}
+      {loading}
+      keyExtractor={(row) => row.id as string}
+      emptyMessage={t.qso.noQSOsYet}
+      sort={{ key: sortField, dir: sortDir }}
+      onsort={handleSort}
+    >
+      {#snippet actions(row)}
+        <div class="flex justify-end gap-[var(--space-1)]">
+          <button
+            class="p-[var(--space-1)] rounded-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+            aria-label="View QSO"
+            onclick={() => goto(`/qso/${row.id}`)}
+          >
+            <Eye size={16} />
+          </button>
+          {#if authStore.isAdmin}
+            <button
+              class="p-[var(--space-1)] rounded-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+              aria-label="Edit QSO"
+              onclick={() => goto(`/qso/${row.id}/edit`)}
+            >
+              <Pencil size={16} />
+            </button>
+            <button
+              class="p-[var(--space-1)] rounded-sm text-[var(--color-text-muted)] hover:text-[var(--color-danger,red)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+              aria-label="Delete QSO"
+              onclick={() => confirmDelete(row.id as string)}
+            >
+              <Trash2 size={16} />
+            </button>
+          {/if}
+        </div>
+      {/snippet}
+    </DataTable>
 
     {#if data.length > 0}
       <div class="text-xs text-[var(--color-text-muted)] font-[var(--font-mono)]">
@@ -216,3 +258,11 @@
     {/if}
   </div>
 {/if}
+
+<ConfirmDialog
+  bind:open={deleteDialogOpen}
+  title="Delete QSO"
+  message="Are you sure you want to delete this QSO? This action cannot be undone."
+  confirmLabel="Delete"
+  onconfirm={handleDeleteConfirm}
+/>

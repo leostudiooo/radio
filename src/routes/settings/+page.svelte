@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { supabase } from '$lib/supabase';
-  import { signOut, updateProfile } from '$lib/logic/auth';
+  import { updateProfile } from '$lib/logic/auth';
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
@@ -9,7 +9,7 @@
   import FormInput from '$lib/ui/components/FormInput.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { LogOut, Save } from 'lucide-svelte';
+  import { Save } from 'lucide-svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
@@ -52,16 +52,6 @@
       toastStore.error(t.auth.profileSaveFailed);
     } finally {
       saving = false;
-    }
-  }
-
-  async function handleLogout() {
-    if (!confirm(t.auth.logoutConfirm)) return;
-    try {
-      await signOut(supabase);
-      goto('/auth/login');
-    } catch {
-      toastStore.error(t.auth.loginFailed);
     }
   }
 
@@ -147,13 +137,6 @@
       </div>
     </div>
 
-    <!-- Logout section -->
-    <div class="pt-4 border-t border-[var(--color-border)]">
-      <Button variant="ghost" onclick={handleLogout}>
-        <LogOut size={14} />
-        {t.auth.logout}
-      </Button>
-    </div>
   </div>
 {:else}
   <div class="flex items-center justify-center min-h-[40vh]">

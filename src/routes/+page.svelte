@@ -76,7 +76,7 @@
     : t.qso.publicView}
 >
   {#snippet action()}
-    <Button variant="secondary" size="sm" onclick={() => goto('/qso/list')}>
+    <Button variant="secondary" size="sm" onclick={() => goto('/qso')}>
       {t.qso.viewAll}
     </Button>
   {/snippet}

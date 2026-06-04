@@ -446,7 +446,7 @@
   <PageHeader title={t.qso.newQSO} />
   <div class="flex flex-col sm:flex-row items-center gap-4 py-12">
     <Button variant="primary" onclick={logAnother}>{t.qso.logAnother}</Button>
-    <Button variant="secondary" onclick={() => goto('/qso/list')}>{t.qso.viewList}</Button>
+    <Button variant="secondary" onclick={() => goto('/qso')}>{t.qso.viewList}</Button>
   </div>
 {:else}
   {#if formMode === 'edit' && ondelete}
@@ -684,7 +684,7 @@
         {/if}
       </Button>
       {#if formMode === 'edit'}
-        <Button variant="ghost" onclick={() => goto('/qso/list')}>{t.common.cancel}</Button>
+        <Button variant="ghost" onclick={() => goto('/qso')}>{t.common.cancel}</Button>
       {/if}
     </div>
   </form>

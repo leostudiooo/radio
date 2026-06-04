@@ -14,6 +14,7 @@
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
   import DataTable from '$lib/ui/components/DataTable.svelte';
   import FileUpload from '$lib/ui/components/FileUpload.svelte';
+  import SegmentedToggle from '$lib/ui/components/SegmentedToggle.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import FormInput from '$lib/ui/components/FormInput.svelte';
   import FormSelect from '$lib/ui/components/FormSelect.svelte';
@@ -178,29 +179,12 @@
 {#if authStore.isAdmin}
 <PageHeader title={t.adif.title} />
 
-<div class="flex gap-2 mb-6">
-  <button
-    type="button"
-    class="px-4 py-2 text-sm font-medium transition-colors duration-100"
-    class:bg-[var(--color-accent)]={activeTab === 'import'}
-    class:text-[var(--color-base)]={activeTab === 'import'}
-    class:bg-transparent={activeTab !== 'import'}
-    class:text-[var(--color-text-secondary)]={activeTab !== 'import'}
-    onclick={() => { activeTab = 'import'; }}
-  >
-    {t.adif.importTitle}
-  </button>
-  <button
-    type="button"
-    class="px-4 py-2 text-sm font-medium transition-colors duration-100"
-    class:bg-[var(--color-accent)]={activeTab === 'export'}
-    class:text-[var(--color-base)]={activeTab === 'export'}
-    class:bg-transparent={activeTab !== 'export'}
-    class:text-[var(--color-text-secondary)]={activeTab !== 'export'}
-    onclick={() => { activeTab = 'export'; }}
-  >
-    {t.adif.exportTitle}
-  </button>
+<div class="mb-6">
+  <SegmentedToggle
+    options={[{ value: 'import', label: t.adif.importTitle }, { value: 'export', label: t.adif.exportTitle }]}
+    value={activeTab}
+    onchange={(v) => { activeTab = v; }}
+  />
 </div>
 
 {#if activeTab === 'import'}
