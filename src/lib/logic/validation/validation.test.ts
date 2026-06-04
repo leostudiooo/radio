@@ -86,6 +86,13 @@ describe('QSO validation helpers', () => {
 		expect(validateRST('599', 'CW')).toBe(true);
 		expect(validateRST('59', 'CW')).toBe(false);
 		expect(validateRST('599', 'FT8')).toBe(true);
+		expect(validateRST('59+', 'SSB')).toBe(true);
+		expect(validateRST('59+10', 'FM')).toBe(true);
+		expect(validateRST('59+20', 'AM')).toBe(true);
+		expect(validateRST('59++', 'SSB')).toBe(false);
+		expect(validateRST('59+abc', 'SSB')).toBe(false);
+		expect(validateRST('599+', 'CW')).toBe(true);
+		expect(validateRST('599+15', 'FT8')).toBe(true);
 	});
 
 	it('accepts a complete valid QSO', () => {

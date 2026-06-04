@@ -44,10 +44,10 @@ export function validateRST(rst: string, mode: string): boolean {
 	const value = rst.trim();
 
 	if (PHONE_MODES.has(normalizedMode)) {
-		return /^[1-5][1-9](?:[1-9])?$/.test(value);
+		return /^[1-5][1-9](?:[1-9])?(?:\+\d{0,3})?$/.test(value);
 	}
 
-	return /^[1-5][1-9][1-9]$/.test(value);
+	return /^[1-5][1-9][1-9](?:\+\d{0,3})?$/.test(value);
 }
 
 export function validateQSO(qso: QSOInsert): ValidationResult {
