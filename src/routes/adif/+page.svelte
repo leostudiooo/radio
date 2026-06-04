@@ -3,6 +3,7 @@
   import { supabase } from '$lib/supabase';
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
+  import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { parseADIF, exportADIF } from '$lib/logic/adif';
   import { bulkCreateQSOs, getQSOs } from '$lib/logic/data/qso';
@@ -53,8 +54,23 @@
 
   const previewColumns: Column[] = $derived([
     { key: 'callsign', header: t.qso.callsign },
-    { key: 'time_on', header: t.qso.date, format: (v: unknown) => String(v ?? '').slice(0, 10) },
-    { key: 'time_on', header: t.qso.time, format: (v: unknown) => { const m = String(v ?? '').match(/T(\d{2}:\d{2})/); return m ? m[1] : ''; } },
+    { key: 'time_on', header: t.qso.date, format: (v: unknown) => {
+      const iso = String(v ?? '');
+      if (!iso) return '';
+      if (!settingsStore.useLocalTime) return iso.slice(0, 10);
+      const d = new Date(iso);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }},
+    { key: 'time_on', header: t.qso.time, format: (v: unknown) => {
+      const iso = String(v ?? '');
+      if (!iso) return '';
+      if (!settingsStore.useLocalTime) {
+        const m = iso.match(/T(\d{2}:\d{2})/);
+        return m ? m[1] : '';
+      }
+      const d = new Date(iso);
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }},
     { key: 'band', header: t.qso.band },
     { key: 'mode', header: t.qso.mode },
   ]);

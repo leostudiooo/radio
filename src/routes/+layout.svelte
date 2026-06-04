@@ -6,6 +6,7 @@
   import favicon from '$lib/assets/favicon.svg';
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
+  import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import Toast from '$lib/ui/components/Toast.svelte';
   import Button from '$lib/ui/components/Button.svelte';
@@ -110,6 +111,13 @@
     </nav>
 
     <div class="flex items-center gap-3 ml-auto">
+      <button
+        type="button"
+        onclick={() => settingsStore.toggleUseLocalTime()}
+        class="text-xs font-[var(--font-mono)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100 uppercase"
+      >
+        {settingsStore.useLocalTime ? 'LCL' : 'UTC'}
+      </button>
       <button
         type="button"
         onclick={switchLocale}

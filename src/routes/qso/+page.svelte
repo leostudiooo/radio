@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
+  import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { BANDS, MODES } from '$lib/logic/types/qso';
@@ -86,16 +87,38 @@
   let rstRcvd = $state('');
   let isEyeball = $state(false);
 
-  let datePart = $derived(timeOn.slice(0, 10));
-  let timePart = $derived(timeOn.slice(11, 16));
+  let datePart = $derived.by(() => {
+    if (!settingsStore.useLocalTime) return timeOn.slice(0, 10);
+    const d = new Date(timeOn);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  let timePart = $derived.by(() => {
+    if (!settingsStore.useLocalTime) return timeOn.slice(11, 16);
+    const d = new Date(timeOn);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  });
 
   function handleDateChange(newDate: string) {
-    timeOn = `${newDate}T${timePart}:00Z`;
+    if (!settingsStore.useLocalTime) {
+      timeOn = `${newDate}T${timePart}:00Z`;
+    } else {
+      const d = new Date(timeOn);
+      const [y, m, day] = newDate.split('-').map(Number);
+      d.setFullYear(y, m - 1, day);
+      timeOn = d.toISOString().slice(0, 19) + 'Z';
+    }
     saved = false;
   }
 
   function handleTimeChange(newTime: string) {
-    timeOn = `${datePart}T${newTime}:00Z`;
+    if (!settingsStore.useLocalTime) {
+      timeOn = `${datePart}T${newTime}:00Z`;
+    } else {
+      const d = new Date(timeOn);
+      const [h, m] = newTime.split(':').map(Number);
+      d.setHours(h, m, 0, 0);
+      timeOn = d.toISOString().slice(0, 19) + 'Z';
+    }
     saved = false;
   }
 
