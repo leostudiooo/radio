@@ -166,7 +166,7 @@
 {#if authStore.isAdmin}
 <PageHeader title={t.adif.title} />
 
-<div class="mb-6">
+<div class="mb-[var(--space-6)]">
   <SegmentedToggle
     options={[{ value: 'import', label: t.adif.importTitle }, { value: 'export', label: t.adif.exportTitle }]}
     value={activeTab}
@@ -175,9 +175,9 @@
 </div>
 
 {#if activeTab === 'import'}
-  <div class="flex gap-2 mb-6">
+  <div class="flex gap-[var(--space-2)] mb-[var(--space-6)]">
     {#each [['upload', t.adif.importStep1], ['preview', t.adif.importStep2], ['result', t.adif.importStep3]] as [step, label], i}
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-[var(--space-2)]">
         <span
           class="inline-flex items-center justify-center w-6 h-6 text-[var(--text-aux)] font-medium"
           class:bg-[var(--color-accent)]={importStep === step}
@@ -194,7 +194,7 @@
         >{label}</span>
       </div>
       {#if i < 2}
-        <span class="text-[var(--color-text-muted)] self-center mx-1">/</span>
+        <span class="text-[var(--color-text-muted)] self-center mx-[var(--space-1)]">/</span>
       {/if}
     {/each}
   </div>
@@ -204,7 +204,7 @@
       <FileUpload accept=".adi,.adif" onfile={handleFile} />
     </div>
   {:else if importStep === 'preview'}
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-[var(--space-4)]">
       <p class="text-[var(--text-body)] text-[var(--color-text-secondary)]">
         {t.adif.foundInFile.replace('{count}', String(parsedQSOs.length))}
       </p>
@@ -222,7 +222,7 @@
         </p>
       {/if}
 
-      <div class="flex gap-3">
+      <div class="flex gap-[var(--space-3)]">
         <Button variant="primary" onclick={handleImport} disabled={importing}>
           {importing ? t.common.loading : t.adif.importAll}
         </Button>
@@ -232,20 +232,20 @@
       </div>
     </div>
   {:else if importStep === 'result'}
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-[var(--space-4)]">
       <p class="text-[var(--text-body)] text-[var(--color-text-secondary)]">
         {t.adif.importResult
           .replace('{success}', String(importSuccess))
           .replace('{errors}', String(importErrors))}
       </p>
 
-      <div class="flex gap-4">
-        <div class="flex flex-col gap-1 px-4 py-3 card-panel">
+      <div class="flex gap-[var(--space-4)]">
+        <div class="flex flex-col gap-[var(--space-1)] px-[var(--space-4)] py-[var(--space-3)] card-panel">
           <span class="text-[var(--text-title)] font-semibold text-[var(--color-text-primary)]">{importSuccess}</span>
           <span class="text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.adif.importedLabel}</span>
         </div>
         {#if importErrors > 0}
-          <div class="flex flex-col gap-1 px-4 py-3 card-panel">
+          <div class="flex flex-col gap-[var(--space-1)] px-[var(--space-4)] py-[var(--space-3)] card-panel">
             <span class="text-[var(--text-title)] font-semibold text-[var(--color-status-invalid)]">{importErrors}</span>
             <span class="text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.adif.errorsLabel}</span>
           </div>
@@ -258,9 +258,9 @@
     </div>
   {/if}
 {:else if activeTab === 'export'}
-  <div class="flex flex-col gap-6 max-w-2xl">
+  <div class="flex flex-col gap-[var(--space-6)] max-w-2xl">
     <CollapsibleSection title={t.adif.filterDescription}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--space-3)]">
         <FormInput
           label={t.qso.callsign}
           value={filterCallsign}

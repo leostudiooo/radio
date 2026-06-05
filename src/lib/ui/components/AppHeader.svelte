@@ -56,10 +56,10 @@
   }
 </script>
 
-<header class="sticky top-0 z-30 shrink-0 h-14 bg-[var(--color-base)] border-b border-[var(--color-border)] flex items-center px-4">
+<header class="sticky top-0 z-30 shrink-0 h-14 bg-[var(--color-base)] border-b border-[var(--color-border)] flex items-center px-[var(--space-4)]">
   <button
     type="button"
-    class="lg:hidden mr-3 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+    class="lg:hidden mr-[var(--space-3)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
     aria-label={localeStore.translation.common.toggleNav}
     onclick={toggleDrawer}
   >
@@ -70,15 +70,15 @@
     {/if}
   </button>
 
-  <a href="/" class="font-[var(--font-mono)] text-[var(--text-subtitle)] font-bold tracking-[0.05em] text-[var(--color-text-primary)] uppercase mr-8">
+  <a href="/" class="font-[var(--font-mono)] text-[var(--text-subtitle)] font-bold tracking-[0.05em] text-[var(--color-text-primary)] uppercase mr-[var(--space-8)]">
     {SITE_CONFIG.callsign}
   </a>
 
-  <nav class="hidden lg:flex items-center gap-1 flex-1">
+  <nav class="hidden lg:flex items-center gap-[var(--space-1)] flex-1">
     {#each publicNavItems as item}
       <a
         href={item.path}
-        class="px-3 py-1.5 rounded-[var(--radius-md)] transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+        class="px-[var(--space-3)] py-[var(--space-1)].5 transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
       >
         {typeof item.label === 'function' ? item.label() : item.label}
       </a>
@@ -87,7 +87,7 @@
       {#each adminNavItems as item}
         <a
           href={item.path}
-          class="px-3 py-1.5 rounded-[var(--radius-md)] transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+          class="px-[var(--space-3)] py-[var(--space-1)].5 transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
         >
           {typeof item.label === 'function' ? item.label() : item.label}
         </a>
@@ -95,7 +95,7 @@
     {/if}
   </nav>
 
-  <div class="flex items-center gap-3 ml-auto">
+  <div class="flex items-center gap-[var(--space-3)] ml-auto">
     <SegmentedToggle
       options={[{ value: 'utc', label: 'UTC' }, { value: 'lcl', label: 'LCL' }]}
       value={settingsStore.useLocalTime ? 'lcl' : 'utc'}

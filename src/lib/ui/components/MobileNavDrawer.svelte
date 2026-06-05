@@ -83,13 +83,13 @@
     onclick={onBackdropClick}
   ></button>
   <aside bind:this={drawerRef} class="fixed left-0 top-14 bottom-0 w-[240px] bg-[var(--color-surface)] border-r border-[var(--color-border)] z-50 lg:hidden flex flex-col">
-    <div class="flex-1 py-4">
+    <div class="flex-1 py-[var(--space-4)]">
       {#each publicNavItems as item}
         {@const Icon = item.icon}
         <button
           type="button"
           onclick={() => handleNavClick(item.path)}
-          class="flex items-center gap-3 px-4 py-3 text-[var(--text-body)] transition-colors duration-100 text-left w-full {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+          class="flex items-center gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] text-[var(--text-body)] transition-colors duration-100 text-left w-full {isActive(item.path) ? 'text-[var(--color-text-primary)] border-l-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
         >
           <Icon size={16} />
           <span>{typeof item.label === 'function' ? item.label() : item.label}</span>
@@ -101,7 +101,7 @@
           <button
             type="button"
             onclick={() => handleNavClick(item.path)}
-            class="flex items-center gap-3 px-4 py-3 text-[var(--text-body)] transition-colors duration-100 text-left w-full {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+            class="flex items-center gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] text-[var(--text-body)] transition-colors duration-100 text-left w-full {isActive(item.path) ? 'text-[var(--color-text-primary)] border-l-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
           >
             <Icon size={16} />
             <span>{typeof item.label === 'function' ? item.label() : item.label}</span>
@@ -110,7 +110,7 @@
       {/if}
     </div>
 
-    <div class="border-t border-[var(--color-border)] p-4 space-y-4">
+    <div class="border-t border-[var(--color-border)] p-[var(--space-4)] space-y-4">
       {#if authStore.isAuthenticated}
         <UserDropdown callsign={authStore.callsign ?? ''} onlogout={() => doLogout(supabase, goto)} />
       {:else}
@@ -119,7 +119,7 @@
         </a>
       {/if}
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-[var(--space-2)]">
         <SegmentedToggle
           options={[{ value: 'utc', label: 'UTC' }, { value: 'lcl', label: 'LCL' }]}
           value={settingsStore.useLocalTime ? 'lcl' : 'utc'}

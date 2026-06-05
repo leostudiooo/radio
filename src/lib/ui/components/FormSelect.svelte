@@ -48,7 +48,7 @@
       {disabled}
       {value}
       onchange={handleChange}
-      class="input-field appearance-none pr-10"
+      class="input-field appearance-none pr-[var(--space-10)]"
     >
       {#if placeholder}
         <option value="" disabled selected={!value}>{placeholder}</option>

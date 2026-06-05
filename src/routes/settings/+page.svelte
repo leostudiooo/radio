@@ -73,9 +73,9 @@
 {#if authStore.isAuthenticated}
   <PageHeader title={t.auth.settings} />
 
-  <div class="flex flex-col gap-8 max-w-lg">
+  <div class="flex flex-col gap-[var(--space-8)] max-w-lg">
     <!-- Profile section -->
-    <form onsubmit={handleSave} class="flex flex-col gap-4">
+    <form onsubmit={handleSave} class="flex flex-col gap-[var(--space-4)]">
       <h2 class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
         {t.auth.profile}
       </h2>
@@ -102,7 +102,7 @@
         oninput={(v) => { qth = v; }}
       />
 
-      <div class="pt-2">
+      <div class="pt-[var(--space-2)]">
         <Button type="submit" variant="primary" disabled={saving}>
           {#if saving}
             <LoadingSpinner size="sm" />
@@ -115,7 +115,7 @@
     </form>
 
     <!-- Account info section -->
-    <div class="flex flex-col gap-3 pt-4 border-t border-[var(--color-border)]">
+    <div class="flex flex-col gap-[var(--space-3)] pt-[var(--space-4)] border-t border-[var(--color-border)]">
       <h2 class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
         {t.auth.accountInfo}
       </h2>

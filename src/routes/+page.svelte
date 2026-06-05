@@ -83,19 +83,19 @@
 </PageHeader>
 
 {#if authStore.isAuthenticated}
-  <div class="mb-6 text-[var(--text-body)] text-[var(--color-text-secondary)]">
+  <div class="mb-[var(--space-6)] text-[var(--text-body)] text-[var(--color-text-secondary)]">
     <p>{t.qso.welcome}</p>
   </div>
 {/if}
 
 {#if !initialLoaded}
-  <div class="flex justify-center py-12">
+  <div class="flex justify-center py-[var(--space-12)]">
     <LoadingSpinner size="lg" />
   </div>
 {:else if data.length === 0}
   <EmptyState icon="📻" message={t.qso.noQSOsYet} />
 {:else}
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-[var(--space-4)]">
     <DataTable
       {columns}
       data={data as unknown as Record<string, unknown>[]}

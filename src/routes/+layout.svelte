@@ -24,7 +24,7 @@
 <div class="min-h-screen flex flex-col">
   <AppHeader />
 
-  <main class="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="flex-1 w-full max-w-[1200px] mx-auto px-[var(--space-4)] sm:px-6 lg:px-8 py-[var(--space-6)]">
     {@render children()}
   </main>
 </div>

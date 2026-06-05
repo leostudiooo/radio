@@ -152,7 +152,7 @@
 </PageHeader>
 
 {#if !initialLoaded}
-  <div class="flex justify-center py-12">
+  <div class="flex justify-center py-[var(--space-12)]">
     <LoadingSpinner size="lg" />
   </div>
 {:else if total === 0 && !filterCallsign && !filterBand && !filterMode && !filterDateFrom && !filterDateTo}
@@ -164,7 +164,7 @@
     {/snippet}
   </EmptyState>
 {:else}
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-[var(--space-4)]">
     <FilterBar onclear={clearFilters}>
       <FormInput
         label={t.qso.callsign}

@@ -80,25 +80,25 @@
 </svelte:head>
 
 <div class="flex flex-col items-center justify-center min-h-[60vh]">
-  <div class="w-full max-w-sm flex flex-col gap-6">
+  <div class="w-full max-w-sm flex flex-col gap-[var(--space-6)]">
     <div class="text-center">
       <h1 class="text-[var(--text-title)] font-semibold text-[var(--color-text-primary)]">{t.auth.loginTitle}</h1>
-      <p class="text-[var(--text-body)] text-[var(--color-text-secondary)] mt-1">{t.auth.loginDescription}</p>
+      <p class="text-[var(--text-body)] text-[var(--color-text-secondary)] mt-[var(--space-1)]">{t.auth.loginDescription}</p>
     </div>
 
     {#if error}
-      <div class="px-3 py-2 bg-[var(--color-status-invalid)]/10 border border-[var(--color-status-invalid)]/30 text-[var(--text-aux)] text-[var(--color-status-invalid)]">
+      <div class="px-[var(--space-3)] py-[var(--space-2)] bg-[var(--color-status-invalid)]/10 border border-[var(--color-status-invalid)]/30 text-[var(--text-aux)] text-[var(--color-status-invalid)]">
         {error}
       </div>
     {/if}
 
     {#if magicLinkSent}
-      <div class="px-3 py-2 bg-[var(--color-status-confirmed)]/10 border border-[var(--color-status-confirmed)]/30 text-[var(--text-aux)] text-[var(--color-status-confirmed)]">
+      <div class="px-[var(--space-3)] py-[var(--space-2)] bg-[var(--color-status-confirmed)]/10 border border-[var(--color-status-confirmed)]/30 text-[var(--text-aux)] text-[var(--color-status-confirmed)]">
         {t.auth.checkEmail}
       </div>
     {/if}
 
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-[var(--space-3)]">
       <Button variant="primary" size="lg" disabled={loading !== null} onclick={handleWebAuthn}>
         {#if loading === 'webauthn'}
           <LoadingSpinner size="sm" />
@@ -117,16 +117,16 @@
         {t.auth.signInWithGitHub}
       </Button>
 
-      <div class="relative my-2">
+      <div class="relative my-[var(--space-2)]">
         <div class="absolute inset-0 flex items-center">
           <div class="w-full border-t border-[var(--color-border)]"></div>
         </div>
         <div class="relative flex justify-center">
-          <span class="bg-[var(--color-surface)] px-3 text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wider">{t.auth.or}</span>
+          <span class="bg-[var(--color-surface)] px-[var(--space-3)] text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wider">{t.auth.or}</span>
         </div>
       </div>
 
-      <form onsubmit={handleMagicLink} class="flex flex-col gap-3">
+      <form onsubmit={handleMagicLink} class="flex flex-col gap-[var(--space-3)]">
         <div class="flex items-center focus-within:border-[var(--color-accent)] focus-within:shadow-[0_0_0_1px_var(--color-accent-medium)] input-field">
           <span class="text-[var(--color-text-muted)]"><Mail size={14} /></span>
           <input
@@ -134,7 +134,7 @@
             placeholder={t.auth.emailPlaceholder}
             bind:value={email}
             required
-            class="flex-1 bg-transparent px-3 text-[var(--text-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none"
+            class="flex-1 bg-transparent px-[var(--space-3)] text-[var(--text-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none"
           />
         </div>
         <Button type="submit" variant="secondary" size="lg" disabled={loading !== null || !email.trim()}>

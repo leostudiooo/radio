@@ -72,7 +72,7 @@
   <button
     type="button"
     onclick={toggle}
-    class="inline-flex items-center gap-1 text-[var(--text-body)] text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-100 font-[var(--font-body)]"
+    class="inline-flex items-center gap-[var(--space-1)] text-[var(--text-body)] text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-100 font-[var(--font-body)]"
     aria-expanded={open}
     aria-haspopup="true"
   >
@@ -82,7 +82,7 @@
 
   {#if open}
     <div
-      class="absolute right-0 mt-1 min-w-[10rem] bg-[var(--color-elevated)] border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-lg z-50"
+      class="absolute right-0 mt-[var(--space-1)] min-w-[10rem] bg-[var(--color-elevated)] border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-lg z-50"
       role="menu"
       tabindex="-1"
       onkeydown={handleMenuKeydown}
@@ -95,7 +95,7 @@
       >
         {localeStore.translation.nav.settings}
       </a>
-      <div class="border-t border-[var(--color-border)] my-1"></div>
+      <div class="border-t border-[var(--color-border)] my-[var(--space-1)]"></div>
       <button
         type="button"
         onclick={() => { open = false; onlogout(); }}

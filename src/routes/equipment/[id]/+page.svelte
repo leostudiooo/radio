@@ -115,7 +115,7 @@
 </svelte:head>
 
 {#if loading}
-  <div class="flex justify-center py-12">
+  <div class="flex justify-center py-[var(--space-12)]">
     <LoadingSpinner size="lg" />
   </div>
 {:else if notFound}
@@ -127,8 +127,8 @@
     {/snippet}
   </PageHeader>
 
-  <form onsubmit={handleSubmit} class="flex flex-col gap-6 pb-24 lg:pb-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <form onsubmit={handleSubmit} class="flex flex-col gap-[var(--space-6)] pb-24 lg:pb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
       <div class="sm:col-span-2">
         <FormInput
           label={t.equipment.name}
@@ -178,7 +178,7 @@
       />
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-[var(--space-3)]">
       <Button type="submit" variant="primary" disabled={submitting}>
         {#if submitting}
           <LoadingSpinner size="sm" />

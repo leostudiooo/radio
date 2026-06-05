@@ -444,7 +444,7 @@
 
 {#if formMode === 'create' && saved}
   <PageHeader title={t.qso.newQSO} />
-  <div class="flex flex-col sm:flex-row items-center gap-4 py-12">
+  <div class="flex flex-col sm:flex-row items-center gap-[var(--space-4)] py-[var(--space-12)]">
     <Button variant="primary" onclick={logAnother}>{t.qso.logAnother}</Button>
     <Button variant="secondary" onclick={() => goto('/qso')}>{t.qso.viewList}</Button>
   </div>
@@ -459,7 +459,7 @@
     <PageHeader title={formMode === 'create' ? t.qso.newQSO : t.qso.editQSO} />
   {/if}
 
-  <form onsubmit={handleSubmit} class="flex flex-col gap-6 pb-24 lg:pb-6">
+  <form onsubmit={handleSubmit} class="flex flex-col gap-[var(--space-6)] pb-24 lg:pb-6">
     <ValidationErrors {errors} namespace="qso" />
 
     <FormToggle
@@ -468,7 +468,7 @@
       onchange={(val) => { isEyeball = val; saved = false; }}
     />
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
       <div class="sm:col-span-2">
         {#if formMode === 'create'}
           <FormInput
@@ -479,7 +479,7 @@
             oninput={handleCallsignInput}
           />
           {#if lookingUp}
-            <span class="text-[var(--text-body)] text-[var(--color-text-muted)] mt-1 inline-flex items-center gap-1">
+            <span class="text-[var(--text-body)] text-[var(--color-text-muted)] mt-[var(--space-1)] inline-flex items-center gap-[var(--space-1)]">
               <LoadingSpinner size="sm" />
             </span>
           {/if}
@@ -578,7 +578,7 @@
         />
       {/if}
 
-      <div class="grid grid-cols-2 gap-4 sm:col-span-2">
+      <div class="grid grid-cols-2 gap-[var(--space-4)] sm:col-span-2">
         {#if formMode === 'create'}
           <FormInput
             label={t.qso.rstSent}
@@ -605,7 +605,7 @@
 
     {#if formMode === 'create'}
       <CollapsibleSection title={t.qso.sectionDetails}>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
           <FormInput label={t.qso.name} bind:value={optName} />
           <FormInput label={t.qso.qth} bind:value={optQth} />
           <FormInput label={t.qso.gridSquare} bind:value={optGrid} />
@@ -621,7 +621,7 @@
       </CollapsibleSection>
     {:else}
       <CollapsibleSection title={t.qso.optionalFields}>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
           <FormInput label={t.qso.name} bind:value={optName} />
           <FormInput label={t.qso.qth} bind:value={optQth} />
           <FormInput label={t.qso.gridSquare} bind:value={optGrid} />
@@ -634,7 +634,7 @@
       </CollapsibleSection>
 
       <CollapsibleSection title={t.qso.sectionDetails}>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
           <FormInput label={t.qso.submode} bind:value={optSubmode} />
           <FormInput label={t.qso.satName} bind:value={optSatName} />
           <FormInput label={t.qso.operator} bind:value={optOperator} />
@@ -643,7 +643,7 @@
     {/if}
 
     <CollapsibleSection title={t.qso.sectionLocation}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
         <FormInput label={t.qso.latitude} type={numericType} bind:value={optLatitude} />
         <FormInput label={t.qso.longitude} type={numericType} bind:value={optLongitude} />
         <FormInput label={t.qso.antAz} type={numericType} bind:value={optAntAz} />
@@ -653,7 +653,7 @@
     </CollapsibleSection>
 
     <CollapsibleSection title={t.qso.sectionGeography}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
         <FormInput label={t.qso.dxcc} type={numericType} bind:value={optDxcc} />
         <FormInput label={t.qso.country} bind:value={optCountry} />
         <FormInput label={t.qso.cqZone} type={numericType} bind:value={optCqZone} />
@@ -663,7 +663,7 @@
     </CollapsibleSection>
 
     <CollapsibleSection title={t.qso.sectionQsl}>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
         <FormSelect label={t.qso.qslSent} bind:value={optQslSent} options={qslStatusOptions} />
         <FormSelect label={t.qso.qslSentVia} bind:value={optQslSentVia} options={qslViaOptions} />
         <FormSelect label={t.qso.qslRcvd} bind:value={optQslRcvd} options={qslStatusOptions} />
@@ -675,7 +675,7 @@
       </div>
     </CollapsibleSection>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-[var(--space-3)]">
       <Button type="submit" variant="primary" disabled={submitting}>
         {#if submitting}
           <LoadingSpinner size="sm" />

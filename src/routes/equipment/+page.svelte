@@ -81,7 +81,7 @@
 </PageHeader>
 
 {#if !initialLoaded}
-  <div class="flex justify-center py-12">
+  <div class="flex justify-center py-[var(--space-12)]">
     <LoadingSpinner size="lg" />
   </div>
 {:else if data.length === 0}
