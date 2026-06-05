@@ -72,7 +72,7 @@
   <button
     type="button"
     onclick={toggle}
-    class="inline-flex items-center gap-[var(--space-1)] text-[var(--text-body)] text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-100 font-[var(--font-body)]"
+    class="inline-flex items-center gap-[var(--space-1)] text-[var(--text-body)] text-[var(--color-text-primary)] hover:text-[var(--color-text-primary)] transition-colors duration-100 font-[var(--font-body)]"
     aria-expanded={open}
     aria-haspopup="true"
   >

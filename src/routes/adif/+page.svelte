@@ -23,6 +23,7 @@
   import CollapsibleSection from '$lib/ui/components/CollapsibleSection.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { SITE_CONFIG } from '$lib/config';
+  import { requireAdmin } from '$lib/logic/auth';
 
   const bandOptions = $derived([{ value: '', label: t.qso.allBands }, ...BANDS.map((b) => ({ value: b, label: b }))]);
   const modeOptions = $derived([{ value: '', label: t.qso.allModes }, ...MODES.map((m) => ({ value: m, label: m }))]);

@@ -78,7 +78,7 @@
     {#each publicNavItems as item}
       <a
         href={item.path}
-        class="px-[var(--space-3)] py-[var(--space-1)].5 transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+        class="px-[var(--space-3)] py-[0.375rem] transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
       >
         {typeof item.label === 'function' ? item.label() : item.label}
       </a>
@@ -87,7 +87,7 @@
       {#each adminNavItems as item}
         <a
           href={item.path}
-          class="px-[var(--space-3)] py-[var(--space-1)].5 transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+          class="px-[var(--space-3)] py-[0.375rem] transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
         >
           {typeof item.label === 'function' ? item.label() : item.label}
         </a>
