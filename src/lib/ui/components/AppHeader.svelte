@@ -15,14 +15,6 @@
   const t = $derived(localeStore.translation);
 
   let drawerOpen = $state(false);
-  let authResolved = $state(false);
-
-  $effect(() => {
-    const id = setTimeout(() => {
-      authResolved = true;
-    }, 50);
-    return () => clearTimeout(id);
-  });
 
   const publicNavItems = [
     { path: '/qso', label: () => localeStore.translation.nav.qsoLog, icon: Radio },
@@ -107,7 +99,7 @@
       onchange={switchLocale}
     />
 
-    {#if authResolved}
+    {#if !authStore.loading}
       {#if authStore.isAuthenticated}
         <UserDropdown callsign={authStore.callsign ?? ''} onlogout={() => doLogout(supabase, goto)} />
       {:else}

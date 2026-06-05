@@ -4,8 +4,7 @@
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
-  import { authStore } from '$lib/ui/stores/auth.svelte';
-  import { requireAdmin } from '$lib/logic/auth';
+  import AdminGuard from '$lib/ui/components/AdminGuard.svelte';
   import { getQSOById, updateQSO, deleteQSO } from '$lib/logic/data/qso';
   import type { QSO, QSOInsert } from '$lib/logic/types/qso';
   import QSOForm from '$lib/ui/components/QSOForm.svelte';
@@ -13,10 +12,6 @@
 
   const t = $derived(localeStore.translation);
   const id: string = $derived($page.params.id);
-
-  $effect(() => {
-    requireAdmin(authStore, goto, toastStore, t.auth.adminOnly);
-  });
 
   let qso: QSO | null = $state(null);
   let loading = $state(true);
@@ -66,7 +61,7 @@
   }
 </script>
 
-{#if authStore.isAdmin}
+<AdminGuard>
   {#if loading}
     <div class="flex justify-center py-[var(--space-12)]">
       <LoadingSpinner size="lg" />
@@ -82,4 +77,4 @@
       ondelete={handleDelete}
     />
   {/if}
-{/if}
+</AdminGuard>

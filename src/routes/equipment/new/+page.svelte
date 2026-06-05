@@ -4,7 +4,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
-  import { requireAdmin } from '$lib/logic/auth';
+  import AdminGuard from '$lib/ui/components/AdminGuard.svelte';
   import { EQUIPMENT_TYPES } from '$lib/logic/types/equipment';
   import { createEquipment } from '$lib/logic/data/equipment';
 
@@ -20,10 +20,6 @@
   const typeOptions = EQUIPMENT_TYPES.map((t) => ({ value: t, label: t }));
 
   const t = $derived(localeStore.translation);
-
-  $effect(() => {
-    requireAdmin(authStore, goto, toastStore, t.auth.adminOnly);
-  });
 
   let name = $state('');
   let type = $state('');
@@ -63,7 +59,7 @@
   <title>{t.equipment.newEquipment}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
-{#if authStore.isAdmin}
+<AdminGuard>
 <PageHeader title={t.equipment.newEquipment} />
 
 <form onsubmit={handleSubmit} class="flex flex-col gap-[var(--space-6)] pb-24 lg:pb-6">
@@ -135,4 +131,4 @@
     <Button variant="ghost" onclick={() => goto('/equipment')}>{t.common.cancel}</Button>
   </div>
 </form>
-{/if}
+</AdminGuard>

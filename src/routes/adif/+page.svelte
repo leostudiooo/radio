@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { supabase } from '$lib/supabase';
-  import { authStore } from '$lib/ui/stores/auth.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
@@ -12,6 +10,7 @@
   import type { Column } from '$lib/ui/components/DataTable';
   import { buildQSOFilter } from '$lib/ui/utils/filters';
 
+  import AdminGuard from '$lib/ui/components/AdminGuard.svelte';
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
   import DataTable from '$lib/ui/components/DataTable.svelte';
   import FileUpload from '$lib/ui/components/FileUpload.svelte';
@@ -23,16 +22,11 @@
   import CollapsibleSection from '$lib/ui/components/CollapsibleSection.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { SITE_CONFIG } from '$lib/config';
-  import { requireAdmin } from '$lib/logic/auth';
 
   const bandOptions = $derived([{ value: '', label: t.qso.allBands }, ...BANDS.map((b) => ({ value: b, label: b }))]);
   const modeOptions = $derived([{ value: '', label: t.qso.allModes }, ...MODES.map((m) => ({ value: m, label: m }))]);
 
   const t = $derived(localeStore.translation);
-
-  $effect(() => {
-    requireAdmin(authStore, goto, toastStore, t.auth.adminOnly);
-  });
 
   type ImportStep = 'upload' | 'preview' | 'result';
   type ActiveTab = 'import' | 'export';
@@ -164,7 +158,7 @@
   <title>{t.adif.importTitle} / {t.adif.exportTitle}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
-{#if authStore.isAdmin}
+<AdminGuard>
 <PageHeader title={t.adif.title} />
 
 <div class="mb-[var(--space-6)]">
@@ -298,4 +292,4 @@
     </Button>
   </div>
 {/if}
-{/if}
+</AdminGuard>

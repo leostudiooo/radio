@@ -4,8 +4,7 @@
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
-  import { authStore } from '$lib/ui/stores/auth.svelte';
-  import { requireAdmin } from '$lib/logic/auth';
+  import AdminGuard from '$lib/ui/components/AdminGuard.svelte';
   import { EQUIPMENT_TYPES } from '$lib/logic/types/equipment';
   import { getEquipmentById, updateEquipment, deleteEquipment } from '$lib/logic/data/equipment';
   import type { Equipment } from '$lib/logic/types/equipment';
@@ -69,10 +68,6 @@
   }
 
   $effect(() => {
-    requireAdmin(authStore, goto, toastStore, t.auth.adminOnly);
-  });
-
-  $effect(() => {
     if (id) loadEquipment();
   });
 
@@ -114,88 +109,90 @@
   <title>{t.equipment.editEquipment}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
-{#if loading}
-  <div class="flex justify-center py-[var(--space-12)]">
-    <LoadingSpinner size="lg" />
-  </div>
-{:else if notFound}
-  <p class="text-[var(--text-body)] text-[var(--color-text-muted)]">Equipment not found.</p>
-{:else}
-  <PageHeader title={t.equipment.editEquipment}>
-    {#snippet action()}
-      <Button variant="ghost" size="sm" onclick={() => { showDeleteConfirm = true; }}>{t.common.delete}</Button>
-    {/snippet}
-  </PageHeader>
+<AdminGuard>
+  {#if loading}
+    <div class="flex justify-center py-[var(--space-12)]">
+      <LoadingSpinner size="lg" />
+    </div>
+  {:else if notFound}
+    <p class="text-[var(--text-body)] text-[var(--color-text-muted)]">Equipment not found.</p>
+  {:else}
+    <PageHeader title={t.equipment.editEquipment}>
+      {#snippet action()}
+        <Button variant="ghost" size="sm" onclick={() => { showDeleteConfirm = true; }}>{t.common.delete}</Button>
+      {/snippet}
+    </PageHeader>
 
-  <form onsubmit={handleSubmit} class="flex flex-col gap-[var(--space-6)] pb-24 lg:pb-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
-      <div class="sm:col-span-2">
-        <FormInput
-          label={t.equipment.name}
-          bind:value={name}
-          placeholder={t.equipment.placeholder.name}
+    <form onsubmit={handleSubmit} class="flex flex-col gap-[var(--space-6)] pb-24 lg:pb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
+        <div class="sm:col-span-2">
+          <FormInput
+            label={t.equipment.name}
+            bind:value={name}
+            placeholder={t.equipment.placeholder.name}
+            required={true}
+          />
+        </div>
+
+        <FormSelect
+          label={t.equipment.type}
+          bind:value={type}
+          options={typeOptions}
+          placeholder={t.common.select.type}
           required={true}
         />
-      </div>
 
-      <FormSelect
-        label={t.equipment.type}
-        bind:value={type}
-        options={typeOptions}
-        placeholder={t.common.select.type}
-        required={true}
-      />
+        <FormInput
+          label={t.equipment.manufacturer}
+          bind:value={manufacturer}
+          placeholder={t.equipment.placeholder.manufacturer}
+        />
 
-      <FormInput
-        label={t.equipment.manufacturer}
-        bind:value={manufacturer}
-        placeholder={t.equipment.placeholder.manufacturer}
-      />
+        <FormInput
+          label={t.equipment.model}
+          bind:value={model}
+          placeholder={t.equipment.placeholder.model}
+        />
 
-      <FormInput
-        label={t.equipment.model}
-        bind:value={model}
-        placeholder={t.equipment.placeholder.model}
-      />
+        <FormInput
+          label={t.equipment.serialNumber}
+          bind:value={serialNumber}
+          placeholder={t.equipment.placeholder.serialNumber}
+        />
 
-      <FormInput
-        label={t.equipment.serialNumber}
-        bind:value={serialNumber}
-        placeholder={t.equipment.placeholder.serialNumber}
-      />
+        <div class="sm:col-span-2">
+          <FormTextarea
+            label={t.equipment.description}
+            bind:value={description}
+            placeholder={t.equipment.placeholder.notes}
+          />
+        </div>
 
-      <div class="sm:col-span-2">
-        <FormTextarea
-          label={t.equipment.description}
-          bind:value={description}
-          placeholder={t.equipment.placeholder.notes}
+        <FormToggle
+          label={t.equipment.active}
+          bind:checked={isActive}
         />
       </div>
 
-      <FormToggle
-        label={t.equipment.active}
-        bind:checked={isActive}
-      />
-    </div>
+      <div class="flex items-center gap-[var(--space-3)]">
+        <Button type="submit" variant="primary" disabled={submitting}>
+          {#if submitting}
+            <LoadingSpinner size="sm" />
+          {:else}
+            {t.common.save}
+          {/if}
+        </Button>
+        <Button variant="ghost" onclick={() => goto('/equipment')}>{t.common.cancel}</Button>
+      </div>
+    </form>
 
-    <div class="flex items-center gap-[var(--space-3)]">
-      <Button type="submit" variant="primary" disabled={submitting}>
-        {#if submitting}
-          <LoadingSpinner size="sm" />
-        {:else}
-          {t.common.save}
-        {/if}
-      </Button>
-      <Button variant="ghost" onclick={() => goto('/equipment')}>{t.common.cancel}</Button>
-    </div>
-  </form>
-
-  <ConfirmDialog
-    bind:open={showDeleteConfirm}
-    title={t.equipment.deleteConfirm}
-    message={t.equipment.deleteMessage}
-    confirmLabel={t.common.delete}
-    cancelLabel={t.common.cancel}
-    onconfirm={handleDelete}
-  />
-{/if}
+    <ConfirmDialog
+      bind:open={showDeleteConfirm}
+      title={t.equipment.deleteConfirm}
+      message={t.equipment.deleteMessage}
+      confirmLabel={t.common.delete}
+      cancelLabel={t.common.cancel}
+      onconfirm={handleDelete}
+    />
+  {/if}
+</AdminGuard>
