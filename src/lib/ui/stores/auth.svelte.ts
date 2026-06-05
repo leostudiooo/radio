@@ -65,6 +65,7 @@ function createAuthStore() {
     get isAuthenticated() { return isAuthenticated; },
     get callsign() { return callsign; },
     get isAdmin() { return isAdmin; },
+    get refreshProfile() { return refreshProfile; },
   };
 }
 
