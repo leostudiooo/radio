@@ -75,7 +75,7 @@
     {/if}
   </button>
 
-  <a href="/" class="font-[var(--font-mono)] text-[var(--text-heading)] font-bold tracking-[0.05em] text-[var(--color-accent)] uppercase mr-8">
+  <a href="/" class="font-[var(--font-mono)] text-[var(--text-subtitle)] font-bold tracking-[0.05em] text-[var(--color-accent)] uppercase mr-8">
     {SITE_CONFIG.callsign}
   </a>
 
@@ -116,7 +116,7 @@
       {#if authStore.isAuthenticated}
         <UserDropdown callsign={authStore.callsign ?? ''} onlogout={handleLogout} />
       {:else}
-        <a href="/auth/login" class="text-[var(--text-caption)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100">
+        <a href="/auth/login" class="text-[var(--text-body)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100">
           {localeStore.translation.auth.login}
         </a>
       {/if}

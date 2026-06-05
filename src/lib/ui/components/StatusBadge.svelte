@@ -41,7 +41,7 @@
 </script>
 
 <span
-  class="inline-block px-[var(--space-2)] py-[var(--space-0-5)] text-[var(--text-label)] font-medium uppercase tracking-[0.05em]"
+  class="inline-block px-[var(--space-2)] py-[var(--space-0-5)] text-[var(--text-body)] font-medium uppercase tracking-[0.05em]"
   style="background-color: {config.bg}; color: {config.text}; border: 1px solid {config.border};"
 >
   {displayLabel}

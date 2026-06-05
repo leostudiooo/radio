@@ -18,7 +18,7 @@
     <button
       type="button"
       onclick={() => onchange(option.value)}
-      class="px-[var(--space-2)] py-[var(--space-0-5)] text-[var(--text-caption)] font-medium transition-all duration-100 {option.value === value
+      class="px-[var(--space-2)] py-[var(--space-0-5)] text-[var(--text-body)] font-medium transition-all duration-100 {option.value === value
         ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)] rounded-full'
         : 'text-[var(--color-text-secondary)]'}"
     >

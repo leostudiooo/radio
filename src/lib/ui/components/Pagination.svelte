@@ -59,12 +59,12 @@
   <div class="hidden sm:flex items-center gap-[var(--space-1)]">
     {#each getPageNumbers() as page}
       {#if page === '...'}
-        <span class="px-[var(--space-2)] text-[var(--text-caption)] text-[var(--color-text-muted)]">...</span>
+        <span class="px-[var(--space-2)] text-[var(--text-body)] text-[var(--color-text-muted)]">...</span>
       {:else if typeof page === 'number'}
         <button
           type="button"
           onclick={() => goToPage(page)}
-          class="min-w-[28px] h-[28px] px-1.5 text-[var(--text-caption)] font-[var(--font-mono)] transition-colors duration-100 {page === currentPage ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+          class="min-w-[28px] h-[28px] px-1.5 text-[var(--text-body)] font-[var(--font-mono)] transition-colors duration-100 {page === currentPage ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
         >
           {page}
         </button>
@@ -72,7 +72,7 @@
     {/each}
   </div>
 
-  <span class="sm:hidden text-[var(--text-caption)] text-[var(--color-text-muted)] font-[var(--font-mono)]">
+  <span class="sm:hidden text-[var(--text-body)] text-[var(--color-text-muted)] font-[var(--font-mono)]">
     {currentPage} / {totalPages}
   </span>
 

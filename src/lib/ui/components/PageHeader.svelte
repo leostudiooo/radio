@@ -12,7 +12,7 @@
 
 <div class="flex flex-col gap-[var(--space-1)] mb-[var(--space-6)]">
   <div class="flex items-center justify-between gap-[var(--space-4)]">
-    <h1 class="text-[var(--text-display)] font-semibold text-[var(--color-text-primary)]">{title}</h1>
+    <h1 class="text-[var(--text-title)] font-semibold text-[var(--color-text-primary)]">{title}</h1>
     {#if action}
       {@render action()}
     {/if}

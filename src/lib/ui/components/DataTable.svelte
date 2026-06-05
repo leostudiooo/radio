@@ -72,7 +72,7 @@
         <tr class="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
           {#each columns as column}
             <th
-              class="px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] {alignClasses[column.align ?? 'left']}"
+              class="px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] {alignClasses[column.align ?? 'left']}"
               aria-sort={column.sortable && effectiveSortKey === column.key
                 ? (effectiveSortDir === 'asc' ? 'ascending' : 'descending')
                 : undefined}
@@ -103,7 +103,7 @@
           {/each}
           {#if actions}
             <th
-              class="px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-right"
+              class="px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-right"
               aria-label="Actions"
             >
               Actions
@@ -135,7 +135,7 @@
       <div class="bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-4)] flex flex-col gap-[var(--space-2)]">
         {#each columns as column}
           <div class="flex justify-between gap-[var(--space-2)]">
-            <span class="text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>
+            <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>
             <span class="text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">{getCellValue(row, column)}</span>
           </div>
         {/each}

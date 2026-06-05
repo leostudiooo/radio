@@ -38,7 +38,7 @@
 </script>
 
 <div class="flex flex-col gap-[var(--space-1)]">
-  <label for={selectId} class="text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+  <label for={selectId} class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
     {label}{#if required}<span class="text-[var(--color-status-invalid)]">*</span>{/if}
   </label>
   <div class="relative">
@@ -62,6 +62,6 @@
     </span>
   </div>
   {#if error}
-    <span class="text-[var(--text-caption)] text-[var(--color-status-invalid)]">{error}</span>
+    <span class="text-[var(--text-body)] text-[var(--color-status-invalid)]">{error}</span>
   {/if}
 </div>

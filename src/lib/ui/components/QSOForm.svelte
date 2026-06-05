@@ -479,7 +479,7 @@
             oninput={handleCallsignInput}
           />
           {#if lookingUp}
-            <span class="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-1 inline-flex items-center gap-1">
+            <span class="text-[var(--text-body)] text-[var(--color-text-muted)] mt-1 inline-flex items-center gap-1">
               <LoadingSpinner size="sm" />
             </span>
           {/if}
@@ -537,7 +537,7 @@
             oninput={handleFreqInput}
           >
             {#snippet suffix()}
-              <span class="text-[var(--text-caption)]">{t.common.unit.mhz}</span>
+              <span class="text-[var(--text-body)]">{t.common.unit.mhz}</span>
             {/snippet}
           </FormInput>
         {:else}
@@ -555,7 +555,7 @@
             placeholder={t.common.placeholder.freq}
           >
             {#snippet suffix()}
-              <span class="text-[var(--text-caption)]">{t.common.unit.mhz}</span>
+              <span class="text-[var(--text-body)]">{t.common.unit.mhz}</span>
             {/snippet}
           </FormInput>
         {/if}

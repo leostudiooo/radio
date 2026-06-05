@@ -78,7 +78,7 @@
     <div class="flex items-center gap-[var(--space-2)] px-[var(--space-3)] py-[var(--space-2)] bg-[var(--color-elevated)] border border-[var(--color-border)]">
       <FileIcon size={16} class="text-[var(--color-text-muted)]" />
       <span class="flex-1 text-[var(--text-body)] text-[var(--color-text-primary)] truncate">{selectedFile.name}</span>
-      <span class="text-[var(--text-caption)] text-[var(--color-text-muted)]">{formatSize(selectedFile.size)}</span>
+      <span class="text-[var(--text-body)] text-[var(--color-text-muted)]">{formatSize(selectedFile.size)}</span>
     </div>
   {/if}
 </div>

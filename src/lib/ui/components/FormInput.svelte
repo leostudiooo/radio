@@ -44,7 +44,7 @@
 </script>
 
 <div class="flex flex-col gap-[var(--space-1)]">
-  <label for={inputId} class="text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+  <label for={inputId} class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
     {label}{#if required}<span class="text-[var(--color-status-invalid)]">*</span>{/if}
   </label>
   <div class="flex items-center bg-[var(--color-elevated)] border border-[var(--color-border)] focus-within:border-[var(--color-accent)] focus-within:shadow-[0_0_0_1px_var(--color-accent-medium)] transition-colors duration-150">
@@ -67,6 +67,6 @@
     {/if}
   </div>
   {#if error}
-    <span class="text-[var(--text-caption)] text-[var(--color-status-invalid)]">{error}</span>
+    <span class="text-[var(--text-body)] text-[var(--color-status-invalid)]">{error}</span>
   {/if}
 </div>

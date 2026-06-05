@@ -18,7 +18,7 @@
   }: Props = $props();
 
   const sizeClasses = {
-    sm: 'h-[var(--height-control-sm)] px-[var(--space-3)] text-[var(--text-caption)]',
+    sm: 'h-[var(--height-control-sm)] px-[var(--space-3)] text-[var(--text-body)]',
     md: 'h-[var(--height-control-md)] px-[var(--space-4)] text-[var(--text-body)]',
     lg: 'h-[var(--height-control-lg)] px-[var(--space-6)] text-[var(--text-body)]',
     icon: 'w-[var(--height-control-md)] h-[var(--height-control-md)] p-0',

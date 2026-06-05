@@ -33,7 +33,7 @@
 </script>
 
 <div class="flex flex-col gap-[var(--space-1)]">
-  <label for={textareaId} class="text-[var(--text-label)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+  <label for={textareaId} class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
     {label}{#if required}<span class="text-[var(--color-status-invalid)]">*</span>{/if}
   </label>
   <textarea
@@ -48,9 +48,9 @@
     class="w-full bg-[var(--color-elevated)] border border-[var(--color-border)] focus:border-[var(--color-accent)] focus:shadow-[0_0_0_1px_var(--color-accent-medium)] px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none transition-colors duration-150 disabled:opacity-40 resize-y"
   ></textarea>
   {#if maxLength !== undefined}
-    <span class="text-[var(--text-label)] text-[var(--color-text-muted)] text-right">{value.length}/{maxLength}</span>
+    <span class="text-[var(--text-aux)] text-[var(--color-text-muted)] text-right">{value.length}/{maxLength}</span>
   {/if}
   {#if error}
-    <span class="text-[var(--text-caption)] text-[var(--color-status-invalid)]">{error}</span>
+    <span class="text-[var(--text-body)] text-[var(--color-status-invalid)]">{error}</span>
   {/if}
 </div>

@@ -15,7 +15,7 @@
     <button
       type="button"
       onclick={onclear}
-      class="shrink-0 text-[var(--text-caption)] text-[var(--color-text-muted)] hover:text-[var(--color-status-invalid)] transition-colors duration-100 whitespace-nowrap"
+      class="shrink-0 text-[var(--text-body)] text-[var(--color-text-muted)] hover:text-[var(--color-status-invalid)] transition-colors duration-100 whitespace-nowrap"
     >
       Clear
     </button>
