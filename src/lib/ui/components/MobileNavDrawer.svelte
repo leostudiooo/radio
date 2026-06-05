@@ -72,7 +72,7 @@
         <button
           type="button"
           onclick={() => handleNavClick(item.path)}
-          class="flex items-center gap-3 px-4 py-3 text-[var(--text-body)] transition-colors duration-100 text-left w-full {isActive(item.path) ? 'text-[var(--color-text-primary)] bg-[var(--color-accent-subtle)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+          class="flex items-center gap-3 px-4 py-3 text-[var(--text-body)] transition-colors duration-100 text-left w-full {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
         >
           <Icon size={16} />
           <span>{typeof item.label === 'function' ? item.label() : item.label}</span>
@@ -84,7 +84,7 @@
           <button
             type="button"
             onclick={() => handleNavClick(item.path)}
-            class="flex items-center gap-3 px-4 py-3 text-[var(--text-body)] transition-colors duration-100 text-left w-full {isActive(item.path) ? 'text-[var(--color-text-primary)] bg-[var(--color-accent-subtle)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+            class="flex items-center gap-3 px-4 py-3 text-[var(--text-body)] transition-colors duration-100 text-left w-full {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
           >
             <Icon size={16} />
             <span>{typeof item.label === 'function' ? item.label() : item.label}</span>
