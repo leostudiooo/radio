@@ -5,8 +5,10 @@ import type { Profile } from '$lib/logic/types/auth';
 import type { Subscription } from '@supabase/auth-js';
 
 let subscription: Subscription | null = null;
+let listenerRegistered = false;
 
 function createAuthStore() {
+  let loading = $state(true);
   let session = $state<Session | null>(null);
   let user = $state<User | null>(null);
   let profile = $state<Profile | null>(null);
@@ -24,38 +26,45 @@ function createAuthStore() {
     }
   }
 
-  function init() {
-    if (subscription) return;
+  async function initAuth() {
+    if (listenerRegistered) return;
+    listenerRegistered = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    try {
+      const { data } = await supabase.auth.getSession();
       session = data.session;
       user = data.session?.user ?? null;
-      refreshProfile();
-    });
+      await refreshProfile();
 
-    subscription = onAuthStateChange(supabase, (newSession) => {
-      session = newSession;
-      user = newSession?.user ?? null;
-      refreshProfile();
-    });
+      subscription = onAuthStateChange(supabase, (async (newSession) => {
+        session = newSession;
+        user = newSession?.user ?? null;
+        await refreshProfile();
+      }) as (session: Session | null) => void);
+    } finally {
+      loading = false;
+    }
   }
 
   function cleanup() {
     if (subscription) {
       subscription.unsubscribe();
       subscription = null;
+      listenerRegistered = false;
     }
   }
 
+  if (typeof window !== 'undefined') initAuth();
+  if (import.meta.hot) import.meta.hot.dispose(cleanup);
+
   return {
+    get loading() { return loading; },
     get session() { return session; },
     get user() { return user; },
     get profile() { return profile; },
     get isAuthenticated() { return isAuthenticated; },
     get callsign() { return callsign; },
     get isAdmin() { return isAdmin; },
-    init,
-    cleanup,
   };
 }
 

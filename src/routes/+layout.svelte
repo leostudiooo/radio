@@ -9,8 +9,6 @@
 
   let { children } = $props();
 
-  authStore.init();
-
   setContext('auth', authStore);
 </script>
 
