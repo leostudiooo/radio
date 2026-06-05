@@ -244,7 +244,7 @@
     </DataTable>
 
     {#if data.length > 0}
-      <div class="text-xs text-[var(--color-text-muted)] font-[var(--font-mono)]">
+      <div class="text-[var(--text-aux)] text-[var(--color-text-muted)] font-[var(--font-mono)]">
         {total} total
       </div>
     {/if}

@@ -76,7 +76,7 @@
   <div class="flex flex-col gap-8 max-w-lg">
     <!-- Profile section -->
     <form onsubmit={handleSave} class="flex flex-col gap-4">
-      <h2 class="text-sm font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+      <h2 class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
         {t.auth.profile}
       </h2>
 
@@ -116,11 +116,11 @@
 
     <!-- Account info section -->
     <div class="flex flex-col gap-3 pt-4 border-t border-[var(--color-border)]">
-      <h2 class="text-sm font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+      <h2 class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
         {t.auth.accountInfo}
       </h2>
 
-      <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+      <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[var(--text-body)]">
         <span class="text-[var(--color-text-secondary)]">{t.auth.email}</span>
         <span class="text-[var(--color-text-primary)]">{authStore.user?.email ?? '-'}</span>
 
@@ -128,7 +128,7 @@
         <span class="text-[var(--color-text-primary)] capitalize">{provider}</span>
 
         <span class="text-[var(--color-text-secondary)]">{t.auth.id}</span>
-        <span class="text-[var(--color-text-primary)] font-[var(--font-mono)] text-xs">
+        <span class="text-[var(--color-text-primary)] font-[var(--font-mono)] text-[var(--text-aux)]">
           {authStore.user?.id?.slice(0, 8) ?? '-'}
         </span>
 

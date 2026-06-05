@@ -122,7 +122,7 @@
     <LoadingSpinner size="lg" />
   </div>
 {:else if notFound}
-  <p class="text-sm text-[var(--color-text-muted)]">Equipment not found.</p>
+  <p class="text-[var(--text-body)] text-[var(--color-text-muted)]">Equipment not found.</p>
 {:else if !authStore.isAdmin}
   <div class="flex justify-center py-12">
     <LoadingSpinner size="lg" />

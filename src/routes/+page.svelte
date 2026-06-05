@@ -83,7 +83,7 @@
 </PageHeader>
 
 {#if authStore.isAuthenticated}
-  <div class="mb-6 text-sm text-[var(--color-text-secondary)]">
+  <div class="mb-6 text-[var(--text-body)] text-[var(--color-text-secondary)]">
     <p>{t.qso.welcome}</p>
   </div>
 {/if}

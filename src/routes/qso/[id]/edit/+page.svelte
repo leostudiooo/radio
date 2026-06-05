@@ -75,7 +75,7 @@
       <LoadingSpinner size="lg" />
     </div>
   {:else if notFound}
-    <p class="text-sm text-[var(--color-text-muted)]">QSO not found.</p>
+    <p class="text-[var(--text-body)] text-[var(--color-text-muted)]">QSO not found.</p>
   {:else if qso}
     <QSOForm
       formMode="edit"
