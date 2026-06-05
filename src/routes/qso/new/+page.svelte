@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { supabase } from '$lib/supabase';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
