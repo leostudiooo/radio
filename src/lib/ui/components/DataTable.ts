@@ -4,4 +4,5 @@ export interface Column<T = Record<string, unknown>> {
   format?: (value: unknown, row: T) => string;
   align?: 'left' | 'right' | 'center';
   sortable?: boolean;
+  badge?: boolean;
 }

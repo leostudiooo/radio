@@ -15,7 +15,7 @@
 <div class="bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-6)]">
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-[var(--space-4)]">
     <div>
-      <h1 class="text-[var(--text-title)] font-[var(--font-mono)] font-bold text-[var(--color-accent)]">
+      <h1 class="text-[var(--text-title)] font-[var(--font-mono)] font-bold text-[var(--color-text-primary)]">
         {callsign}
       </h1>
       <p class="text-[var(--text-aux)] text-[var(--color-text-secondary)] mt-[var(--space-1)]">

@@ -75,7 +75,7 @@
     {/if}
   </button>
 
-  <a href="/" class="font-[var(--font-mono)] text-[var(--text-subtitle)] font-bold tracking-[0.05em] text-[var(--color-accent)] uppercase mr-8">
+  <a href="/" class="font-[var(--font-mono)] text-[var(--text-subtitle)] font-bold tracking-[0.05em] text-[var(--color-text-primary)] uppercase mr-8">
     {SITE_CONFIG.callsign}
   </a>
 
@@ -83,7 +83,7 @@
     {#each publicNavItems as item}
       <a
         href={item.path}
-        class="px-3 py-1.5 rounded-md transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+        class="px-3 py-1.5 rounded-[var(--radius-md)] transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
       >
         {typeof item.label === 'function' ? item.label() : item.label}
       </a>
@@ -92,7 +92,7 @@
       {#each adminNavItems as item}
         <a
           href={item.path}
-          class="px-3 py-1.5 rounded-md transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
+          class="px-3 py-1.5 rounded-[var(--radius-md)] transition-colors duration-100 text-[var(--text-body)] {isActive(item.path) ? 'text-[var(--color-text-primary)] border-b-2 border-[var(--color-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
         >
           {typeof item.label === 'function' ? item.label() : item.label}
         </a>

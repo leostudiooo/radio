@@ -14,7 +14,7 @@
   import Button from '$lib/ui/components/Button.svelte';
   import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { Cpu, Pencil, Trash2 } from 'lucide-svelte';
+  import { Pencil, Trash2 } from 'lucide-svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
@@ -30,7 +30,7 @@
     { key: 'name', header: t.equipment.name, sortable: true },
     { key: 'type', header: t.equipment.type, sortable: true },
     { key: 'manufacturer', header: t.equipment.manufacturer },
-    { key: 'model', header: t.equipment.model },
+    { key: 'model', header: t.equipment.model, badge: true },
     {
       key: 'is_active',
       header: t.equipment.active,
@@ -85,7 +85,7 @@
     <LoadingSpinner size="lg" />
   </div>
 {:else if data.length === 0}
-  <EmptyState icon={Cpu} message={t.equipment.noEquipment}>
+  <EmptyState icon="🔧" message={t.equipment.noEquipment}>
     {#snippet cta()}
       {#if authStore.isAdmin}
         <Button variant="primary" onclick={() => goto('/equipment/new')}>{t.equipment.addFirst}</Button>
@@ -105,7 +105,7 @@
         <div class="flex items-center justify-end gap-[var(--space-1)]">
           <button
             type="button"
-            class="inline-flex items-center justify-center p-[var(--space-1)] rounded-sm text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+            class="inline-flex items-center justify-center p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             onclick={() => goto(`/equipment/${row.id}`)}
             aria-label="Edit {String(row.name ?? '')}"
           >
@@ -113,7 +113,7 @@
           </button>
           <button
             type="button"
-            class="inline-flex items-center justify-center p-[var(--space-1)] rounded-sm text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+            class="inline-flex items-center justify-center p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             onclick={() => { deleteTarget = row as unknown as Equipment; showDeleteConfirm = true; }}
             aria-label="Delete {String(row.name ?? '')}"
           >

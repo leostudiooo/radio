@@ -13,7 +13,7 @@
   import EmptyState from '$lib/ui/components/EmptyState.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { Radio } from 'lucide-svelte';
+
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
@@ -93,10 +93,7 @@
     <LoadingSpinner size="lg" />
   </div>
 {:else if data.length === 0}
-  <EmptyState
-    icon={Radio}
-    message={t.qso.noQSOsYet}
-  />
+  <EmptyState icon="📻" message={t.qso.noQSOsYet} />
 {:else}
   <div class="flex flex-col gap-4">
     <DataTable

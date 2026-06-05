@@ -20,7 +20,7 @@
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
-  import { Radio, Eye, Pencil, Trash2 } from 'lucide-svelte';
+  import { Eye, Pencil, Trash2 } from 'lucide-svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const PAGE_SIZE = 25;
@@ -165,7 +165,7 @@
     <LoadingSpinner size="lg" />
   </div>
 {:else if total === 0 && !filterCallsign && !filterBand && !filterMode && !filterDateFrom && !filterDateTo}
-  <EmptyState icon={Radio} message={t.qso.noQSOsYet}>
+  <EmptyState icon="📻" message={t.qso.noQSOsYet}>
     {#snippet cta()}
       {#if authStore.isAdmin}
         <Button variant="primary" onclick={() => goto('/qso/new')}>{t.qso.logYourFirst}</Button>
@@ -217,7 +217,7 @@
       {#snippet actions(row)}
         <div class="flex justify-end gap-[var(--space-1)]">
           <button
-            class="p-[var(--space-1)] rounded-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+            class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
             aria-label="View QSO"
             onclick={() => goto(`/qso/${row.id}`)}
           >
@@ -225,14 +225,14 @@
           </button>
           {#if authStore.isAdmin}
             <button
-              class="p-[var(--space-1)] rounded-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+              class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
               aria-label="Edit QSO"
               onclick={() => goto(`/qso/${row.id}/edit`)}
             >
               <Pencil size={16} />
             </button>
             <button
-              class="p-[var(--space-1)] rounded-sm text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+              class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
               aria-label="Delete QSO"
               onclick={() => confirmDelete(row.id as string)}
             >

@@ -13,7 +13,7 @@
   import FormSelect from '$lib/ui/components/FormSelect.svelte';
   import EmptyState from '$lib/ui/components/EmptyState.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { ArrowUpDown, Mail } from 'lucide-svelte';
+  import { ArrowUpDown } from 'lucide-svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
@@ -169,7 +169,7 @@
     </FilterBar>
 
     {#if data.length === 0}
-      <EmptyState icon={Mail} message={t.qsl.noQSLCards} />
+      <EmptyState icon="✉️" message={t.qsl.noQSLCards} />
     {:else}
       <div class="hidden lg:block overflow-x-auto">
         <table class="w-full border-collapse">

@@ -79,7 +79,7 @@
             >
               {#if column.sortable}
                 <button
-                  class="inline-flex items-center gap-[var(--space-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded-sm cursor-pointer hover:text-[var(--color-text-secondary)]"
+                  class="inline-flex items-center gap-[var(--space-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded-[var(--radius-sm)] cursor-pointer hover:text-[var(--color-text-secondary)]"
                   onclick={() => handleSort(column)}
                   aria-label="Sort by {column.header}"
                 >
@@ -116,7 +116,11 @@
           <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors duration-100">
             {#each columns as column}
               <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] {alignClasses[column.align ?? 'left']}">
-                {getCellValue(row, column)}
+                {#if column.badge}
+                  <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-[var(--color-text-on-accent)]">{getCellValue(row, column)}</span>
+                {:else}
+                  {getCellValue(row, column)}
+                {/if}
               </td>
             {/each}
             {#if actions}
@@ -136,7 +140,13 @@
         {#each columns as column}
           <div class="flex justify-between gap-[var(--space-2)]">
             <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>
-            <span class="text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">{getCellValue(row, column)}</span>
+            <span class="text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">
+              {#if column.badge}
+                <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-[var(--color-text-on-accent)]">{getCellValue(row, column)}</span>
+              {:else}
+                {getCellValue(row, column)}
+              {/if}
+            </span>
           </div>
         {/each}
         {#if actions}
