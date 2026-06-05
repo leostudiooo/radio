@@ -122,7 +122,7 @@
             {#each columns as column}
               <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] {alignClasses[column.align ?? 'left']}">
                 {#if column.badge}
-                  <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-[var(--color-text-on-accent)]">{getCellValue(row, column)}</span>
+                  <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
                 {:else}
                   {getCellValue(row, column)}
                 {/if}
@@ -147,7 +147,7 @@
             <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>
             <span class="text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">
               {#if column.badge}
-                <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-[var(--color-text-on-accent)]">{getCellValue(row, column)}</span>
+                <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
               {:else}
                 {getCellValue(row, column)}
               {/if}

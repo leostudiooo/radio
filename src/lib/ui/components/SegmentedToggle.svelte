@@ -50,8 +50,9 @@
       onclick={() => onchange(option.value)}
       role="radio"
       aria-checked={option.value === value}
+      style={option.value === value ? 'color: var(--color-text-on-accent)' : ''}
       class="px-[var(--space-2)] py-[var(--space-0-5)] text-[var(--text-body)] font-medium transition-all duration-100 {option.value === value
-        ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)] rounded-full'
+        ? 'bg-[var(--color-accent)] rounded-full'
         : 'text-[var(--color-text-secondary)]'}"
     >
       {option.label}

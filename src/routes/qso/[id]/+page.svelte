@@ -63,7 +63,8 @@
       {#if authStore.isAdmin}
         <a
           href="/qso/{id}/edit"
-          class="inline-flex items-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-body)] font-medium bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90 transition-opacity"
+          style="color: var(--color-text-on-accent)"
+          class="inline-flex items-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-body)] font-medium bg-[var(--color-accent)] hover:opacity-90 transition-opacity"
         >
           {t.common.edit}
         </a>
