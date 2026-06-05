@@ -1,5 +1,6 @@
 <script lang="ts">
   import { SITE_CONFIG } from '$lib/config';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
 
   interface Props {
     profile: { callsign?: string; grid_square?: string; qth?: string; name?: string } | null;
@@ -19,15 +20,15 @@
         {callsign}
       </h1>
       <p class="text-[var(--text-aux)] text-[var(--color-text-secondary)] mt-[var(--space-1)]">
-        Amateur Radio Station
+        {localeStore.translation.common.station}
       </p>
     </div>
     <div class="flex flex-wrap gap-[var(--space-4)] text-[var(--text-aux)] text-[var(--color-text-secondary)]">
       {#if grid_square}
-        <span>Grid: {grid_square}</span>
+        <span>{localeStore.translation.common.grid}: {grid_square}</span>
       {/if}
       {#if qth}
-        <span>QTH: {qth}</span>
+        <span>{localeStore.translation.common.qth}: {qth}</span>
       {/if}
     </div>
   </div>

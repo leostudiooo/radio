@@ -2,6 +2,7 @@
   import { page } from '$app/stores';
   import { supabase } from '$lib/supabase';
   import { authStore } from '$lib/ui/stores/auth.svelte';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { getQSOById } from '$lib/logic/data/qso';
   import type { QSO } from '$lib/logic/types/qso';
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
@@ -10,6 +11,7 @@
   import EmptyState from '$lib/ui/components/EmptyState.svelte';
 
   const id: string = $derived($page.params.id);
+  const t = $derived(localeStore.translation);
 
   let qso: QSO | null = $state(null);
   let loading = $state(true);
@@ -76,7 +78,7 @@
     <LoadingSpinner size="lg" />
   </div>
 {:else if notFound}
-  <EmptyState message="QSO not found." />
+  <EmptyState message={t.qso.notFound} />
 {:else if qso}
   <PageHeader title={qso.callsign} {subtitle}>
     {#snippet action()}
@@ -85,7 +87,7 @@
           href="/qso/{id}/edit"
           class="inline-flex items-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-label)] font-medium bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90 transition-opacity"
         >
-          Edit
+          {t.common.edit}
         </a>
       {/if}
     {/snippet}

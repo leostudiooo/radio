@@ -25,8 +25,8 @@
 
   const PAGE_SIZE = 25;
 
-  const bandOptions = [{ value: '', label: 'All bands' }, ...BANDS.map((b) => ({ value: b, label: b }))];
-  const modeOptions = [{ value: '', label: 'All modes' }, ...MODES.map((m) => ({ value: m, label: m }))];
+  const bandOptions = $derived([{ value: '', label: t.qso.allBands }, ...BANDS.map((b) => ({ value: b, label: b }))]);
+  const modeOptions = $derived([{ value: '', label: t.qso.allModes }, ...MODES.map((m) => ({ value: m, label: m }))]);
 
   const t = $derived(localeStore.translation);
 
@@ -72,7 +72,7 @@
     { key: 'mode', header: t.qso.mode, sortable: true },
     { key: 'rst_sent', header: t.qso.rstSent },
     { key: 'rst_rcvd', header: t.qso.rstRcvd },
-    { key: 'country', header: 'Country', sortable: true },
+    { key: 'country', header: t.qso.country, sortable: true },
   ]);
 
   function buildFilter(): QSOFilter {
@@ -218,7 +218,7 @@
         <div class="flex justify-end gap-[var(--space-1)]">
           <button
             class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
-            aria-label="View QSO"
+            aria-label={t.qso.viewQso}
             onclick={() => goto(`/qso/${row.id}`)}
           >
             <Eye size={16} />
@@ -226,14 +226,14 @@
           {#if authStore.isAdmin}
             <button
               class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
-              aria-label="Edit QSO"
+              aria-label={t.qso.editQso}
               onclick={() => goto(`/qso/${row.id}/edit`)}
             >
               <Pencil size={16} />
             </button>
             <button
               class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
-              aria-label="Delete QSO"
+              aria-label={t.qso.deleteQso}
               onclick={() => confirmDelete(row.id as string)}
             >
               <Trash2 size={16} />
@@ -245,7 +245,7 @@
 
     {#if data.length > 0}
       <div class="text-[var(--text-aux)] text-[var(--color-text-muted)] font-[var(--font-mono)]">
-        {total} total
+        {t.qso.totalCount.replace('{total}', String(total))}
       </div>
     {/if}
 
@@ -261,8 +261,8 @@
 
 <ConfirmDialog
   bind:open={deleteDialogOpen}
-  title="Delete QSO"
-  message="Are you sure you want to delete this QSO? This action cannot be undone."
-  confirmLabel="Delete"
+  title={t.qso.deleteConfirm}
+  message={t.qso.deleteMessage}
+  confirmLabel={t.common.delete}
   onconfirm={handleDeleteConfirm}
 />

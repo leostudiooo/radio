@@ -82,13 +82,13 @@
   const modeOptions = MODES.map((m) => ({ value: m, label: m }));
   const contOptions = CONTINENTS.map((c) => ({ value: c, label: c }));
   const qslStatusOptions = ADIF_QSL_STATUS.map((s) => ({ value: s, label: s }));
-  const qslViaOptions = [
+  const qslViaOptions = $derived([
     { value: '', label: '\u2014' },
-    { value: 'B', label: 'Bureau' },
-    { value: 'D', label: 'Direct' },
-    { value: 'E', label: 'Electronic' },
-    { value: 'M', label: 'Manager' },
-  ];
+    { value: 'B', label: t.qso.qslViaBureau },
+    { value: 'D', label: t.qso.qslViaDirect },
+    { value: 'E', label: t.qso.qslViaElectronic },
+    { value: 'M', label: t.qso.qslViaManager },
+  ]);
 
   const t = $derived(localeStore.translation);
 

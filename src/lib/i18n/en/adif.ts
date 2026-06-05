@@ -26,6 +26,7 @@ const adif = {
   errorsLabel: 'Errors',
   dateFrom: 'From',
   dateTo: 'To',
+  showingFirstOf: 'Showing first {count} of {total}',
 } as const;
 
 export default adif;

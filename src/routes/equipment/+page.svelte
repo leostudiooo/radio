@@ -107,7 +107,7 @@
             type="button"
             class="inline-flex items-center justify-center p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             onclick={() => goto(`/equipment/${row.id}`)}
-            aria-label="Edit {String(row.name ?? '')}"
+            aria-label={t.equipment.editItem.replace('{name}', String(row.name ?? ''))}
           >
             <Pencil size={16} />
           </button>
@@ -115,7 +115,7 @@
             type="button"
             class="inline-flex items-center justify-center p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             onclick={() => { deleteTarget = row as unknown as Equipment; showDeleteConfirm = true; }}
-            aria-label="Delete {String(row.name ?? '')}"
+            aria-label={t.equipment.deleteItem.replace('{name}', String(row.name ?? ''))}
           >
             <Trash2 size={16} />
           </button>

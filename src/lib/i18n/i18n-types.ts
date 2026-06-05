@@ -32,6 +32,14 @@ export type BaseTranslation = {
     success: string;
     useUtc: string;
     useLocalTime: string;
+    prev: string;
+    next: string;
+    clear: string;
+    upload: string;
+    station: string;
+    grid: string;
+    qth: string;
+    closeDialog: string;
     placeholder: {
       callsign: string;
       freq: string;
@@ -99,6 +107,7 @@ export type BaseTranslation = {
     adminOnly: string;
     id: string;
     createdAt: string;
+    or: string;
   };
   qso: {
     title: string;
@@ -156,14 +165,30 @@ export type BaseTranslation = {
     deleteMessage: string;
     optionalFields: string;
     sectionDetails: string;
+    sectionStation: string;
+    sectionTechnical: string;
+    sectionMetadata: string;
     sectionLocation: string;
     sectionGeography: string;
     sectionQsl: string;
+    createdAt: string;
+    updatedAt: string;
     welcome: string;
     loggedInAs: string;
     publicView: string;
     recentQSOs: string;
     viewAll: string;
+    viewQso: string;
+    editQso: string;
+    deleteQso: string;
+    allBands: string;
+    allModes: string;
+    totalCount: string;
+    notFound: string;
+    qslViaBureau: string;
+    qslViaDirect: string;
+    qslViaElectronic: string;
+    qslViaManager: string;
     validation: {
       callsign: { INVALID_FORMAT?: string; REQUIRED?: string };
       band: { INVALID_BAND?: string; REQUIRED?: string };
@@ -202,6 +227,7 @@ export type BaseTranslation = {
     errorsLabel: string;
     dateFrom: string;
     dateTo: string;
+    showingFirstOf: string;
   };
   equipment: {
     title: string;
@@ -220,6 +246,8 @@ export type BaseTranslation = {
     saveFailed: string;
     deleteConfirm: string;
     deleteMessage: string;
+    editItem: string;
+    deleteItem: string;
     placeholder: {
       name: string;
       type: string;

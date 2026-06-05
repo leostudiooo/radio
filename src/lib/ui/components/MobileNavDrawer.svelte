@@ -62,7 +62,7 @@
   <button
     type="button"
     class="fixed inset-0 bg-black/80 z-40 lg:hidden"
-    aria-label="Close navigation"
+    aria-label={localeStore.translation.common.closeNav}
     onclick={onBackdropClick}
   ></button>
   <aside class="fixed left-0 top-14 bottom-0 w-[240px] bg-[var(--color-surface)] border-r border-[var(--color-border)] z-50 lg:hidden flex flex-col">

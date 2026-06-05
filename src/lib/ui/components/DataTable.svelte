@@ -1,9 +1,12 @@
 <script lang="ts">
   import LoadingSpinner from './LoadingSpinner.svelte';
   import EmptyState from './EmptyState.svelte';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-svelte';
   import type { Column } from './DataTable';
   import type { Snippet } from 'svelte';
+
+  const t = $derived(localeStore.translation);
 
   interface Props {
     columns: Column[];
@@ -21,11 +24,13 @@
     data,
     loading = false,
     keyExtractor,
-    emptyMessage = 'No data found',
+    emptyMessage,
     actions,
     onsort,
     sort,
   }: Props = $props();
+
+  const resolvedEmptyMessage = $derived(emptyMessage ?? localeStore.translation.common.noData);
 
   let sortKey = $state<string | null>(null);
   let sortDir = $state<'asc' | 'desc'>('asc');
@@ -64,7 +69,7 @@
     {/each}
   </div>
 {:else if data.length === 0}
-  <EmptyState message={emptyMessage} />
+  <EmptyState message={resolvedEmptyMessage} />
 {:else}
   <div class="hidden lg:block overflow-x-auto">
     <table class="w-full border-collapse">
@@ -81,7 +86,7 @@
                 <button
                   class="inline-flex items-center gap-[var(--space-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded-[var(--radius-sm)] cursor-pointer hover:text-[var(--color-text-secondary)]"
                   onclick={() => handleSort(column)}
-                  aria-label="Sort by {column.header}"
+                  aria-label={t.common.sortBy.replace('{column}', column.header)}
                 >
                   {column.header}
                   {#if effectiveSortKey === column.key}
@@ -104,9 +109,9 @@
           {#if actions}
             <th
               class="px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)] text-right"
-              aria-label="Actions"
+              aria-label={localeStore.translation.common.actions}
             >
-              Actions
+              {localeStore.translation.common.actions}
             </th>
           {/if}
         </tr>

@@ -15,6 +15,8 @@ const equipment = {
   saveFailed: 'Failed to save equipment',
   deleteConfirm: 'Are you sure?',
   deleteMessage: 'This equipment will be permanently deleted.',
+  editItem: 'Edit {name}',
+  deleteItem: 'Delete {name}',
   placeholder: {
     name: 'e.g. IC-7300',
     type: 'Select type',

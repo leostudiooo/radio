@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
 
   interface Props {
     children: Snippet;
@@ -17,7 +18,7 @@
       onclick={onclear}
       class="shrink-0 text-[var(--text-body)] text-[var(--color-text-muted)] hover:text-[var(--color-status-invalid)] transition-colors duration-100 whitespace-nowrap"
     >
-      Clear
+      {localeStore.translation.common.clear}
     </button>
   {/if}
 </div>

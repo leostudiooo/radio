@@ -1,5 +1,6 @@
 <script lang="ts">
   import { toastStore } from '$lib/ui/stores/toast.svelte';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { X, CheckCircle, AlertCircle, Info } from 'lucide-svelte';
 
   const iconMap = {
@@ -38,7 +39,7 @@
       <button
         type="button"
         class="opacity-70 hover:opacity-100 transition-opacity"
-        aria-label="Dismiss"
+        aria-label={localeStore.translation.common.dismiss}
         onclick={() => toastStore.remove(toast.id)}
       >
         <X size={14} />

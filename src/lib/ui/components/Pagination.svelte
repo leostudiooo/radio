@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from './Button.svelte';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
 
   interface Props {
     currentPage: number;
@@ -53,7 +54,7 @@
     disabled={currentPage <= 1}
     onclick={() => goToPage(currentPage - 1)}
   >
-    Prev
+    {localeStore.translation.common.prev}
   </Button>
 
   <div class="hidden sm:flex items-center gap-[var(--space-1)]">
@@ -82,6 +83,6 @@
     disabled={currentPage >= totalPages}
     onclick={() => goToPage(currentPage + 1)}
   >
-    Next
+    {localeStore.translation.common.next}
   </Button>
 </div>

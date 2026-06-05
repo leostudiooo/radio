@@ -26,6 +26,7 @@ const adif = {
   errorsLabel: '错误',
   dateFrom: '从',
   dateTo: '到',
+  showingFirstOf: '显示前 {count} 条，共 {total} 条',
 } as const;
 
 export default adif;

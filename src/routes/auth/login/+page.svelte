@@ -122,7 +122,7 @@
           <div class="w-full border-t border-[var(--color-border)]"></div>
         </div>
         <div class="relative flex justify-center">
-          <span class="bg-[var(--color-surface)] px-3 text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wider">or</span>
+          <span class="bg-[var(--color-surface)] px-3 text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wider">{t.auth.or}</span>
         </div>
       </div>
 

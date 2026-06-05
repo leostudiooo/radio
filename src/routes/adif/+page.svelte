@@ -23,8 +23,8 @@
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { SITE_CONFIG } from '$lib/config';
 
-  const bandOptions = [{ value: '', label: 'All bands' }, ...BANDS.map((b) => ({ value: b, label: b }))];
-  const modeOptions = [{ value: '', label: 'All modes' }, ...MODES.map((m) => ({ value: m, label: m }))];
+  const bandOptions = $derived([{ value: '', label: t.qso.allBands }, ...BANDS.map((b) => ({ value: b, label: b }))]);
+  const modeOptions = $derived([{ value: '', label: t.qso.allModes }, ...MODES.map((m) => ({ value: m, label: m }))]);
 
   const t = $derived(localeStore.translation);
 
@@ -231,7 +231,7 @@
 
       {#if parsedQSOs.length > 10}
         <p class="text-[var(--text-aux)] text-[var(--color-text-muted)]">
-          Showing first 10 of {parsedQSOs.length}
+          {t.adif.showingFirstOf.replace('{count}', '10').replace('{total}', String(parsedQSOs.length))}
         </p>
       {/if}
 

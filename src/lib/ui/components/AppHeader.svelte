@@ -12,6 +12,8 @@
   import { supabase } from '$lib/supabase';
   import MobileNavDrawer from './MobileNavDrawer.svelte';
 
+  const t = $derived(localeStore.translation);
+
   let drawerOpen = $state(false);
   let authResolved = $state(false);
 
@@ -29,7 +31,7 @@
   ];
 
   const adminNavItems = [
-    { path: '/adif', label: 'ADIF', icon: Download },
+    { path: '/adif', label: () => localeStore.translation.adif.title, icon: Download },
   ];
 
   function isActive(path: string): boolean {
@@ -65,7 +67,7 @@
   <button
     type="button"
     class="lg:hidden mr-3 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-    aria-label="Toggle navigation"
+    aria-label={localeStore.translation.common.toggleNav}
     onclick={toggleDrawer}
   >
     {#if drawerOpen}

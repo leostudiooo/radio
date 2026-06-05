@@ -15,6 +15,8 @@ const equipment = {
   saveFailed: '保存设备失败',
   deleteConfirm: '确认删除？',
   deleteMessage: '此设备将被永久删除。',
+  editItem: '编辑 {name}',
+  deleteItem: '删除 {name}',
   placeholder: {
     name: '例如 IC-7300',
     type: '选择类型',

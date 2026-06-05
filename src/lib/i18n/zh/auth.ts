@@ -24,6 +24,7 @@ const auth = {
   adminOnly: '仅管理员可操作',
   id: 'ID',
   createdAt: '创建时间',
+  or: '或',
 } as const;
 
 export default auth;

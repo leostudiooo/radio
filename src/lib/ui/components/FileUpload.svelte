@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Upload, File as FileIcon } from 'lucide-svelte';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
 
   interface Props {
     accept?: string;
@@ -65,7 +66,7 @@
     class:bg-[var(--color-elevated)]={!dragOver}
   >
     <Upload size={24} class="text-[var(--color-text-muted)]" />
-    <span class="text-[var(--text-body)] text-[var(--color-text-secondary)]">Drag & drop or click to upload</span>
+    <span class="text-[var(--text-body)] text-[var(--color-text-secondary)]">{localeStore.translation.common.upload}</span>
     <input
       type="file"
       {accept}

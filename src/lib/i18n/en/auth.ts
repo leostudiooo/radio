@@ -24,6 +24,7 @@ const auth = {
   adminOnly: 'Admin only',
   id: 'ID',
   createdAt: 'Created',
+  or: 'or',
 } as const;
 
 export default auth;

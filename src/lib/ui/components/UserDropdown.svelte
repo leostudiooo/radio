@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
+
   interface Props {
     callsign: string;
     onlogout: () => void;
@@ -58,7 +60,7 @@
         class="block px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-body)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] transition-colors duration-100"
         role="menuitem"
       >
-        Settings
+        {localeStore.translation.nav.settings}
       </a>
       <div class="border-t border-[var(--color-border)] my-1"></div>
       <button
@@ -67,7 +69,7 @@
         class="block w-full text-left px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-body)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] transition-colors duration-100"
         role="menuitem"
       >
-        Logout
+        {localeStore.translation.nav.logout}
       </button>
     </div>
   {/if}

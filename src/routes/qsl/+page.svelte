@@ -20,21 +20,29 @@
 
   const STATUS_CYCLE: QSLStatus[] = ['pending', 'sent', 'received', 'confirmed'];
 
-  const methodLabel: Record<QSLMethod, string> = {
-    paper: 'Paper',
-    lotw: 'LoTW',
-    eqsl: 'eQSL',
-  };
+  const statusLabel: Record<QSLStatus, string> = $derived({
+    pending: t.qsl.pending,
+    sent: t.qsl.sent,
+    received: t.qsl.received,
+    confirmed: t.qsl.confirmed,
+    invalid: t.qsl.invalid,
+  });
 
-  const methodOptions = [
-    { value: '', label: 'All methods' },
+  const methodLabel: Record<QSLMethod, string> = $derived({
+    paper: t.qsl.paper,
+    lotw: t.qsl.lotw,
+    eqsl: t.qsl.eqsl,
+  });
+
+  const methodOptions = $derived([
+    { value: '', label: t.qsl.allMethods },
     ...QSL_METHODS.map((m) => ({ value: m, label: methodLabel[m] })),
-  ];
+  ]);
 
-  const statusOptions = [
-    { value: '', label: 'All statuses' },
-    ...QSL_STATUSES.map((s) => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) })),
-  ];
+  const statusOptions = $derived([
+    { value: '', label: t.qsl.allStatuses },
+    ...QSL_STATUSES.map((s) => ({ value: s, label: statusLabel[s] })),
+  ]);
 
   let filterMethod = $state('');
   let filterStatus = $state('');
@@ -126,9 +134,9 @@
 
   const statCards = $derived([
     { label: t.qsl.totalCards, value: stats?.total ?? 0, accent: false },
-    { label: 'Paper', value: stats?.byMethod.paper ?? 0, accent: false },
-    { label: 'LoTW', value: stats?.byMethod.lotw ?? 0, accent: false },
-    { label: 'eQSL', value: stats?.byMethod.eqsl ?? 0, accent: false },
+    { label: t.qsl.paper, value: stats?.byMethod.paper ?? 0, accent: false },
+    { label: t.qsl.lotw, value: stats?.byMethod.lotw ?? 0, accent: false },
+    { label: t.qsl.eqsl, value: stats?.byMethod.eqsl ?? 0, accent: false },
   ]);
 </script>
 
@@ -280,7 +288,7 @@
       </div>
 
       <div class="text-[var(--text-aux)] text-[var(--color-text-muted)] font-[var(--font-mono)]">
-        {data.length} total
+        {t.qso.totalCount.replace('{total}', String(data.length))}
       </div>
     {/if}
   </div>

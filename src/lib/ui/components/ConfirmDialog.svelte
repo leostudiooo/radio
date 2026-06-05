@@ -1,5 +1,8 @@
 <script lang="ts">
   import Button from './Button.svelte';
+  import { localeStore } from '$lib/ui/stores/locale.svelte';
+
+  const t = $derived(localeStore.translation);
 
   interface Props {
     open?: boolean;
@@ -15,11 +18,14 @@
     open = $bindable(false),
     title,
     message,
-    confirmLabel = 'Confirm',
-    cancelLabel = 'Cancel',
+    confirmLabel,
+    cancelLabel,
     onconfirm,
     oncancel,
   }: Props = $props();
+
+  const resolvedConfirmLabel = $derived(confirmLabel ?? localeStore.translation.common.confirm);
+  const resolvedCancelLabel = $derived(cancelLabel ?? localeStore.translation.common.cancel);
 
   function handleConfirm() {
     open = false;
@@ -50,7 +56,7 @@
     <button
       type="button"
       class="absolute inset-0 bg-black/80"
-      aria-label="Close dialog"
+      aria-label={localeStore.translation.common.closeDialog}
       onclick={handleCancel}
     ></button>
     <div class="relative w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-6)] mx-[var(--space-4)]">
@@ -59,8 +65,8 @@
       </h2>
       <p class="text-[var(--text-body)] text-[var(--color-text-secondary)] mb-[var(--space-6)]">{message}</p>
       <div class="flex justify-end gap-[var(--space-3)]">
-        <Button variant="ghost" onclick={handleCancel}>{cancelLabel}</Button>
-        <Button variant="primary" onclick={handleConfirm}>{confirmLabel}</Button>
+        <Button variant="ghost" onclick={handleCancel}>{resolvedCancelLabel}</Button>
+        <Button variant="primary" onclick={handleConfirm}>{resolvedConfirmLabel}</Button>
       </div>
     </div>
   </div>
