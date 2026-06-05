@@ -6,7 +6,9 @@
   import { QSL_METHODS, QSL_STATUSES } from '$lib/logic/types/qsl';
   import { getQSLCards, updateQSLCard, getQSLStats } from '$lib/logic/data/qsl';
   import type { QSLCard, QSLMethod, QSLStatus, QSLStats } from '$lib/logic/types/qsl';
+  import { formatDate } from '$lib/ui/utils/format';
 
+  import StatCard from '$lib/ui/components/StatCard.svelte';
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
   import StatusBadge from '$lib/ui/components/StatusBadge.svelte';
   import FilterBar from '$lib/ui/components/FilterBar.svelte';
@@ -122,22 +124,11 @@
     }
   }
 
-  function formatDate(v: string | undefined): string {
-    if (!v) return '-';
-    return v.slice(0, 10);
-  }
-
   function truncate(s: string | undefined, len = 30): string {
     if (!s) return '-';
     return s.length > len ? s.slice(0, len) + '...' : s;
   }
 
-  const statCards = $derived([
-    { label: t.qsl.totalCards, value: stats?.total ?? 0, accent: false },
-    { label: t.qsl.paper, value: stats?.byMethod.paper ?? 0, accent: false },
-    { label: t.qsl.lotw, value: stats?.byMethod.lotw ?? 0, accent: false },
-    { label: t.qsl.eqsl, value: stats?.byMethod.eqsl ?? 0, accent: false },
-  ]);
 </script>
 
 <svelte:head>
@@ -153,12 +144,10 @@
 {:else}
   <div class="flex flex-col gap-6">
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {#each statCards as card}
-        <div class="bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 flex flex-col gap-1">
-          <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{card.label}</span>
-          <span class="text-[var(--text-title)] font-semibold text-[var(--color-text-primary)]">{card.value}</span>
-        </div>
-      {/each}
+      <StatCard label={t.qsl.totalCards} value={stats?.total ?? 0} />
+      <StatCard label={t.qsl.paper} value={stats?.byMethod.paper ?? 0} />
+      <StatCard label={t.qsl.lotw} value={stats?.byMethod.lotw ?? 0} />
+      <StatCard label={t.qsl.eqsl} value={stats?.byMethod.eqsl ?? 0} />
     </div>
 
     <FilterBar onclear={clearFilters}>
@@ -240,7 +229,7 @@
 
       <div class="lg:hidden flex flex-col gap-3">
         {#each data as card (card.id)}
-          <div class="bg-[var(--color-surface)] border border-[var(--color-border)] p-4 flex flex-col gap-2" class:opacity-50={updatingId === card.id}>
+          <div class="card-panel p-4 flex flex-col gap-2" class:opacity-50={updatingId === card.id}>
             <div class="flex justify-between gap-2">
               <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.qsoId}</span>
               <span class="text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">{card.qso_id.slice(0, 8)}</span>

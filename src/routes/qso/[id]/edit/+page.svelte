@@ -5,6 +5,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
+  import { requireAdmin } from '$lib/logic/auth';
   import { getQSOById, updateQSO, deleteQSO } from '$lib/logic/data/qso';
   import type { QSO, QSOInsert } from '$lib/logic/types/qso';
   import QSOForm from '$lib/ui/components/QSOForm.svelte';
@@ -14,11 +15,7 @@
   const id: string = $derived($page.params.id);
 
   $effect(() => {
-    if (!authStore.isAdmin) {
-      goto('/');
-      toastStore.error(t.auth.adminOnly);
-      return;
-    }
+    requireAdmin(authStore, goto, toastStore, t.auth.adminOnly);
   });
 
   let qso: QSO | null = $state(null);

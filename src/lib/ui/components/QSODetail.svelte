@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { QSO } from '$lib/logic/types/qso';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
+  import { formatDate, formatTime } from '$lib/ui/utils/format';
 
   interface Props {
     qso: QSO;
@@ -11,29 +12,6 @@
   const t = $derived(localeStore.translation);
 
   const DASH = '\u2014';
-
-  function formatDate(iso: string): string {
-    try {
-      return new Date(iso).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch {
-      return DASH;
-    }
-  }
-
-  function formatTime(iso: string): string {
-    try {
-      return new Date(iso).toLocaleTimeString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return DASH;
-    }
-  }
 
   function formatTimestamp(iso: string): string {
     try {

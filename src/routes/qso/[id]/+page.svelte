@@ -5,6 +5,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { getQSOById } from '$lib/logic/data/qso';
   import type { QSO } from '$lib/logic/types/qso';
+  import { formatDate, formatTime } from '$lib/ui/utils/format';
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
   import QSODetail from '$lib/ui/components/QSODetail.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
@@ -37,29 +38,6 @@
   $effect(() => {
     if (id) loadQSO();
   });
-
-  function formatDate(iso: string): string {
-    try {
-      return new Date(iso).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch {
-      return '';
-    }
-  }
-
-  function formatTime(iso: string): string {
-    try {
-      return new Date(iso).toLocaleTimeString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return '';
-    }
-  }
 
   let subtitle: string = $derived.by(() => {
     if (!qso) return '';

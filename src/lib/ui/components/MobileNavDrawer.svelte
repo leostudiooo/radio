@@ -6,7 +6,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
-  import { signOut } from '$lib/logic/auth';
+  import { handleLogout as doLogout } from '$lib/logic/auth';
   import { supabase } from '$lib/supabase';
   import { goto } from '$app/navigation';
 
@@ -29,13 +29,6 @@
 
   function switchLocale(value: string) {
     localeStore.setLocale(value as 'en' | 'zh');
-  }
-
-  async function handleLogout() {
-    try {
-      await signOut(supabase);
-      goto('/auth/login');
-    } catch {}
   }
 
   function onBackdropClick() {
@@ -95,7 +88,7 @@
 
     <div class="border-t border-[var(--color-border)] p-4 space-y-4">
       {#if authStore.isAuthenticated}
-        <UserDropdown callsign={authStore.callsign ?? ''} onlogout={handleLogout} />
+        <UserDropdown callsign={authStore.callsign ?? ''} onlogout={() => doLogout(supabase, goto)} />
       {:else}
         <a href="/auth/login" class="text-[var(--text-body)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100">
           {localeStore.translation.auth.login}

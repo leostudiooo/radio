@@ -4,6 +4,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
+  import { requireAdmin } from '$lib/logic/auth';
   import { createQSO } from '$lib/logic/data/qso';
   import type { QSOInsert } from '$lib/logic/types/qso';
   import QSOForm from '$lib/ui/components/QSOForm.svelte';
@@ -11,11 +12,7 @@
   const t = $derived(localeStore.translation);
 
   $effect(() => {
-    if (!authStore.isAdmin) {
-      goto('/');
-      toastStore.error(t.auth.adminOnly);
-      return;
-    }
+    requireAdmin(authStore, goto, toastStore, t.auth.adminOnly);
   });
 
   async function handleSubmit(data: QSOInsert) {

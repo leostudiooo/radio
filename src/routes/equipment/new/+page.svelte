@@ -4,6 +4,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
+  import { requireAdmin } from '$lib/logic/auth';
   import { EQUIPMENT_TYPES } from '$lib/logic/types/equipment';
   import { createEquipment } from '$lib/logic/data/equipment';
 
@@ -21,11 +22,7 @@
   const t = $derived(localeStore.translation);
 
   $effect(() => {
-    if (!authStore.isAdmin) {
-      goto('/');
-      toastStore.error(t.auth.adminOnly);
-      return;
-    }
+    requireAdmin(authStore, goto, toastStore, t.auth.adminOnly);
   });
 
   let name = $state('');
@@ -66,9 +63,9 @@
   <title>{t.equipment.newEquipment}{SITE_CONFIG.pageTitleSuffix}</title>
 </svelte:head>
 
+{#if authStore.isAdmin}
 <PageHeader title={t.equipment.newEquipment} />
 
-{#if authStore.isAdmin}
 <form onsubmit={handleSubmit} class="flex flex-col gap-6 pb-24 lg:pb-6">
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div class="sm:col-span-2">
@@ -138,8 +135,4 @@
     <Button variant="ghost" onclick={() => goto('/equipment')}>{t.common.cancel}</Button>
   </div>
 </form>
-{:else}
-  <div class="flex justify-center py-12">
-    <LoadingSpinner size="lg" />
-  </div>
 {/if}

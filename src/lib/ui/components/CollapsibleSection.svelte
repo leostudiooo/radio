@@ -18,7 +18,7 @@
   }
 </script>
 
-<div class="border border-[var(--color-border)] bg-[var(--color-surface)]">
+<div class="card-panel">
   <button
     type="button"
     onclick={toggle}

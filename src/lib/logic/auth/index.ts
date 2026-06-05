@@ -115,6 +115,18 @@ export async function getCurrentUser(supabase: SupabaseClient): Promise<User | n
 	return session?.user ?? null;
 }
 
+export function requireAdmin(
+	authStore: { isAdmin: boolean },
+	goto: (path: string) => void,
+	toast: { error: (msg: string) => void },
+	message: string
+): void {
+	if (!authStore.isAdmin) {
+		toast.error(message);
+		goto('/auth/login');
+	}
+}
+
 export async function getProfile(
 	supabase: SupabaseClient,
 	userId: string
@@ -130,6 +142,16 @@ export async function getProfile(
 	}
 
 	return data as Profile;
+}
+
+export async function handleLogout(
+	supabase: SupabaseClient,
+	goto: (url: string) => unknown
+): Promise<void> {
+	try {
+		await signOut(supabase);
+		goto('/auth/login');
+	} catch {}
 }
 
 export async function updateProfile(

@@ -13,7 +13,7 @@
   let { options, value, onchange }: Props = $props();
 </script>
 
-<div class="inline-flex items-center bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full p-[var(--space-0-5)]">
+<div class="inline-flex items-center card-panel rounded-full p-[var(--space-0-5)]">
   {#each options as option}
     <button
       type="button"

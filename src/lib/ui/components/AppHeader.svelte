@@ -8,7 +8,7 @@
   import { Menu, X, Radio, Cpu, Mail, Download } from 'lucide-svelte';
   import SegmentedToggle from './SegmentedToggle.svelte';
   import UserDropdown from './UserDropdown.svelte';
-  import { signOut } from '$lib/logic/auth';
+  import { handleLogout as doLogout } from '$lib/logic/auth';
   import { supabase } from '$lib/supabase';
   import MobileNavDrawer from './MobileNavDrawer.svelte';
 
@@ -53,13 +53,6 @@
   function handleNavClick(path: string) {
     closeDrawer();
     goto(path);
-  }
-
-  async function handleLogout() {
-    try {
-      await signOut(supabase);
-      goto('/auth/login');
-    } catch {}
   }
 </script>
 
@@ -116,7 +109,7 @@
 
     {#if authResolved}
       {#if authStore.isAuthenticated}
-        <UserDropdown callsign={authStore.callsign ?? ''} onlogout={handleLogout} />
+        <UserDropdown callsign={authStore.callsign ?? ''} onlogout={() => doLogout(supabase, goto)} />
       {:else}
         <a href="/auth/login" class="text-[var(--text-body)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-100">
           {localeStore.translation.auth.login}

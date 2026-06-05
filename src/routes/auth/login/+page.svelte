@@ -127,14 +127,14 @@
       </div>
 
       <form onsubmit={handleMagicLink} class="flex flex-col gap-3">
-        <div class="flex items-center bg-[var(--color-elevated)] border border-[var(--color-border)] focus-within:border-[var(--color-accent)] focus-within:shadow-[0_0_0_1px_var(--color-accent-medium)] transition-colors duration-150">
-          <span class="pl-3 text-[var(--color-text-muted)]"><Mail size={14} /></span>
+        <div class="flex items-center focus-within:border-[var(--color-accent)] focus-within:shadow-[0_0_0_1px_var(--color-accent-medium)] input-field">
+          <span class="text-[var(--color-text-muted)]"><Mail size={14} /></span>
           <input
             type="email"
             placeholder={t.auth.emailPlaceholder}
             bind:value={email}
             required
-            class="flex-1 bg-transparent px-3 py-2.5 text-[var(--text-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none"
+            class="flex-1 bg-transparent px-3 text-[var(--text-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none"
           />
         </div>
         <Button type="submit" variant="secondary" size="lg" disabled={loading !== null || !email.trim()}>

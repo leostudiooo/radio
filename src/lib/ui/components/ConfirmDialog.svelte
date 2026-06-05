@@ -59,7 +59,7 @@
       aria-label={localeStore.translation.common.closeDialog}
       onclick={handleCancel}
     ></button>
-    <div class="relative w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-6)] mx-[var(--space-4)]">
+    <div class="relative w-full max-w-[480px] card-panel p-[var(--space-6)] mx-[var(--space-4)]">
       <h2 id="confirm-title" class="text-[var(--text-subtitle)] font-semibold text-[var(--color-text-primary)] border-b border-[var(--color-border)] pb-[var(--space-3)] mb-[var(--space-4)]">
         {title}
       </h2>

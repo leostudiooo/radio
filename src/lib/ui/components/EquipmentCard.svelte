@@ -9,7 +9,7 @@
   let { equipment }: Props = $props();
 </script>
 
-<div class="bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-3)]">
+<div class="card-panel p-[var(--space-3)]">
   <div class="flex items-center justify-between">
     <div>
       <span class="text-[var(--text-body)] font-medium text-[var(--color-text-primary)]">{equipment.name}</span>

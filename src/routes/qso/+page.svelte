@@ -6,8 +6,9 @@
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { BANDS, MODES } from '$lib/logic/types/qso';
   import { getQSOs, deleteQSO } from '$lib/logic/data/qso';
-  import type { QSO, QSOFilter } from '$lib/logic/types/qso';
+  import type { QSO } from '$lib/logic/types/qso';
   import type { Column } from '$lib/ui/components/DataTable';
+  import { buildQSOFilter } from '$lib/ui/utils/filters';
 
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
   import DataTable from '$lib/ui/components/DataTable.svelte';
@@ -75,20 +76,10 @@
     { key: 'country', header: t.qso.country, sortable: true },
   ]);
 
-  function buildFilter(): QSOFilter {
-    const f: QSOFilter = {};
-    if (filterCallsign.trim()) f.callsign = filterCallsign.trim();
-    if (filterBand) f.band = filterBand;
-    if (filterMode) f.mode = filterMode;
-    if (filterDateFrom) f.dateFrom = filterDateFrom;
-    if (filterDateTo) f.dateTo = filterDateTo;
-    return f;
-  }
-
   async function loadData() {
     loading = true;
     try {
-      const result = await getQSOs(supabase, buildFilter(), { field: sortField, direction: sortDir }, currentPage, PAGE_SIZE);
+      const result = await getQSOs(supabase, buildQSOFilter({ callsign: filterCallsign, band: filterBand, mode: filterMode, dateFrom: filterDateFrom, dateTo: filterDateTo }), { field: sortField, direction: sortDir }, currentPage, PAGE_SIZE);
       data = result.data;
       total = result.total;
       totalPages = result.totalPages;

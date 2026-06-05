@@ -141,7 +141,7 @@
 
   <div class="lg:hidden flex flex-col gap-[var(--space-3)]">
     {#each data as row (keyExtractor(row))}
-      <div class="bg-[var(--color-surface)] border border-[var(--color-border)] p-[var(--space-4)] flex flex-col gap-[var(--space-2)]">
+      <div class="card-panel p-[var(--space-4)] flex flex-col gap-[var(--space-2)]">
         {#each columns as column}
           <div class="flex justify-between gap-[var(--space-2)]">
             <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>

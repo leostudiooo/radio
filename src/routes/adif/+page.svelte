@@ -8,8 +8,9 @@
   import { parseADIF, exportADIF } from '$lib/logic/adif';
   import { bulkCreateQSOs, getQSOs } from '$lib/logic/data/qso';
   import { BANDS, MODES } from '$lib/logic/types/qso';
-  import type { QSOInsert, QSO, QSOFilter } from '$lib/logic/types/qso';
+  import type { QSOInsert, QSO } from '$lib/logic/types/qso';
   import type { Column } from '$lib/ui/components/DataTable';
+  import { buildQSOFilter } from '$lib/ui/utils/filters';
 
   import PageHeader from '$lib/ui/components/PageHeader.svelte';
   import DataTable from '$lib/ui/components/DataTable.svelte';
@@ -29,11 +30,7 @@
   const t = $derived(localeStore.translation);
 
   $effect(() => {
-    if (!authStore.isAdmin) {
-      goto('/');
-      toastStore.error(t.auth.adminOnly);
-      return;
-    }
+    requireAdmin(authStore, goto, toastStore, t.auth.adminOnly);
   });
 
   type ImportStep = 'upload' | 'preview' | 'result';
@@ -119,22 +116,12 @@
     importErrors = 0;
   }
 
-  function buildExportFilter(): QSOFilter {
-    const f: QSOFilter = {};
-    if (filterCallsign.trim()) f.callsign = filterCallsign.trim();
-    if (filterBand) f.band = filterBand;
-    if (filterMode) f.mode = filterMode;
-    if (filterDateFrom) f.dateFrom = filterDateFrom;
-    if (filterDateTo) f.dateTo = filterDateTo;
-    return f;
-  }
-
   async function handleExport() {
     exporting = true;
     try {
       const result = await getQSOs(
         supabase,
-        buildExportFilter(),
+        buildQSOFilter({ callsign: filterCallsign, band: filterBand, mode: filterMode, dateFrom: filterDateFrom, dateTo: filterDateTo }),
         { field: 'time_on', direction: 'desc' },
         1,
         10000,
@@ -253,12 +240,12 @@
       </p>
 
       <div class="flex gap-4">
-        <div class="flex flex-col gap-1 px-4 py-3 border border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div class="flex flex-col gap-1 px-4 py-3 card-panel">
           <span class="text-[var(--text-title)] font-semibold text-[var(--color-text-primary)]">{importSuccess}</span>
           <span class="text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.adif.importedLabel}</span>
         </div>
         {#if importErrors > 0}
-          <div class="flex flex-col gap-1 px-4 py-3 border border-[var(--color-border)] bg-[var(--color-surface)]">
+          <div class="flex flex-col gap-1 px-4 py-3 card-panel">
             <span class="text-[var(--text-title)] font-semibold text-[var(--color-status-invalid)]">{importErrors}</span>
             <span class="text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.adif.errorsLabel}</span>
           </div>
@@ -310,8 +297,4 @@
     </Button>
   </div>
 {/if}
-{:else}
-  <div class="flex justify-center py-12">
-    <LoadingSpinner size="lg" />
-  </div>
 {/if}
