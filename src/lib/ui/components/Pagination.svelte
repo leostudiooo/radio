@@ -65,6 +65,7 @@
         <button
           type="button"
           onclick={() => goToPage(page)}
+          aria-current={page === currentPage ? 'page' : undefined}
           class="min-w-[28px] h-[28px] px-1.5 text-[var(--text-body)] font-[var(--font-mono)] transition-colors duration-100 {page === currentPage ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'}"
         >
           {page}

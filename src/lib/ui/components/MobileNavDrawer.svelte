@@ -26,6 +26,7 @@
   }
 
   let { open, onclose, publicNavItems, adminNavItems, isActive, handleNavClick }: Props = $props();
+  let drawerRef: HTMLElement;
 
   function switchLocale(value: string) {
     localeStore.setLocale(value as 'en' | 'zh');
@@ -35,15 +36,38 @@
     onclose();
   }
 
+  function getFocusable(): HTMLElement[] {
+    if (!drawerRef) return [];
+    return [...drawerRef.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])')] as HTMLElement[];
+  }
+
   function onKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       onclose();
+      return;
+    }
+    if (e.key === 'Tab') {
+      const focusable = getFocusable();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   }
 
   $effect(() => {
     if (open) {
       document.addEventListener('keydown', onKeydown);
+      const focusable = getFocusable();
+      if (focusable.length > 0) {
+        setTimeout(() => focusable[0].focus(), 0);
+      }
     } else {
       document.removeEventListener('keydown', onKeydown);
     }
@@ -58,7 +82,7 @@
     aria-label={localeStore.translation.common.closeNav}
     onclick={onBackdropClick}
   ></button>
-  <aside class="fixed left-0 top-14 bottom-0 w-[240px] bg-[var(--color-surface)] border-r border-[var(--color-border)] z-50 lg:hidden flex flex-col">
+  <aside bind:this={drawerRef} class="fixed left-0 top-14 bottom-0 w-[240px] bg-[var(--color-surface)] border-r border-[var(--color-border)] z-50 lg:hidden flex flex-col">
     <div class="flex-1 py-4">
       {#each publicNavItems as item}
         {@const Icon = item.icon}

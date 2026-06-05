@@ -27,6 +27,13 @@
   const resolvedConfirmLabel = $derived(confirmLabel ?? localeStore.translation.common.confirm);
   const resolvedCancelLabel = $derived(cancelLabel ?? localeStore.translation.common.cancel);
 
+  let panelRef: HTMLElement;
+
+  function getFocusable(): HTMLElement[] {
+    if (!panelRef) return [];
+    return [...panelRef.querySelectorAll('button, [tabindex]:not([tabindex="-1"])')] as HTMLElement[];
+  }
+
   function handleConfirm() {
     open = false;
     onconfirm?.();
@@ -40,8 +47,31 @@
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       handleCancel();
+      return;
+    }
+    if (e.key === 'Tab') {
+      const focusable = getFocusable();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   }
+
+  $effect(() => {
+    if (open) {
+      const focusable = getFocusable();
+      if (focusable.length > 0) {
+        setTimeout(() => focusable[0].focus(), 0);
+      }
+    }
+  });
 </script>
 
 {#if open}
@@ -59,7 +89,7 @@
       aria-label={localeStore.translation.common.closeDialog}
       onclick={handleCancel}
     ></button>
-    <div class="relative w-full max-w-[480px] card-panel p-[var(--space-6)] mx-[var(--space-4)]">
+    <div bind:this={panelRef} class="relative w-full max-w-[480px] card-panel p-[var(--space-6)] mx-[var(--space-4)]">
       <h2 id="confirm-title" class="text-[var(--text-subtitle)] font-semibold text-[var(--color-text-primary)] border-b border-[var(--color-border)] pb-[var(--space-3)] mb-[var(--space-4)]">
         {title}
       </h2>
