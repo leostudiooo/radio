@@ -4,7 +4,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { toastStore } from '$lib/ui/stores/toast.svelte';
-  import { getEquipment, deleteEquipment } from '$lib/logic/data/equipment';
+  import { getEquipment, deleteEquipment, toggleEquipmentActive } from '$lib/logic/data/equipment';
   import type { Equipment } from '$lib/logic/types/equipment';
   import type { Column } from '$lib/ui/components/DataTable';
 
@@ -30,12 +30,8 @@
     { key: 'name', header: t.equipment.name, sortable: true },
     { key: 'type', header: t.equipment.type, sortable: true },
     { key: 'manufacturer', header: t.equipment.manufacturer },
-    { key: 'model', header: t.equipment.model, badge: true },
-    {
-      key: 'is_active',
-      header: t.equipment.active,
-      format: (v: unknown) => (v ? '\u25CF' : '\u25CB'),
-    },
+    { key: 'model', header: t.equipment.model },
+    { key: 'is_active', header: t.equipment.active },
   ]);
 
   async function loadData() {
@@ -64,6 +60,16 @@
       toastStore.error(t.equipment.saveFailed);
     } finally {
       deleteTarget = null;
+    }
+  }
+
+  async function handleToggleActive(item: Equipment) {
+    if (!item.id) return;
+    try {
+      const updated = await toggleEquipmentActive(supabase, item.id);
+      data = data.map((d) => (d.id === updated.id ? updated : d));
+    } catch {
+      toastStore.error(t.equipment.saveFailed);
     }
   }
 </script>
@@ -100,6 +106,28 @@
     keyExtractor={(row) => row.id as string}
     emptyMessage={t.equipment.noEquipment}
   >
+    {#snippet cell_is_active(row)}
+      {#if authStore.isAdmin}
+        <button
+          type="button"
+          class="cursor-pointer font-[var(--font-mono)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+          onclick={() => handleToggleActive(row as unknown as Equipment)}
+          aria-label={row.is_active ? t.equipment.deactivate : t.equipment.activate}
+        >
+          {#if row.is_active}
+            <span class="font-[var(--font-mono)] text-[var(--color-accent)]">[x]</span>
+          {:else}
+            <span class="font-[var(--font-mono)]">[ ]</span>
+          {/if}
+        </button>
+      {:else}
+        {#if row.is_active}
+          <span class="font-[var(--font-mono)] text-[var(--color-accent)]">[x]</span>
+        {:else}
+          <span class="font-[var(--font-mono)]">[ ]</span>
+        {/if}
+      {/if}
+    {/snippet}
     {#snippet actions(row)}
       {#if authStore.isAdmin}
         <div class="flex items-center justify-end gap-[var(--space-1)]">
