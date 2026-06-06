@@ -4,10 +4,15 @@ import {
 	getCurrentUser,
 	getProfile,
 	getSession,
+	isPasskeySupported,
+	listPasskeys,
 	onAuthStateChange,
+	registerPasskey,
 	signInWithMagicLink,
 	signInWithPasskey,
 	signOut,
+	updatePasskey,
+	deletePasskey,
 	updateProfile
 } from './index';
 import type { Profile } from '$lib/logic/types/auth';
@@ -63,7 +68,7 @@ function createProfilesQuery<T>(result: QueryResult<T>) {
 	return query;
 }
 
-	describe('auth logic helpers', () => {
+describe('auth logic helpers', () => {
 	it('signs in with Passkey when the injected client supports it', async () => {
 		const originalPublicKeyCredential = (globalThis as any).PublicKeyCredential;
 		(globalThis as any).PublicKeyCredential = class {};
@@ -232,5 +237,116 @@ function createProfilesQuery<T>(result: QueryResult<T>) {
 		const supabase = createSupabase({ from: vi.fn(() => query) } as unknown as SupabaseClient);
 
 		await expect(updateProfile(supabase, 'user-1', { callsign: 'N0CALL' })).rejects.toThrow(error);
+	});
+
+	it('detects passkey support when PublicKeyCredential exists', () => {
+		const original = (globalThis as any).PublicKeyCredential;
+		(globalThis as any).PublicKeyCredential = class {};
+		expect(isPasskeySupported()).toBe(true);
+		(globalThis as any).PublicKeyCredential = original;
+	});
+
+	it('detects no passkey support when PublicKeyCredential is missing', () => {
+		const original = (globalThis as any).PublicKeyCredential;
+		(globalThis as any).PublicKeyCredential = undefined;
+		expect(isPasskeySupported()).toBe(false);
+		(globalThis as any).PublicKeyCredential = original;
+	});
+
+	it('registers a passkey successfully', async () => {
+		const session = createSession();
+		const registerPasskeyMock = vi.fn(async () => ({
+			data: { session, user: session.user },
+			error: null
+		}));
+		const supabase = createSupabase({
+			auth: { registerPasskey: registerPasskeyMock }
+		} as unknown as SupabaseClient);
+
+		await expect(registerPasskey(supabase)).resolves.toEqual({
+			success: true,
+			session,
+			user: session.user
+		});
+		expect(registerPasskeyMock).toHaveBeenCalledOnce();
+	});
+
+	it('returns error when passkey registration fails', async () => {
+		const registerPasskeyMock = vi.fn(async () => ({
+			data: null,
+			error: { message: 'Too many passkeys', code: 'too_many_passkeys' }
+		}));
+		const supabase = createSupabase({
+			auth: { registerPasskey: registerPasskeyMock }
+		} as unknown as SupabaseClient);
+
+		await expect(registerPasskey(supabase)).resolves.toEqual({
+			success: false,
+			error: 'Too many passkeys',
+			errorCode: 'too_many_passkeys'
+		});
+	});
+
+	it('lists passkeys successfully', async () => {
+		const passkeyList = [
+			{ id: 'pk-1', name: 'My Passkey', created_at: '2026-01-01T00:00:00Z', last_used_at: null }
+		];
+		const listMock = vi.fn(async () => ({ data: passkeyList, error: null }));
+		const supabase = createSupabase({
+			auth: { passkey: { list: listMock } }
+		} as unknown as SupabaseClient);
+
+		await expect(listPasskeys(supabase)).resolves.toEqual(passkeyList);
+		expect(listMock).toHaveBeenCalledOnce();
+	});
+
+	it('throws when listing passkeys fails', async () => {
+		const error = new Error('Network error');
+		const listMock = vi.fn(async () => ({ data: null, error }));
+		const supabase = createSupabase({
+			auth: { passkey: { list: listMock } }
+		} as unknown as SupabaseClient);
+
+		await expect(listPasskeys(supabase)).rejects.toThrow(error);
+	});
+
+	it('updates a passkey name', async () => {
+		const updateMock = vi.fn(async () => ({ data: null, error: null }));
+		const supabase = createSupabase({
+			auth: { passkey: { update: updateMock } }
+		} as unknown as SupabaseClient);
+
+		await expect(updatePasskey(supabase, 'pk-1', 'New Name')).resolves.toBeUndefined();
+		expect(updateMock).toHaveBeenCalledWith({ id: 'pk-1', name: 'New Name' });
+	});
+
+	it('throws when updating a passkey fails', async () => {
+		const error = new Error('Update failed');
+		const updateMock = vi.fn(async () => ({ data: null, error }));
+		const supabase = createSupabase({
+			auth: { passkey: { update: updateMock } }
+		} as unknown as SupabaseClient);
+
+		await expect(updatePasskey(supabase, 'pk-1', 'New Name')).rejects.toThrow(error);
+	});
+
+	it('deletes a passkey', async () => {
+		const deleteMock = vi.fn(async () => ({ data: null, error: null }));
+		const supabase = createSupabase({
+			auth: { passkey: { delete: deleteMock } }
+		} as unknown as SupabaseClient);
+
+		await expect(deletePasskey(supabase, 'pk-1')).resolves.toBeUndefined();
+		expect(deleteMock).toHaveBeenCalledWith({ id: 'pk-1' });
+	});
+
+	it('throws when deleting a passkey fails', async () => {
+		const error = new Error('Delete failed');
+		const deleteMock = vi.fn(async () => ({ data: null, error }));
+		const supabase = createSupabase({
+			auth: { passkey: { delete: deleteMock } }
+		} as unknown as SupabaseClient);
+
+		await expect(deletePasskey(supabase, 'pk-1')).rejects.toThrow(error);
 	});
 });
