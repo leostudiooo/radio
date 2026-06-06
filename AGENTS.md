@@ -108,6 +108,164 @@ supabase db push      # Apply pending migrations
 supabase db diff      # Generate migration from schema changes
 ```
 
+## DESIGN SYSTEM RULES (Locked)
+
+> Extracted from typography-redesign, design-consolidation, and frontend-restructure plans. These are enforced design rules, not suggestions.
+
+### Typography
+- **All text ≥ 1em**. Pure em system, zero px for font-size. No `text-xs`, `text-sm`, `text-[10px]`, `text-[11px]`, `text-[13px]`.
+- **Exception**: `--text-aux: 0.875em` for auxiliary metadata only (char counters, total counts, timestamps). Must use em or semantic variable, never px.
+- **Hierarchy**: via em sizes (`--text-body: 1em`, `--text-subtitle: 1.125em`, `--text-title: 1.5em`) + color (`text-primary` / `text-secondary` / `text-muted`), NOT font variants.
+- **Labels/headers that were previously smaller**: use `text-[var(--text-body)]` + `text-[var(--color-text-muted)]` + `uppercase tracking-[0.05em]` to preserve optical hierarchy.
+- **Explanatory text / placeholders**: use `text-muted`, never shrink font size.
+- **Old tokens deleted**: `--text-hero`, `--text-stat`, `--text-caption`, `--text-label`, `--text-display`, `--text-heading` — all removed. Use the 4-token system: `body`, `aux`, `subtitle`, `title`.
+
+### Container Sizing
+- Line-height-sensitive → use `--line-height-normal: 1.5` or `--line-height-tight: 1.25`.
+- Non-line-height → text + padding, no fixed px heights (`h-[32px]` etc).
+- **Forbidden**: Fixed px container heights + em font sizes mixed.
+
+### Color Rules (3-tier)
+1. Already named → use token directly (`var(--color-base)`)
+2. Obviously derived → use Tailwind derivation (opacity modifiers)
+3. Genuinely new → define named token in `@theme` with semantic name
+- **NO inline raw oklch/hex** in `.svelte` files. Every color has a name or clear derivation.
+
+### Accent Color Usage
+- **Decoration / border / line** → OK
+- **Fill background** → OK **only if** foreground uses `--color-text-on-accent` (fixed dark, theme-independent)
+- **Text color** → AVOID (too bright for readability). Exception: `FormToggle` `[x]/[ ]` and `CollapsibleSection` `[+]/[-]` accent text.
+- **Brand "BA4VUN"** → `bg-[var(--color-accent)] text-[var(--color-text-on-accent)]` badge, NOT text-accent.
+
+### Border Radius
+- Use `--radius-sm` (0.25rem), `--radius-md` (0.5rem), `--radius-lg` (0.75rem) tokens.
+- `rounded-full` only for `SegmentedToggle` (pill pattern).
+
+### Table Grid Lines
+- Horizontal lines only (already compliant).
+
+### Tab Navigation
+- Active tab uses **bottom border deco line** (`border-b-2 border-[var(--color-accent)]`), NOT background fill.
+- `SegmentedToggle` keeps pill pattern (separate concern from tab nav).
+
+---
+
+## NAMING CONVENTIONS (Canonical)
+
+| Layer | Convention | Examples |
+|---|---|---|
+| DB / SQL | snake_case | `qso_date`, `time_on`, `is_eyeball`, `profile_id` |
+| TypeScript types | PascalCase | `QSO`, `QSOInsert`, `ValidationResult` |
+| TS variables/functions | camelCase | `validateQSO`, `isValidTime`, `timeOn` |
+| TS constants | UPPER_SNAKE_CASE | `BANDS`, `MODES`, `PHONE_MODES` |
+| i18n namespace keys | camelCase | `qsoDate`, `timeOn`, `rstSent`, `gridSquare` |
+| Validation field names | camelCase (aligned with i18n) | `timeOn`, `rstSent`, `rstRcvd`, `gridSquare` — NOT `time_on` |
+| Component files | PascalCase | `FormDate.svelte`, `ValidationErrors.svelte` |
+| Route pages | SvelteKit convention | `+page.svelte` |
+| CSS variables | kebab-case with tier prefix | `--color-text-primary`, `--text-body`, `--radius-sm` |
+
+> Key lesson: Validation field names must be camelCase to match i18n keys. Previously `time_on`, `rst_sent` etc were snake_case (copied from DB columns), causing validation errors to display raw codes instead of translated messages.
+
+---
+
+## AUTH & GUARD PATTERNS
+
+### Auth Store (`src/lib/ui/stores/auth.svelte.ts`)
+- Uses `loading = $state(true)` initial state. Auth-dependent UI checks `!authStore.loading` before rendering.
+- Auto-initializes at module level (`if (typeof window !== 'undefined')`), no manual `init()` call needed.
+- `isAdmin` derived from `profile?.role === 'admin'`.
+- `onAuthStateChange` callback **awaits** `refreshProfile()` before setting states — prevents race conditions.
+- Idempotent `listenerRegistered` flag prevents duplicate listeners during HMR.
+
+### Route Guards
+- **Pure guard functions** in `src/lib/ui/stores/guards.svelte.ts`: `useAdminRoute(authStore)` returns `'loading' | 'admin' | 'not-admin' | 'not-authenticated'`. Zero side effects.
+- **`AdminGuard.svelte`** wrapper component: renders spinner during loading, content for admin, redirect + toast for non-admin.
+- Protected pages: `/qso/new`, `/qso/[id]/edit`, `/equipment/new`, `/equipment/[id]`, `/adif`.
+- Public read pages: `/qso` (list), `/equipment` (list), `/qsl` — show data but hide write buttons for non-admin.
+- **No 50ms setTimeout hacks** — auth loading state handles transition naturally.
+
+### Auth Anti-patterns
+- **NEVER** use `$effect(() => { requireAdmin(...) })` without checking `loading` — fires before auth resolves, causing instant redirect.
+- **NEVER** use `goto()` inside `$effect` without guard — `goto` doesn't immediately destroy components, causing cascade errors (`effect_update_depth_exceeded`).
+
+---
+
+## DATETIME HANDLING
+
+### Schema (post-refactor)
+- `time_on TIMESTAMPTZ NOT NULL` + `time_off TIMESTAMPTZ` — single timestamp columns, no separate date/time.
+- **Old `qso_date` column removed**. All time references use `time_on`.
+- UNIQUE constraint: `(profile_id, callsign, time_on, band)`.
+
+### UI ↔ DB Convention
+- **DB always stores UTC**. Display can toggle UTC/local via `settingsStore.useLocalTime`.
+- **Form UX**: Keep separate `<FormDate>` + `<FormTime>` inputs. Combine into ISO timestamp on submit (`YYYY-MM-DDTHH:MM:SSZ`).
+- **Split for display**: Extract date/time parts from ISO timestamp for table columns.
+- **`<input type="time">` returns `HH:MM`** — must append `:00` before validation/composition.
+
+### ADIF ↔ DB
+- **Import**: `QSO_DATE` + `TIME_ON` → combine into `time_on TIMESTAMPTZ`. `QSO_DATE_OFF` + `TIME_OFF` → `time_off`. Missing `QSO_DATE_OFF` defaults to `QSO_DATE`.
+- **Export**: `time_on` → split into `QSO_DATE` + `TIME_ON`. `time_off` → `QSO_DATE_OFF` + `TIME_OFF`.
+- Use `date-fns` for UTC-safe operations (not browser `new Date()` which is locale-dependent).
+
+### Date Filtering
+- `dateFrom` → `time_on >= 'YYYY-MM-DDT00:00:00Z'`
+- `dateTo` → `time_on < '(dateTo+1)T00:00:00Z'` (exclusive upper bound)
+
+---
+
+## RST VALIDATION
+
+- Phone modes: `/^[1-5][1-9](?:[1-9])?(?:\+\d{0,3})?$/` — supports `59`, `59+`, `59+10`.
+- CW/digital: `/^[1-5][1-9][1-9](?:\+\d{0,3})?$/` — supports `599`, `599+`, `599+15`.
+- The `+` modifier is common in real-world RST values (e.g. `59+` stored in DB).
+
+---
+
+## SUPABASE PATTERNS
+
+### RLS Policies
+- **Public read**: `SELECT TO anon, authenticated USING (true)` on `qsos`, `equipment`, `qsl_cards`.
+- **Admin write**: `INSERT/UPDATE/DELETE TO authenticated` with `(select auth.uid()) = profile_id`.
+- **Per-operation** policies (not `FOR ALL`) — better plan caching with `(select auth.uid())`.
+- **Profiles**: auth-only, no public SELECT.
+- **`qsl_cards`** has no `profile_id` — uses subquery to `qsos.profile_id` for RLS.
+- First admin: `handle_new_user` trigger with `pg_advisory_xact_lock(1)` to prevent race condition.
+- Anti-demotion: trigger prevents last admin from demoting themselves.
+
+### Supabase Client
+- Singleton in `src/lib/supabase.ts` with `experimental: { passkey: true }`.
+- **Logic layer NEVER imports this** — takes SupabaseClient as first param (dependency injection).
+- UI layer passes it: `createQSO(supabase, data)`.
+
+### Type Generation
+- `database.ts` is auto-generated by `pnpm gen-types` (gitignored).
+- After any migration: `supabase db push` → `pnpm gen-types` → update domain types.
+
+### Error Handling (Known Gap)
+- `updateQSO()` uses `.single()` — throws PostgREST 406 when 0 rows match (RLS denial).
+- **TODO**: Surface real error in catch blocks, consider `.maybeSingle()` + null check, client-side ownership guard.
+
+---
+
+## i18n PATTERNS
+
+- `typesafe-i18n` with domain-split files: `common.ts`, `qso.ts`, `auth.ts`, `adif.ts`, `equipment.ts`, `nav.ts`, `qsl.ts` under `src/lib/i18n/{en,zh}/`.
+- **Type definitions** in `src/lib/i18n/i18n-types.ts` — add key to types FIRST, then en/zh.
+- **Parameterized strings**: use `.replace('{param}', value)` pattern (NOT template functions).
+- **aria-labels**: All use i18n keys via expressions (`aria-label={t.qso.viewQso}`), never hardcoded English.
+- **Parallel task conflict**: When multiple tasks edit i18n files simultaneously, re-read before editing. Deduplicate keys after parallel edits (JS silently resolves duplicate keys with last-wins).
+
+---
+
+## PLAYWRIGHT / QA
+
+- Use **local Chrome** (`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`) instead of downloading Chromium — avoids network issues and version desync.
+- Project does NOT have Playwright in `package.json` — it's a global tool.
+- `color-scheme: dark` in CSS is required for native browser form controls to render dark-themed icons (date/time pickers, scrollbars).
+
+---
+
 ## NOTES
 
 - No CI/CD pipeline exists. No `.github/workflows/`.
@@ -117,3 +275,5 @@ supabase db diff      # Generate migration from schema changes
 - `src/lib/vitest-examples/` is empty scaffolding from `npx sv create` — safe to delete.
 - `qsl-card/` directory is gitignored design assets.
 - Database: PostgreSQL 17 via Supabase, UUID PKs, snake_case columns, RLS on all tables.
+- Empty `catch {}` in `handleLogout` is intentional (best-effort signout).
+- Station homepage (`/`) design is **POSTPONED** — user has detailed design not yet documented.
