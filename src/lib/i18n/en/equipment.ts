@@ -9,6 +9,8 @@ const equipment = {
   serialNumber: 'Serial number',
   description: 'Description',
   active: 'Active',
+  activate: 'Activate',
+  deactivate: 'Deactivate',
   noEquipment: 'No equipment yet',
   addFirst: 'Add your first equipment',
   equipmentSaved: 'Equipment saved',

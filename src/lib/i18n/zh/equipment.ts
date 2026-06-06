@@ -9,6 +9,8 @@ const equipment = {
   serialNumber: '序列号',
   description: '描述',
   active: '启用',
+  activate: '启用',
+  deactivate: '停用',
   noEquipment: '还没有设备',
   addFirst: '添加第一个设备',
   equipmentSaved: '设备已保存',
