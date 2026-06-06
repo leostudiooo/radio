@@ -26,3 +26,4 @@ export { default as EquipmentCard } from './EquipmentCard.svelte';
 export { default as AppHeader } from './AppHeader.svelte';
 export { default as MobileNavDrawer } from './MobileNavDrawer.svelte';
 export { default as QSODetail } from './QSODetail.svelte';
+export { default as Terminal } from './Terminal.svelte';

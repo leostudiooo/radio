@@ -6,15 +6,17 @@ import qso from './qso';
 import adif from './adif';
 import equipment from './equipment';
 import qsl from './qsl';
+import terminal from './terminal';
 
 const zh: Translation = {
-  common,
-  nav,
-  auth,
-  qso,
-  adif,
-  equipment,
-  qsl,
+	common,
+	nav,
+	auth,
+	qso,
+	adif,
+	equipment,
+	qsl,
+	terminal
 };
 
 export default zh;
