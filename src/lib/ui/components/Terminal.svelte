@@ -207,7 +207,7 @@
 {#snippet terminalCursor()}
 	<span class="relative inline-block h-0 w-0 align-baseline" aria-hidden="true">
 		<span
-			class="animate-blink absolute top-[-0.95em] left-0 inline-block h-[1.2em] w-[0.6em] bg-[var(--color-text-primary)]"
+			class="animate-blink absolute bottom-[-0.12em] left-0 inline-block h-[1.2em] w-[0.6em] bg-[var(--color-text-primary)]"
 			data-testid="terminal-cursor"
 		></span>
 	</span>
