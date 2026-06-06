@@ -1,5 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { PaginatedResult, QSO, QSOFilter, QSOInsert, QSOSort, QSOStats, QSOUpdate } from '$lib/logic/types/qso';
+import type {
+	PaginatedResult,
+	QSO,
+	QSOFilter,
+	QSOInsert,
+	QSOSort,
+	QSOStats,
+	QSOUpdate
+} from '$lib/logic/types/qso';
 import { validateQSO } from '$lib/logic/validation';
 
 const QSO_COLUMNS =
@@ -109,7 +117,11 @@ export async function getQSOs(
 }
 
 export async function getQSOById(supabase: SupabaseClient, id: string): Promise<QSO | null> {
-	const { data, error } = await supabase.from('qsos').select(QSO_COLUMNS).eq('id', id).maybeSingle();
+	const { data, error } = await supabase
+		.from('qsos')
+		.select(QSO_COLUMNS)
+		.eq('id', id)
+		.maybeSingle();
 
 	if (error) {
 		throw error;

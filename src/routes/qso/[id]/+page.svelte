@@ -1,75 +1,75 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { supabase } from '$lib/supabase';
-  import { authStore } from '$lib/ui/stores/auth.svelte';
-  import { localeStore } from '$lib/ui/stores/locale.svelte';
-  import { getQSOById } from '$lib/logic/data/qso';
-  import type { QSO } from '$lib/logic/types/qso';
-  import { formatDate, formatTime } from '$lib/ui/utils/format';
-  import PageHeader from '$lib/ui/components/PageHeader.svelte';
-  import QSODetail from '$lib/ui/components/QSODetail.svelte';
-  import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import EmptyState from '$lib/ui/components/EmptyState.svelte';
+	import { page } from '$app/stores';
+	import { supabase } from '$lib/supabase';
+	import { authStore } from '$lib/ui/stores/auth.svelte';
+	import { localeStore } from '$lib/ui/stores/locale.svelte';
+	import { getQSOById } from '$lib/logic/data/qso';
+	import type { QSO } from '$lib/logic/types/qso';
+	import { formatDate, formatTime } from '$lib/ui/utils/format';
+	import PageHeader from '$lib/ui/components/PageHeader.svelte';
+	import QSODetail from '$lib/ui/components/QSODetail.svelte';
+	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
+	import EmptyState from '$lib/ui/components/EmptyState.svelte';
 
-  const id = $derived($page.params.id!);
-  const t = $derived(localeStore.translation);
+	const id = $derived($page.params.id!);
+	const t = $derived(localeStore.translation);
 
-  let qso: QSO | null = $state(null);
-  let loading = $state(true);
-  let notFound = $state(false);
+	let qso: QSO | null = $state(null);
+	let loading = $state(true);
+	let notFound = $state(false);
 
-  async function loadQSO() {
-    loading = true;
-    notFound = false;
-    try {
-      const result = await getQSOById(supabase, id);
-      if (result) {
-        qso = result;
-      } else {
-        notFound = true;
-      }
-    } catch {
-      notFound = true;
-    } finally {
-      loading = false;
-    }
-  }
+	async function loadQSO() {
+		loading = true;
+		notFound = false;
+		try {
+			const result = await getQSOById(supabase, id);
+			if (result) {
+				qso = result;
+			} else {
+				notFound = true;
+			}
+		} catch {
+			notFound = true;
+		} finally {
+			loading = false;
+		}
+	}
 
-  $effect(() => {
-    if (id) loadQSO();
-  });
+	$effect(() => {
+		if (id) loadQSO();
+	});
 
-  let subtitle: string = $derived.by(() => {
-    if (!qso) return '';
-    const parts: string[] = [];
-    const d = formatDate(qso.time_on);
-    const t = formatTime(qso.time_on);
-    if (d || t) parts.push([d, t].filter(Boolean).join(' '));
-    if (qso.band) parts.push(qso.band);
-    if (qso.mode) parts.push(qso.mode);
-    return parts.join(' \u00B7 ');
-  });
+	let subtitle: string = $derived.by(() => {
+		if (!qso) return '';
+		const parts: string[] = [];
+		const d = formatDate(qso.time_on);
+		const t = formatTime(qso.time_on);
+		if (d || t) parts.push([d, t].filter(Boolean).join(' '));
+		if (qso.band) parts.push(qso.band);
+		if (qso.mode) parts.push(qso.mode);
+		return parts.join(' \u00B7 ');
+	});
 </script>
 
 {#if loading}
-  <div class="flex justify-center py-[var(--space-12)]">
-    <LoadingSpinner size="lg" />
-  </div>
+	<div class="flex justify-center py-[var(--space-12)]">
+		<LoadingSpinner size="lg" />
+	</div>
 {:else if notFound}
-  <EmptyState message={t.qso.notFound} />
+	<EmptyState message={t.qso.notFound} />
 {:else if qso}
-  <PageHeader title={qso.callsign} {subtitle}>
-    {#snippet action()}
-      {#if authStore.isAdmin}
-        <a
-          href="/qso/{id}/edit"
-          style="color: var(--color-text-on-accent)"
-          class="inline-flex items-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-body)] font-medium bg-[var(--color-accent)] hover:opacity-90 transition-opacity"
-        >
-          {t.common.edit}
-        </a>
-      {/if}
-    {/snippet}
-  </PageHeader>
-  <QSODetail {qso} isAdmin={authStore.isAdmin} />
+	<PageHeader title={qso.callsign} {subtitle}>
+		{#snippet action()}
+			{#if authStore.isAdmin}
+				<a
+					href="/qso/{id}/edit"
+					style="color: var(--color-text-on-accent)"
+					class="inline-flex items-center gap-[var(--space-2)] bg-[var(--color-accent)] px-[var(--space-4)] py-[var(--space-2)] font-medium text-[var(--text-body)] transition-opacity hover:opacity-90"
+				>
+					{t.common.edit}
+				</a>
+			{/if}
+		{/snippet}
+	</PageHeader>
+	<QSODetail {qso} isAdmin={authStore.isAdmin} />
 {/if}

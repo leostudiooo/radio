@@ -114,7 +114,10 @@ describe('auth logic helpers', () => {
 			session: undefined,
 			user: undefined
 		});
-		expect(signInWithOtp).toHaveBeenCalledWith({ email: 'ham@example.com', options: { shouldCreateUser: false } });
+		expect(signInWithOtp).toHaveBeenCalledWith({
+			email: 'ham@example.com',
+			options: { shouldCreateUser: false }
+		});
 	});
 
 	it('returns magic-link errors', async () => {
@@ -133,7 +136,9 @@ describe('auth logic helpers', () => {
 
 	it('signs out through Supabase auth', async () => {
 		const signOutMock = vi.fn(async () => ({ error: null }));
-		const supabase = createSupabase({ auth: { signOut: signOutMock } } as unknown as SupabaseClient);
+		const supabase = createSupabase({
+			auth: { signOut: signOutMock }
+		} as unknown as SupabaseClient);
 
 		await expect(signOut(supabase)).resolves.toBeUndefined();
 		expect(signOutMock).toHaveBeenCalledOnce();
@@ -159,7 +164,9 @@ describe('auth logic helpers', () => {
 
 	it('returns null when session lookup fails', async () => {
 		const supabase = createSupabase({
-			auth: { getSession: vi.fn(async () => ({ data: { session: null }, error: new Error('No session') })) }
+			auth: {
+				getSession: vi.fn(async () => ({ data: { session: null }, error: new Error('No session') }))
+			}
 		} as unknown as SupabaseClient);
 
 		await expect(getSession(supabase)).resolves.toBeNull();
@@ -169,11 +176,13 @@ describe('auth logic helpers', () => {
 		const session = createSession();
 		const subscription = { id: 'subscription-1', unsubscribe: vi.fn() };
 		const callback = vi.fn();
-		const onAuthStateChangeMock = vi.fn((handler: (_event: string, session: Session | null) => void) => {
-			handler('SIGNED_IN', session);
+		const onAuthStateChangeMock = vi.fn(
+			(handler: (_event: string, session: Session | null) => void) => {
+				handler('SIGNED_IN', session);
 
-			return { data: { subscription } };
-		});
+				return { data: { subscription } };
+			}
+		);
 		const supabase = createSupabase({
 			auth: { onAuthStateChange: onAuthStateChangeMock }
 		} as unknown as SupabaseClient);
@@ -185,7 +194,9 @@ describe('auth logic helpers', () => {
 	it('gets the current user from the session', async () => {
 		const user = createUser();
 		const supabase = createSupabase({
-			auth: { getSession: vi.fn(async () => ({ data: { session: createSession(user) }, error: null })) }
+			auth: {
+				getSession: vi.fn(async () => ({ data: { session: createSession(user) }, error: null }))
+			}
 		} as unknown as SupabaseClient);
 
 		await expect(getCurrentUser(supabase)).resolves.toBe(user);

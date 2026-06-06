@@ -1,22 +1,28 @@
 <script lang="ts">
-  import type { Equipment } from '$lib/logic/types/equipment';
-  import { localeStore } from '$lib/ui/stores/locale.svelte';
+	import type { Equipment } from '$lib/logic/types/equipment';
+	import { localeStore } from '$lib/ui/stores/locale.svelte';
 
-  interface Props {
-    equipment: Equipment;
-  }
+	interface Props {
+		equipment: Equipment;
+	}
 
-  let { equipment }: Props = $props();
+	let { equipment }: Props = $props();
 </script>
 
 <div class="card-panel p-[var(--space-3)]">
-  <div class="flex items-center justify-between">
-    <div>
-      <span class="text-[var(--text-body)] font-medium text-[var(--color-text-primary)]">{equipment.name}</span>
-      <span class="text-[var(--text-aux)] text-[var(--color-text-secondary)] ml-[var(--space-2)]">{equipment.type}</span>
-    </div>
-    {#if equipment.is_active}
-      <span class="text-[var(--text-body)] text-[var(--color-success)]">{localeStore.translation.equipment.active}</span>
-    {/if}
-  </div>
+	<div class="flex items-center justify-between">
+		<div>
+			<span class="font-medium text-[var(--color-text-primary)] text-[var(--text-body)]"
+				>{equipment.name}</span
+			>
+			<span class="ml-[var(--space-2)] text-[var(--color-text-secondary)] text-[var(--text-aux)]"
+				>{equipment.type}</span
+			>
+		</div>
+		{#if equipment.is_active}
+			<span class="text-[var(--color-success)] text-[var(--text-body)]"
+				>{localeStore.translation.equipment.active}</span
+			>
+		{/if}
+	</div>
 </div>

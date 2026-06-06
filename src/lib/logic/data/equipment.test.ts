@@ -51,7 +51,8 @@ function createSelectQuery<T>(result: QueryResult<T>) {
 		update: vi.fn(() => query),
 		eq: vi.fn(() => query),
 		single: vi.fn(async () => result),
-		then: ((onfulfilled, onrejected) => Promise.resolve(result).then(onfulfilled, onrejected)) as EquipmentQueryBuilder<T>['then']
+		then: ((onfulfilled, onrejected) =>
+			Promise.resolve(result).then(onfulfilled, onrejected)) as EquipmentQueryBuilder<T>['then']
 	};
 
 	return query as EquipmentQueryBuilder<T>;
@@ -95,12 +96,17 @@ describe('equipment logic helpers', () => {
 		).resolves.toEqual(created);
 
 		await expect(getEquipmentById(supabase, 'eq-1')).resolves.toEqual(created);
-		await expect(updateEquipment(supabase, 'eq-1', { name: 'FT-991A Mk2' })).resolves.toEqual(updated);
+		await expect(updateEquipment(supabase, 'eq-1', { name: 'FT-991A Mk2' })).resolves.toEqual(
+			updated
+		);
 		await expect(deleteEquipment(supabase, 'eq-1')).resolves.toBeUndefined();
 	});
 
 	it('filters active equipment when requested', async () => {
-		const active = [createEquipmentRow(), createEquipmentRow({ id: 'eq-2', name: 'Dipole', type: 'antenna' })];
+		const active = [
+			createEquipmentRow(),
+			createEquipmentRow({ id: 'eq-2', name: 'Dipole', type: 'antenna' })
+		];
 		const query = createSelectQuery({ data: active, error: null });
 		const from = vi.fn(() => query);
 		const supabase = createSupabase({ from } as unknown as SupabaseClient);
@@ -114,10 +120,7 @@ describe('equipment logic helpers', () => {
 		const toggled = createEquipmentRow({ is_active: false });
 		const getQuery = createSelectQuery({ data: current, error: null });
 		const updateQuery = createSelectQuery({ data: toggled, error: null });
-		const from = vi
-			.fn()
-			.mockReturnValueOnce(getQuery)
-			.mockReturnValueOnce(updateQuery);
+		const from = vi.fn().mockReturnValueOnce(getQuery).mockReturnValueOnce(updateQuery);
 		const supabase = createSupabase({ from } as unknown as SupabaseClient);
 
 		await expect(toggleEquipmentActive(supabase, 'eq-1')).resolves.toEqual(toggled);

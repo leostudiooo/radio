@@ -55,7 +55,7 @@ function createQslQuery<TList, TSingle>(options: {
 		Promise.resolve(options.listResult).then(onfulfilled, onrejected)) as QslQuery<
 		TList,
 		TSingle
-	>[ 'then' ];
+	>['then'];
 
 	return query as QslQuery<TList, TSingle>;
 }
@@ -158,7 +158,9 @@ describe('QSL logic helpers', () => {
 		const supabase = createSupabase(from);
 
 		await expect(getQSLCards(supabase, { status: 'pending' })).resolves.toEqual([pendingCard]);
-		expect(pendingQuery.or).toHaveBeenCalledWith('sent_status.eq.pending,received_status.eq.pending');
+		expect(pendingQuery.or).toHaveBeenCalledWith(
+			'sent_status.eq.pending,received_status.eq.pending'
+		);
 
 		await expect(updateQSLCard(supabase, 'qsl-1', { sent_status: 'sent' })).resolves.toEqual(
 			sentCard

@@ -205,7 +205,12 @@ describe('QSO data helpers', () => {
 	it('computes aggregate QSO statistics', async () => {
 		const rows = [
 			createQSORecord({ callsign: 'K1ABC', country: 'United States', grid_square: 'FN31' }),
-			createQSORecord({ id: 'qso-2', callsign: 'K1ABC', country: 'United States', grid_square: 'FN31' }),
+			createQSORecord({
+				id: 'qso-2',
+				callsign: 'K1ABC',
+				country: 'United States',
+				grid_square: 'FN31'
+			}),
 			createQSORecord({ id: 'qso-3', callsign: 'JA1ABC', country: 'Japan', grid_square: 'PM95' })
 		];
 		const query = new QueryMock<Array<Pick<QSO, 'callsign' | 'country' | 'grid_square'>>>({

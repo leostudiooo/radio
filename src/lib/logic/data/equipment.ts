@@ -46,7 +46,9 @@ export async function getEquipment(
 	supabase: SupabaseClient,
 	activeOnly = false
 ): Promise<Equipment[]> {
-	let query = supabase.from('equipment').select(EQUIPMENT_SELECT_COLUMNS) as unknown as EquipmentCollectionQuery;
+	let query = supabase
+		.from('equipment')
+		.select(EQUIPMENT_SELECT_COLUMNS) as unknown as EquipmentCollectionQuery;
 
 	if (activeOnly) {
 		query = query.eq('is_active', true);

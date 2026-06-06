@@ -68,7 +68,11 @@ function booleanFlag(value: string): boolean {
 	return ['1', 'T', 'TRUE', 'Y', 'YES'].includes(value.trim().toUpperCase());
 }
 
-function assignGenericField(qso: MutableQSOInsert, dbField: keyof QSOInsert, rawValue: string): void {
+function assignGenericField(
+	qso: MutableQSOInsert,
+	dbField: keyof QSOInsert,
+	rawValue: string
+): void {
 	if (rawValue.length === 0) {
 		return;
 	}

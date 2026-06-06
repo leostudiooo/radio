@@ -52,7 +52,10 @@ describe('authStore', () => {
 		let deferredResolve: (value: unknown) => void;
 
 		mockGetSession.mockImplementation(
-			() => new Promise((resolve) => { deferredResolve = resolve; })
+			() =>
+				new Promise((resolve) => {
+					deferredResolve = resolve;
+				})
 		);
 		mockGetProfile.mockResolvedValue(null);
 
@@ -73,7 +76,10 @@ describe('authStore', () => {
 		let deferredResolve: (value: unknown) => void;
 
 		mockGetSession.mockImplementation(
-			() => new Promise((resolve) => { deferredResolve = resolve; })
+			() =>
+				new Promise((resolve) => {
+					deferredResolve = resolve;
+				})
 		);
 		mockGetProfile.mockResolvedValue(createMockProfile({ role: 'admin' }));
 
@@ -95,7 +101,10 @@ describe('authStore', () => {
 		let deferredResolve: (value: unknown) => void;
 
 		mockGetSession.mockImplementation(
-			() => new Promise((resolve) => { deferredResolve = resolve; })
+			() =>
+				new Promise((resolve) => {
+					deferredResolve = resolve;
+				})
 		);
 		mockGetProfile.mockResolvedValue(createMockProfile({ role: 'user' }));
 

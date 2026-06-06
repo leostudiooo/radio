@@ -4,19 +4,19 @@ Pure TypeScript business logic — NO Svelte/UI/browser dependencies. Enforced b
 
 ## WHERE TO LOOK
 
-| Task | File | Notes |
-|------|------|-------|
-| Add QSO CRUD operation | `data/qso.ts` | Takes SupabaseClient as first param |
-| Add QSL CRUD operation | `data/qsl.ts` | Same pattern as qso.ts |
-| Add equipment CRUD | `data/equipment.ts` | Same pattern as qso.ts |
-| Add ADIF field mapping | `adif/fields.ts` | `ADIF_TO_DB_MAP` / `DB_TO_ADIF_MAP` |
-| Parse ADIF file | `adif/parser.ts` | Returns QSOInsert[] |
-| Export to ADIF | `adif/exporter.ts` | Takes QSO[], returns string |
-| Add/edit domain type | `types/qso.ts` | Interfaces + const enums (`BANDS`, `MODES`) |
-| Add validation rule | `validation/index.ts` | Callsign, grid, band, RST validators |
-| Auth flow (passkey/magic link) | `auth/index.ts` | Takes SupabaseClient as first param |
-| Callsign lookup | `data/callsign.ts` | Wraps QRZ.com API via Cloudflare Function |
-| Station identity | `data/station.ts` | Station config data |
+| Task                           | File                  | Notes                                       |
+| ------------------------------ | --------------------- | ------------------------------------------- |
+| Add QSO CRUD operation         | `data/qso.ts`         | Takes SupabaseClient as first param         |
+| Add QSL CRUD operation         | `data/qsl.ts`         | Same pattern as qso.ts                      |
+| Add equipment CRUD             | `data/equipment.ts`   | Same pattern as qso.ts                      |
+| Add ADIF field mapping         | `adif/fields.ts`      | `ADIF_TO_DB_MAP` / `DB_TO_ADIF_MAP`         |
+| Parse ADIF file                | `adif/parser.ts`      | Returns QSOInsert[]                         |
+| Export to ADIF                 | `adif/exporter.ts`    | Takes QSO[], returns string                 |
+| Add/edit domain type           | `types/qso.ts`        | Interfaces + const enums (`BANDS`, `MODES`) |
+| Add validation rule            | `validation/index.ts` | Callsign, grid, band, RST validators        |
+| Auth flow (passkey/magic link) | `auth/index.ts`       | Takes SupabaseClient as first param         |
+| Callsign lookup                | `data/callsign.ts`    | Wraps QRZ.com API via Cloudflare Function   |
+| Station identity               | `data/station.ts`     | Station config data                         |
 
 ## CONVENTIONS
 

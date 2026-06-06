@@ -1,118 +1,120 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-base: oklch(0.145 0 0);
-  --color-surface: oklch(0.191 0 0);
-  --color-elevated: oklch(0.218 0 0);
-  --color-overlay: oklch(0.239 0 0);
-  --color-border: oklch(0.285 0 0);
-  --color-border-hover: oklch(0.348 0 0);
-  --color-text-primary: oklch(0.931 0 0);
-  --color-text-secondary: oklch(0.706 0 0);
-  --color-text-muted: oklch(0.510 0 0);
+	--color-base: oklch(0.145 0 0);
+	--color-surface: oklch(0.191 0 0);
+	--color-elevated: oklch(0.218 0 0);
+	--color-overlay: oklch(0.239 0 0);
+	--color-border: oklch(0.285 0 0);
+	--color-border-hover: oklch(0.348 0 0);
+	--color-text-primary: oklch(0.931 0 0);
+	--color-text-secondary: oklch(0.706 0 0);
+	--color-text-muted: oklch(0.51 0 0);
 
-  --color-accent: oklch(0.958 0.207 108);
-  --color-accent-subtle: oklch(0.958 0.207 108 / 0.10);
-  --color-accent-light: oklch(0.958 0.207 108 / 0.15);
-  --color-accent-medium: oklch(0.958 0.207 108 / 0.30);
-  --color-accent-hover: oklch(0.900 0.207 108);
+	--color-accent: oklch(0.958 0.207 108);
+	--color-accent-subtle: oklch(0.958 0.207 108 / 0.1);
+	--color-accent-light: oklch(0.958 0.207 108 / 0.15);
+	--color-accent-medium: oklch(0.958 0.207 108 / 0.3);
+	--color-accent-hover: oklch(0.9 0.207 108);
 
-  --color-status-pending: oklch(0.958 0.207 108);
-  --color-status-pending-bg: oklch(0.958 0.207 108 / 0.15);
-  --color-status-pending-border: oklch(0.958 0.207 108 / 0.30);
+	--color-status-pending: oklch(0.958 0.207 108);
+	--color-status-pending-bg: oklch(0.958 0.207 108 / 0.15);
+	--color-status-pending-border: oklch(0.958 0.207 108 / 0.3);
 
-  --color-status-sent: oklch(0.804 0.146 220);
-  --color-status-sent-bg: oklch(0.804 0.146 220 / 0.15);
-  --color-status-sent-border: oklch(0.804 0.146 220 / 0.30);
+	--color-status-sent: oklch(0.804 0.146 220);
+	--color-status-sent-bg: oklch(0.804 0.146 220 / 0.15);
+	--color-status-sent-border: oklch(0.804 0.146 220 / 0.3);
 
-  --color-status-received: oklch(0.876 0.228 153);
-  --color-status-received-bg: oklch(0.876 0.228 153 / 0.15);
-  --color-status-received-border: oklch(0.876 0.228 153 / 0.30);
+	--color-status-received: oklch(0.876 0.228 153);
+	--color-status-received-bg: oklch(0.876 0.228 153 / 0.15);
+	--color-status-received-border: oklch(0.876 0.228 153 / 0.3);
 
-  --color-status-confirmed: oklch(0.887 0.182 95);
-  --color-status-confirmed-bg: oklch(0.887 0.182 95 / 0.15);
-  --color-status-confirmed-border: oklch(0.887 0.182 95 / 0.30);
+	--color-status-confirmed: oklch(0.887 0.182 95);
+	--color-status-confirmed-bg: oklch(0.887 0.182 95 / 0.15);
+	--color-status-confirmed-border: oklch(0.887 0.182 95 / 0.3);
 
-  --color-status-invalid: oklch(0.664 0.223 26);
-  --color-status-invalid-bg: oklch(0.664 0.223 26 / 0.15);
-  --color-status-invalid-border: oklch(0.664 0.223 26 / 0.30);
+	--color-status-invalid: oklch(0.664 0.223 26);
+	--color-status-invalid-bg: oklch(0.664 0.223 26 / 0.15);
+	--color-status-invalid-border: oklch(0.664 0.223 26 / 0.3);
 
-  --color-text-on-accent: var(--color-base);
-  --color-danger: oklch(0.664 0.223 26);
-  --color-success: oklch(0.876 0.228 153);
+	--color-text-on-accent: var(--color-base);
+	--color-danger: oklch(0.664 0.223 26);
+	--color-success: oklch(0.876 0.228 153);
 
-  --text-title: 1.5em;
-  --text-body: 1em;
-  --text-subtitle: 1.125em;
-  --text-aux: 0.875em;
+	--text-title: 1.5em;
+	--text-body: 1em;
+	--text-subtitle: 1.125em;
+	--text-aux: 0.875em;
 
-  --line-height-normal: 1.5;
-  --line-height-tight: 1.25;
+	--line-height-normal: 1.5;
+	--line-height-tight: 1.25;
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+	--radius-sm: 0.25rem;
+	--radius-md: 0.5rem;
+	--radius-lg: 0.75rem;
 
-  --font-body: 'Iosevka Aile', 'Source Han Sans SC', sans-serif;
-  --font-mono: 'Iosevka Term', 'Source Han Sans SC HW', monospace;
-  --space-0-5: 0.125rem;
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --height-control-sm: 2rem;
-  --height-control-md: 2.5rem;
-  --height-control-lg: 3rem;
-  --breakpoint-sm: 640px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
+	--font-body: 'Iosevka Aile', 'Source Han Sans SC', sans-serif;
+	--font-mono: 'Iosevka Term', 'Source Han Sans SC HW', monospace;
+	--space-0-5: 0.125rem;
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.25rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+	--space-10: 2.5rem;
+	--space-12: 3rem;
+	--space-16: 4rem;
+	--height-control-sm: 2rem;
+	--height-control-md: 2.5rem;
+	--height-control-lg: 3rem;
+	--breakpoint-sm: 640px;
+	--breakpoint-md: 768px;
+	--breakpoint-lg: 1024px;
+	--breakpoint-xl: 1280px;
 }
 
 html {
-  font-size: 100%;
-  color-scheme: dark;
+	font-size: 100%;
+	color-scheme: dark;
 }
 
 body {
-  background-color: var(--color-base);
-  color: var(--color-text-primary);
-  font-family: var(--font-body);
+	background-color: var(--color-base);
+	color: var(--color-text-primary);
+	font-family: var(--font-body);
 }
 
 ::selection {
-  background: rgba(255, 250, 0, 0.2);
-  color: var(--color-text-primary);
+	background: rgba(255, 250, 0, 0.2);
+	color: var(--color-text-primary);
 }
 
 @layer components {
-  .card-panel {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
+	.card-panel {
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+	}
 
-  .input-field {
-    width: 100%;
-    background-color: var(--color-elevated);
-    background-image: none;
-    border: 1px solid var(--color-border);
-    padding: var(--space-2) var(--space-3);
-    color: var(--color-text-primary);
-    font-size: var(--text-body);
-    outline: none;
-    transition: border-color 150ms, box-shadow 150ms;
-  }
-  .input-field:focus {
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 1px var(--color-accent-medium);
-  }
-  .input-field:disabled {
-    opacity: 0.4;
-  }
+	.input-field {
+		width: 100%;
+		background-color: var(--color-elevated);
+		background-image: none;
+		border: 1px solid var(--color-border);
+		padding: var(--space-2) var(--space-3);
+		color: var(--color-text-primary);
+		font-size: var(--text-body);
+		outline: none;
+		transition:
+			border-color 150ms,
+			box-shadow 150ms;
+	}
+	.input-field:focus {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 1px var(--color-accent-medium);
+	}
+	.input-field:disabled {
+		opacity: 0.4;
+	}
 }

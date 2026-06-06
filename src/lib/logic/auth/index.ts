@@ -20,7 +20,9 @@ function authResultFromError(error: AuthErrorLike): AuthResult {
 	};
 }
 
-function authResultFromData(data: { session?: Session | null; user?: User | null } | null): AuthResult {
+function authResultFromData(
+	data: { session?: Session | null; user?: User | null } | null
+): AuthResult {
 	return {
 		success: true,
 		session: data?.session ?? undefined,
