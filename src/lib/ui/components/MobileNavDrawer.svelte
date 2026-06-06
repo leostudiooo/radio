@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { Component } from 'svelte';
-  import { Radio, Cpu, Mail, Download } from 'lucide-svelte';
+  import type { LucideIcon } from '@lucide/svelte';
   import SegmentedToggle from './SegmentedToggle.svelte';
   import UserDropdown from './UserDropdown.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
@@ -13,7 +12,7 @@
   interface NavItem {
     path: string;
     label: string | (() => string);
-    icon: Component<{ size?: number; class?: string }>;
+    icon: LucideIcon;
   }
 
   interface Props {

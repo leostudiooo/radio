@@ -2,7 +2,7 @@
   import LoadingSpinner from './LoadingSpinner.svelte';
   import EmptyState from './EmptyState.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
-  import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-svelte';
+  import { ArrowUpDown, ArrowUp, ArrowDown } from '@lucide/svelte';
   import type { Column } from './DataTable';
   import type { Snippet } from 'svelte';
 

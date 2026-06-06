@@ -15,7 +15,7 @@
   import FormSelect from '$lib/ui/components/FormSelect.svelte';
   import EmptyState from '$lib/ui/components/EmptyState.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { ArrowUpDown } from 'lucide-svelte';
+  import { ArrowUpDown } from '@lucide/svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);

@@ -6,7 +6,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { KeyRound, Mail } from 'lucide-svelte';
+  import { KeyRound, Mail } from '@lucide/svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);

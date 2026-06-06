@@ -1,7 +1,7 @@
 <script lang="ts">
   import { toastStore } from '$lib/ui/stores/toast.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
-  import { X, CheckCircle, AlertCircle, Info } from 'lucide-svelte';
+  import { X, CheckCircle, AlertCircle, Info } from '@lucide/svelte';
 
   const iconMap = {
     success: CheckCircle,
@@ -30,11 +30,12 @@
 
 <div class="fixed top-[var(--space-4)] right-[var(--space-4)] z-50 flex flex-col gap-[var(--space-2)] w-[320px]">
   {#each toastStore.toasts as toast (toast.id)}
+    {@const Icon = iconMap[toast.type]}
     <div
       class="flex items-start gap-[var(--space-3)] p-[var(--space-4)] border text-[var(--text-body)]"
       style="background-color: {bgMap[toast.type]}; border-color: {borderMap[toast.type]}; color: {textMap[toast.type]};"
     >
-      <svelte:component this={iconMap[toast.type]} size={18} />
+      <Icon size={18} />
       <span class="flex-1">{toast.message}</span>
       <button
         type="button"

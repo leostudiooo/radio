@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Upload, File as FileIcon } from 'lucide-svelte';
+  import { Upload, File as FileIcon } from '@lucide/svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
 
   interface Props {

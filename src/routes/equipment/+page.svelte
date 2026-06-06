@@ -14,7 +14,7 @@
   import Button from '$lib/ui/components/Button.svelte';
   import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { Pencil, Trash2 } from 'lucide-svelte';
+  import { Pencil, Trash2 } from '@lucide/svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);

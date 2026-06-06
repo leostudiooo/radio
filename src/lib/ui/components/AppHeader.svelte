@@ -5,7 +5,7 @@
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import { settingsStore } from '$lib/ui/stores/settings.svelte';
   import { SITE_CONFIG } from '$lib/config';
-  import { Menu, X, Radio, Cpu, Mail, Download } from 'lucide-svelte';
+  import { Menu, X, Radio, Cpu, Mail, Download } from '@lucide/svelte';
   import SegmentedToggle from './SegmentedToggle.svelte';
   import UserDropdown from './UserDropdown.svelte';
   import { handleLogout as doLogout } from '$lib/logic/auth';

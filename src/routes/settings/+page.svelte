@@ -9,7 +9,7 @@
   import FormInput from '$lib/ui/components/FormInput.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { Save, KeyRound, Pencil, Trash2 } from 'lucide-svelte';
+  import { Save, KeyRound, Pencil, Trash2 } from '@lucide/svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
