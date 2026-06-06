@@ -39,3 +39,4 @@ Svelte 5 UI layer using forced runes mode, reactive stores in .svelte.ts files, 
 - **Toast Life**: Notifications in `toastStore` auto-dismiss after exactly 4 seconds.
 - **Guard Enums**: Route guards return status strings (`'loading'`, `'admin'`, `'not-admin'`, `'not-authenticated'`, `'authenticated'`) rather than booleans.
 - **DataTable Typing**: Always use the `Column` type from `DataTable.ts` when configuring tables to ensure type safety for cell renderers.
+- **Unfinished DataTable Cell Snippets**: `DataTable.svelte` collects `cell_*` snippets from `...rest` at runtime, but `Props` does not type dynamic `cell_${string}` snippet props. This currently breaks `src/routes/equipment/+page.svelte` at `{#snippet cell_is_active(row)}`. Finish the typed snippet API before adding more custom cells.

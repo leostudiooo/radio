@@ -31,3 +31,8 @@ SvelteKit SPA routes, ssr=false, all data loading in onMount.
 - Never add `+server.ts` endpoints.
 - Avoid SSR logic. Components must be browser compatible.
 - Don't bypass `authStore` for route guards.
+
+## CURRENT TODO
+
+- `equipment/+page.svelte` has unfinished active-toggle work. It uses `{#snippet cell_is_active(row)}` for a DataTable custom cell and references `t.equipment.activate` / `t.equipment.deactivate`.
+- Before `pnpm check` can pass, type `DataTable.svelte`'s dynamic `cell_*` snippet props (or replace that API with an explicit typed one), type the snippet row parameter, and sync the equipment i18n type keys.

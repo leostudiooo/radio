@@ -31,3 +31,4 @@ Domain-split translations using `typesafe-i18n` with English (en) and Chinese (z
 - `i18n-types.ts` and `i18n-util.ts` are auto-generated. Don't edit them manually.
 - Files regenerate during `pnpm dev`. If types aren't updating, restart the dev server.
 - The `en` locale serves as the base for type generation.
+- **Current Type Drift**: `src/lib/i18n/{en,zh}/equipment.ts` contains `activate` and `deactivate`, but `src/lib/i18n/i18n-types.ts` does not yet expose those keys. This is one of the current `pnpm check` failures. Regenerate or update types before using `t.equipment.activate` / `t.equipment.deactivate`.
