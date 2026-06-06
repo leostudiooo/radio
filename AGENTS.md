@@ -265,13 +265,10 @@ supabase db diff      # Generate migration from schema changes
 - `updateQSO()` uses `.single()` — throws PostgREST 406 when 0 rows match (RLS denial).
 - **TODO**: Surface real error in catch blocks, consider `.maybeSingle()` + null check, client-side ownership guard.
 
-### Current Unfinished Work
+### Current Check Status
 
-- `pnpm check` currently fails on the equipment list active-toggle work, not on the homepage terminal. Current blocking errors are in `src/routes/equipment/+page.svelte`.
-- `DataTable.svelte` supports runtime `cell_*` snippets through `...rest`, but its `Props` type does not declare those snippet props. This makes `{#snippet cell_is_active(row)}` fail type checking with "Object literal may only specify known properties". Fix by typing dynamic `cell_${string}` snippet props or by replacing this pattern with an explicit typed cell-snippet API.
-- The same `cell_is_active(row)` snippet parameter is implicitly `any`. It should be typed through the DataTable snippet contract so callers get `Record<string, unknown>` or a generic row type.
-- `src/lib/i18n/{en,zh}/equipment.ts` includes `activate` and `deactivate`, but `src/lib/i18n/i18n-types.ts` does not yet expose those keys. Regenerate or update the generated types before relying on `t.equipment.activate` / `t.equipment.deactivate`.
-- Existing Svelte warnings remain in several components (`FormInput`, `FormSelect`, `FormDate`, `FormTime`, `FormTextarea`, `LoadingSpinner`, `StatusBadge`, `ConfirmDialog`, `FileUpload`, `StationIdentityCard`, `MobileNavDrawer`, `QSOForm`). They are warnings, not the current `pnpm check` hard failures.
+- `pnpm check` passes with 0 errors.
+- Existing Svelte warnings remain in several components (`FormInput`, `FormSelect`, `FormDate`, `FormTime`, `FormTextarea`, `LoadingSpinner`, `StatusBadge`, `ConfirmDialog`, `FileUpload`, `StationIdentityCard`, `MobileNavDrawer`, `QSOForm`). They are warnings only.
 
 ---
 
