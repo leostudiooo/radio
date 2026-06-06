@@ -36,7 +36,7 @@
   {disabled}
   {onclick}
   style={variant === 'primary' ? 'color: var(--color-text-on-accent)' : ''}
-  class="inline-flex items-center justify-center gap-[var(--space-2)] transition-all duration-100 ease-out font-[var(--font-body)] disabled:opacity-40 disabled:cursor-not-allowed {sizeClasses[size]} {variantClasses[variant]}"
+  class="inline-flex items-center justify-center gap-[var(--space-2)] transition-all duration-100 ease-out font-body disabled:opacity-40 disabled:cursor-not-allowed {sizeClasses[size]} {variantClasses[variant]}"
 >
   {@render children?.()}
 </button>

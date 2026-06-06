@@ -186,7 +186,7 @@
         <span class="text-[var(--color-text-primary)] capitalize">{provider}</span>
 
         <span class="text-[var(--color-text-secondary)]">{t.auth.id}</span>
-        <span class="text-[var(--color-text-primary)] font-[var(--font-mono)] text-[var(--text-aux)]">
+        <span class="text-[var(--color-text-primary)] font-mono text-[var(--text-aux)]">
           {authStore.user?.id?.slice(0, 8) ?? '-'}
         </span>
 

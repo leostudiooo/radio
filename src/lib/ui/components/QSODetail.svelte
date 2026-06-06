@@ -42,7 +42,7 @@
     <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-[var(--space-8)] gap-y-[var(--space-3)]">
       <div>
         <dt class="text-[var(--text-body)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.qso.callsign}</dt>
-        <dd class="text-[var(--text-subtitle)] text-[var(--color-text-primary)] font-[var(--font-mono)]">{qso.callsign}</dd>
+        <dd class="text-[var(--text-subtitle)] text-[var(--color-text-primary)] font-mono">{qso.callsign}</dd>
       </div>
       <div>
         <dt class="text-[var(--text-body)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.qso.date}</dt>
@@ -138,7 +138,7 @@
       </div>
       <div>
         <dt class="text-[var(--text-body)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.qso.gridSquare}</dt>
-        <dd class="text-[var(--text-body)] text-[var(--color-text-primary)] font-[var(--font-mono)]">{fmt(qso.grid_square)}</dd>
+        <dd class="text-[var(--text-body)] text-[var(--color-text-primary)] font-mono">{fmt(qso.grid_square)}</dd>
       </div>
       <div>
         <dt class="text-[var(--text-body)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.qso.power}</dt>
@@ -211,13 +211,13 @@
       {#if qso.latitude !== null && qso.latitude !== undefined}
         <div>
           <dt class="text-[var(--text-body)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.qso.latitude}</dt>
-          <dd class="text-[var(--text-body)] text-[var(--color-text-primary)] font-[var(--font-mono)]">{qso.latitude}</dd>
+          <dd class="text-[var(--text-body)] text-[var(--color-text-primary)] font-mono">{qso.latitude}</dd>
         </div>
       {/if}
       {#if qso.longitude !== null && qso.longitude !== undefined}
         <div>
           <dt class="text-[var(--text-body)] text-[var(--color-text-muted)] uppercase tracking-wide">{t.qso.longitude}</dt>
-          <dd class="text-[var(--text-body)] text-[var(--color-text-primary)] font-[var(--font-mono)]">{qso.longitude}</dd>
+          <dd class="text-[var(--text-body)] text-[var(--color-text-primary)] font-mono">{qso.longitude}</dd>
         </div>
       {/if}
     </dl>

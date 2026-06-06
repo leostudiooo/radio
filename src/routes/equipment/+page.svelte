@@ -110,21 +110,21 @@
       {#if authStore.isAdmin}
         <button
           type="button"
-          class="cursor-pointer font-[var(--font-mono)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+          class="cursor-pointer font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
           onclick={() => handleToggleActive(row as unknown as Equipment)}
           aria-label={row.is_active ? t.equipment.deactivate : t.equipment.activate}
         >
           {#if row.is_active}
-            <span class="font-[var(--font-mono)] text-[var(--color-accent)]">[x]</span>
+            <span class="font-mono text-[var(--color-accent)]">[x]</span>
           {:else}
-            <span class="font-[var(--font-mono)]">[ ]</span>
+            <span class="font-mono">[ ]</span>
           {/if}
         </button>
       {:else}
         {#if row.is_active}
-          <span class="font-[var(--font-mono)] text-[var(--color-accent)]">[x]</span>
+          <span class="font-mono text-[var(--color-accent)]">[x]</span>
         {:else}
-          <span class="font-[var(--font-mono)]">[ ]</span>
+          <span class="font-mono">[ ]</span>
         {/if}
       {/if}
     {/snippet}

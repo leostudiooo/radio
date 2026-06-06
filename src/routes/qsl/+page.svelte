@@ -184,8 +184,8 @@
           <tbody>
             {#each data as card (card.id)}
               <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors duration-100" class:opacity-50={updatingId === card.id}>
-                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">{card.qso_id.slice(0, 8)}</td>
-                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">
+                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-mono text-[var(--color-text-primary)]">{card.qso_id.slice(0, 8)}</td>
+                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-mono text-[var(--color-text-primary)]">
                   <span class="inline-block px-[var(--space-2)] py-[var(--space-0-5)] text-[var(--text-body)] font-medium uppercase tracking-[0.05em] bg-[var(--color-elevated)] border border-[var(--color-border)] text-[var(--color-text-secondary)]">
                     {methodLabel[card.method]}
                   </span>
@@ -218,9 +218,9 @@
                     <StatusBadge status={card.received_status ?? 'pending'} />
                   {/if}
                 </td>
-                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">{formatDate(card.sent_date)}</td>
-                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">{formatDate(card.received_date)}</td>
-                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-secondary)] max-w-[200px] truncate">{truncate(card.notes)}</td>
+                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-mono text-[var(--color-text-primary)]">{formatDate(card.sent_date)}</td>
+                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-mono text-[var(--color-text-primary)]">{formatDate(card.received_date)}</td>
+                <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-body)] font-mono text-[var(--color-text-secondary)] max-w-[200px] truncate">{truncate(card.notes)}</td>
               </tr>
             {/each}
           </tbody>
@@ -232,11 +232,11 @@
           <div class="card-panel p-[var(--space-4)] flex flex-col gap-[var(--space-2)]" class:opacity-50={updatingId === card.id}>
             <div class="flex justify-between gap-[var(--space-2)]">
               <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.qsoId}</span>
-              <span class="text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">{card.qso_id.slice(0, 8)}</span>
+              <span class="text-[var(--text-body)] font-mono text-[var(--color-text-primary)]">{card.qso_id.slice(0, 8)}</span>
             </div>
             <div class="flex justify-between gap-[var(--space-2)]">
               <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.method}</span>
-              <span class="text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">{methodLabel[card.method]}</span>
+              <span class="text-[var(--text-body)] font-mono text-[var(--color-text-primary)]">{methodLabel[card.method]}</span>
             </div>
             <div class="flex justify-between items-center gap-[var(--space-2)]">
               <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.sentStatus}</span>
@@ -260,23 +260,23 @@
             </div>
             <div class="flex justify-between gap-[var(--space-2)]">
               <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.sentDate}</span>
-              <span class="text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">{formatDate(card.sent_date)}</span>
+              <span class="text-[var(--text-body)] font-mono text-[var(--color-text-primary)]">{formatDate(card.sent_date)}</span>
             </div>
             <div class="flex justify-between gap-[var(--space-2)]">
               <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.receivedDate}</span>
-              <span class="text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-primary)]">{formatDate(card.received_date)}</span>
+              <span class="text-[var(--text-body)] font-mono text-[var(--color-text-primary)]">{formatDate(card.received_date)}</span>
             </div>
             {#if card.notes}
               <div class="flex justify-between gap-[var(--space-2)]">
                 <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{t.qsl.notes}</span>
-                <span class="text-[var(--text-body)] font-[var(--font-mono)] text-[var(--color-text-secondary)] text-right max-w-[200px] truncate">{truncate(card.notes)}</span>
+                <span class="text-[var(--text-body)] font-mono text-[var(--color-text-secondary)] text-right max-w-[200px] truncate">{truncate(card.notes)}</span>
               </div>
             {/if}
           </div>
         {/each}
       </div>
 
-      <div class="text-[var(--text-aux)] text-[var(--color-text-muted)] font-[var(--font-mono)]">
+      <div class="text-[var(--text-aux)] text-[var(--color-text-muted)] font-mono">
         {t.qso.totalCount.replace('{total}', String(data.length))}
       </div>
     {/if}

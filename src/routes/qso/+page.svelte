@@ -235,7 +235,7 @@
     </DataTable>
 
     {#if data.length > 0}
-      <div class="text-[var(--text-aux)] text-[var(--color-text-muted)] font-[var(--font-mono)]">
+      <div class="text-[var(--text-aux)] text-[var(--color-text-muted)] font-mono">
         {t.qso.totalCount.replace('{total}', String(total))}
       </div>
     {/if}

@@ -130,7 +130,7 @@
         {#each data as row (keyExtractor(row))}
           <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors duration-100">
             {#each columns as column}
-              <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] {alignClasses[column.align ?? 'left']}">
+              <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-aux)] font-mono text-[var(--color-text-primary)] {alignClasses[column.align ?? 'left']}">
                 {#if cellSnippets[column.key]}
                   {@render cellSnippets[column.key](row)}
                 {:else if column.badge}
@@ -159,7 +159,7 @@
         {#each columns as column}
           <div class="flex justify-between gap-[var(--space-2)]">
             <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>
-            <span class="text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">
+            <span class="text-[var(--text-aux)] font-mono text-[var(--color-text-primary)] text-right">
               {#if cellSnippets[column.key]}
                 {@render cellSnippets[column.key](row)}
               {:else if column.badge}

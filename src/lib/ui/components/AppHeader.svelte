@@ -62,7 +62,7 @@
     {/if}
   </button>
 
-  <a href="/" class="font-[var(--font-mono)] text-[var(--text-subtitle)] font-bold tracking-[0.05em] text-[var(--color-text-primary)] uppercase mr-[var(--space-8)]">
+  <a href="/" class="font-mono text-[var(--text-subtitle)] font-bold tracking-[0.05em] text-[var(--color-text-primary)] uppercase mr-[var(--space-8)]">
     {SITE_CONFIG.callsign}
   </a>
 
@@ -87,7 +87,7 @@
     {/if}
   </nav>
 
-  <div class="flex items-center gap-[var(--space-3)] ml-auto">
+  <div class="hidden lg:flex items-center gap-[var(--space-3)] ml-auto">
     <SegmentedToggle
       options={[{ value: 'utc', label: 'UTC' }, { value: 'lcl', label: 'LCL' }]}
       value={settingsStore.useLocalTime ? 'lcl' : 'utc'}
