@@ -5,4 +5,5 @@ export interface Column<T = Record<string, unknown>> {
   align?: 'left' | 'right' | 'center';
   sortable?: boolean;
   badge?: boolean;
+  html?: boolean;
 }

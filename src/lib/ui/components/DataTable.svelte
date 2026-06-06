@@ -28,7 +28,17 @@
     actions,
     onsort,
     sort,
+    // Collect any cell-* snippet children
+    ...rest
   }: Props = $props();
+
+  const cellSnippets: Record<string, Snippet<[Record<string, unknown>]>> = $derived(
+    Object.fromEntries(
+      Object.entries(rest)
+        .filter(([k, v]) => k.startsWith('cell_') && typeof v === 'function')
+        .map(([k, v]) => [k.slice(5), v as Snippet<[Record<string, unknown>]>])
+    )
+  );
 
   const resolvedEmptyMessage = $derived(emptyMessage ?? localeStore.translation.common.noData);
 
@@ -121,8 +131,12 @@
           <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors duration-100">
             {#each columns as column}
               <td class="px-[var(--space-3)] py-[var(--space-3)] text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] {alignClasses[column.align ?? 'left']}">
-                {#if column.badge}
+                {#if cellSnippets[column.key]}
+                  {@render cellSnippets[column.key](row)}
+                {:else if column.badge}
                   <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
+                {:else if column.html}
+                  {@html getCellValue(row, column)}
                 {:else}
                   {getCellValue(row, column)}
                 {/if}
@@ -146,11 +160,15 @@
           <div class="flex justify-between gap-[var(--space-2)]">
             <span class="text-[var(--text-body)] font-medium uppercase tracking-[0.05em] text-[var(--color-text-muted)]">{column.header}</span>
             <span class="text-[var(--text-aux)] font-[var(--font-mono)] text-[var(--color-text-primary)] text-right">
-              {#if column.badge}
-                <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
-              {:else}
-                {getCellValue(row, column)}
-              {/if}
+              {#if cellSnippets[column.key]}
+                {@render cellSnippets[column.key](row)}
+              {:else if column.badge}
+                 <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
+               {:else if column.html}
+                 {@html getCellValue(row, column)}
+               {:else}
+                 {getCellValue(row, column)}
+               {/if}
             </span>
           </div>
         {/each}
