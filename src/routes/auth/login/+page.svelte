@@ -51,7 +51,8 @@
 		if (!email.trim()) return;
 		loading = 'magic';
 		try {
-			const result = await signInWithMagicLink(supabase, email.trim());
+			const redirectTo = `${window.location.origin}/auth/callback`;
+			const result = await signInWithMagicLink(supabase, email.trim(), redirectTo);
 			if (result.success) {
 				magicLinkSent = true;
 			} else {

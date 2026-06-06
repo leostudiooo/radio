@@ -79,11 +79,12 @@ export async function deletePasskey(supabase: SupabaseClient, id: string) {
 
 export async function signInWithMagicLink(
 	supabase: SupabaseClient,
-	email: string
+	email: string,
+	redirectTo?: string
 ): Promise<AuthResult> {
 	const { data, error } = await supabase.auth.signInWithOtp({
 		email,
-		options: { shouldCreateUser: false }
+		options: { shouldCreateUser: false, emailRedirectTo: redirectTo }
 	});
 
 	if (error) {
