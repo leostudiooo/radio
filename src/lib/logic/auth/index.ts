@@ -8,15 +8,6 @@ type AuthErrorLike = {
 	status?: number;
 };
 
-type WebAuthnCapableClient = SupabaseClient & {
-	auth: SupabaseClient['auth'] & {
-		signInWithWebAuthn?: () => Promise<{
-			data?: { session?: Session | null; user?: User | null } | null;
-			error?: AuthErrorLike | null;
-		}>;
-	};
-};
-
 function errorCode(error: AuthErrorLike): string | undefined {
 	return error.code ?? (error.status ? String(error.status) : undefined);
 }
@@ -37,18 +28,20 @@ function authResultFromData(data: { session?: Session | null; user?: User | null
 	};
 }
 
-export async function signInWithWebAuthn(supabase: SupabaseClient): Promise<AuthResult> {
-	const signInWithWebAuthn = (supabase as WebAuthnCapableClient).auth.signInWithWebAuthn;
+export function isPasskeySupported(): boolean {
+	return typeof PublicKeyCredential !== 'undefined';
+}
 
-	if (!signInWithWebAuthn) {
+export async function signInWithPasskey(supabase: SupabaseClient): Promise<AuthResult> {
+	if (!isPasskeySupported()) {
 		return {
 			success: false,
-			error: 'WebAuthn sign-in is not supported by this Supabase client.',
-			errorCode: 'webauthn_not_supported'
+			error: 'Passkeys are not supported by this browser.',
+			errorCode: 'passkey_not_supported'
 		};
 	}
 
-	const { data, error } = await signInWithWebAuthn.call(supabase.auth);
+	const { data, error } = await (supabase.auth as any).signInWithPasskey();
 
 	if (error) {
 		return authResultFromError(error);
@@ -57,21 +50,40 @@ export async function signInWithWebAuthn(supabase: SupabaseClient): Promise<Auth
 	return authResultFromData(data ?? null);
 }
 
-export async function signInWithGitHub(supabase: SupabaseClient): Promise<AuthResult> {
-	const { error } = await supabase.auth.signInWithOAuth({ provider: 'github' });
+export async function registerPasskey(supabase: SupabaseClient): Promise<AuthResult> {
+	const { data, error } = await (supabase.auth as any).registerPasskey();
 
 	if (error) {
 		return authResultFromError(error);
 	}
 
-	return { success: true };
+	return authResultFromData(data ?? null);
+}
+
+export async function listPasskeys(supabase: SupabaseClient) {
+	const { data, error } = await (supabase.auth as any).passkey.list();
+	if (error) throw error;
+	return data;
+}
+
+export async function updatePasskey(supabase: SupabaseClient, id: string, name: string) {
+	const { error } = await (supabase.auth as any).passkey.update({ id, name });
+	if (error) throw error;
+}
+
+export async function deletePasskey(supabase: SupabaseClient, id: string) {
+	const { error } = await (supabase.auth as any).passkey.delete({ id });
+	if (error) throw error;
 }
 
 export async function signInWithMagicLink(
 	supabase: SupabaseClient,
 	email: string
 ): Promise<AuthResult> {
-	const { data, error } = await supabase.auth.signInWithOtp({ email });
+	const { data, error } = await supabase.auth.signInWithOtp({
+		email,
+		options: { shouldCreateUser: false }
+	});
 
 	if (error) {
 		return authResultFromError(error);

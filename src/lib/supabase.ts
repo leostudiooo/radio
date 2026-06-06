@@ -5,4 +5,10 @@ if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
 	throw new Error('Missing Supabase public environment variables.');
 }
 
-export const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
+	auth: {
+		experimental: {
+			passkey: true
+		}
+	}
+});
