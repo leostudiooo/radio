@@ -258,6 +258,8 @@ export type BaseTranslation = {
 		serialNumber: string;
 		description: string;
 		active: string;
+		activate: string;
+		deactivate: string;
 		noEquipment: string;
 		addFirst: string;
 		equipmentSaved: string;

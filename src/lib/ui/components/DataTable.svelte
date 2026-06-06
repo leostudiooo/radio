@@ -17,6 +17,7 @@
 		actions?: Snippet<[row: Record<string, unknown>]>;
 		onsort?: (key: string, dir: 'asc' | 'desc') => void;
 		sort?: { key: string; dir: 'asc' | 'desc' };
+		[key: `cell_${string}`]: Snippet<[row: Record<string, unknown>]> | undefined;
 	}
 
 	let {
