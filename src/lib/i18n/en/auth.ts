@@ -1,9 +1,9 @@
 const auth = {
   login: 'Log in',
   logout: 'Log out',
-  signInWithWebAuthn: 'Sign in with WebAuthn',
-  signInWithGitHub: 'Sign in with GitHub',
+  signInWithPasskey: 'Sign in with Passkey',
   signInWithMagicLink: 'Sign in with magic link',
+  passkeyNotSupported: 'Passkeys are not supported by this browser',
   emailPlaceholder: 'Enter your email',
   sendMagicLink: 'Send magic link',
   profile: 'Profile',

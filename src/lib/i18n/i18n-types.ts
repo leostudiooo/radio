@@ -84,9 +84,9 @@ export type BaseTranslation = {
   auth: {
     login: string;
     logout: string;
-    signInWithWebAuthn: string;
-    signInWithGitHub: string;
+    signInWithPasskey: string;
     signInWithMagicLink: string;
+    passkeyNotSupported: string;
     emailPlaceholder: string;
     sendMagicLink: string;
     profile: string;

@@ -15,7 +15,7 @@ function errorCode(error: AuthErrorLike): string | undefined {
 function authResultFromError(error: AuthErrorLike): AuthResult {
 	return {
 		success: false,
-		error: error.message ?? 'Authentication failed.',
+		error: error.message,
 		errorCode: errorCode(error)
 	};
 }
@@ -36,7 +36,6 @@ export async function signInWithPasskey(supabase: SupabaseClient): Promise<AuthR
 	if (!isPasskeySupported()) {
 		return {
 			success: false,
-			error: 'Passkeys are not supported by this browser.',
 			errorCode: 'passkey_not_supported'
 		};
 	}

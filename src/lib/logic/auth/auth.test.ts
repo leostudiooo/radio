@@ -5,9 +5,8 @@ import {
 	getProfile,
 	getSession,
 	onAuthStateChange,
-	signInWithGitHub,
 	signInWithMagicLink,
-	signInWithWebAuthn,
+	signInWithPasskey,
 	signOut,
 	updateProfile
 } from './index';
@@ -64,61 +63,41 @@ function createProfilesQuery<T>(result: QueryResult<T>) {
 	return query;
 }
 
-describe('auth logic helpers', () => {
-	it('signs in with WebAuthn when the injected client supports it', async () => {
+	describe('auth logic helpers', () => {
+	it('signs in with Passkey when the injected client supports it', async () => {
+		const originalPublicKeyCredential = (globalThis as any).PublicKeyCredential;
+		(globalThis as any).PublicKeyCredential = class {};
+
 		const session = createSession();
-		const signInWithWebAuthnMock = vi.fn(async () => ({
+		const signInWithPasskeyMock = vi.fn(async () => ({
 			data: { session, user: session.user },
 			error: null
 		}));
 		const supabase = createSupabase({
-			auth: { signInWithWebAuthn: signInWithWebAuthnMock }
+			auth: { signInWithPasskey: signInWithPasskeyMock }
 		} as unknown as SupabaseClient);
 
-		await expect(signInWithWebAuthn(supabase)).resolves.toEqual({
+		await expect(signInWithPasskey(supabase)).resolves.toEqual({
 			success: true,
 			session,
 			user: session.user
 		});
-		expect(signInWithWebAuthnMock).toHaveBeenCalledOnce();
+		expect(signInWithPasskeyMock).toHaveBeenCalledOnce();
+
+		(globalThis as any).PublicKeyCredential = originalPublicKeyCredential;
 	});
 
-	it('returns a typed WebAuthn error when the client does not support passkeys', async () => {
+	it('returns a typed Passkey error when the browser does not support passkeys', async () => {
+		const originalPublicKeyCredential = (globalThis as any).PublicKeyCredential;
+		(globalThis as any).PublicKeyCredential = undefined;
 		const supabase = createSupabase({ auth: {} } as unknown as SupabaseClient);
 
-		await expect(signInWithWebAuthn(supabase)).resolves.toEqual({
+		await expect(signInWithPasskey(supabase)).resolves.toEqual({
 			success: false,
-			error: 'WebAuthn sign-in is not supported by this Supabase client.',
-			errorCode: 'webauthn_not_supported'
+			errorCode: 'passkey_not_supported'
 		});
-	});
 
-	it('returns OAuth sign-in data for GitHub', async () => {
-		const session = createSession();
-		const signInWithOAuth = vi.fn(async () => ({
-			data: { session, user: session.user },
-			error: null
-		}));
-		const supabase = createSupabase({ auth: { signInWithOAuth } } as unknown as SupabaseClient);
-
-		await expect(signInWithGitHub(supabase)).resolves.toEqual({
-			success: true
-		});
-		expect(signInWithOAuth).toHaveBeenCalledWith({ provider: 'github' });
-	});
-
-	it('returns OAuth errors for GitHub sign-in failures', async () => {
-		const signInWithOAuth = vi.fn(async () => ({
-			data: null,
-			error: { message: 'OAuth failed', code: 'oauth_failed' }
-		}));
-		const supabase = createSupabase({ auth: { signInWithOAuth } } as unknown as SupabaseClient);
-
-		await expect(signInWithGitHub(supabase)).resolves.toEqual({
-			success: false,
-			error: 'OAuth failed',
-			errorCode: 'oauth_failed'
-		});
+		(globalThis as any).PublicKeyCredential = originalPublicKeyCredential;
 	});
 
 	it('requests a magic link for the given email', async () => {
@@ -130,7 +109,7 @@ describe('auth logic helpers', () => {
 			session: undefined,
 			user: undefined
 		});
-		expect(signInWithOtp).toHaveBeenCalledWith({ email: 'ham@example.com' });
+		expect(signInWithOtp).toHaveBeenCalledWith({ email: 'ham@example.com', options: { shouldCreateUser: false } });
 	});
 
 	it('returns magic-link errors', async () => {

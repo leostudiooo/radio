@@ -1,20 +1,26 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { supabase } from '$lib/supabase';
-  import { signInWithWebAuthn, signInWithGitHub, signInWithMagicLink } from '$lib/logic/auth';
+  import { signInWithPasskey, isPasskeySupported, signInWithMagicLink } from '$lib/logic/auth';
   import { authStore } from '$lib/ui/stores/auth.svelte';
   import { localeStore } from '$lib/ui/stores/locale.svelte';
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-  import { KeyRound, Github, Mail } from 'lucide-svelte';
+  import { KeyRound, Mail } from 'lucide-svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const t = $derived(localeStore.translation);
+
+  function getErrorMessage(result: { error?: string; errorCode?: string }): string {
+    if (result.errorCode === 'passkey_not_supported') return t.auth.passkeyNotSupported;
+    return result.error ?? t.auth.loginFailed;
+  }
 
   let email = $state('');
   let error = $state('');
   let magicLinkSent = $state(false);
   let loading = $state<string | null>(null);
+  let passkeySupported = $state(isPasskeySupported());
 
   $effect(() => {
     if (authStore.isAuthenticated) {
@@ -22,30 +28,14 @@
     }
   });
 
-  async function handleWebAuthn() {
+  async function handlePasskey() {
     error = '';
     magicLinkSent = false;
-    loading = 'webauthn';
+    loading = 'passkey';
     try {
-      const result = await signInWithWebAuthn(supabase);
+      const result = await signInWithPasskey(supabase);
       if (!result.success) {
-        error = result.error ?? t.auth.loginFailed;
-      }
-    } catch {
-      error = t.auth.loginFailed;
-    } finally {
-      loading = null;
-    }
-  }
-
-  async function handleGitHub() {
-    error = '';
-    magicLinkSent = false;
-    loading = 'github';
-    try {
-      const result = await signInWithGitHub(supabase);
-      if (!result.success) {
-        error = result.error ?? t.auth.loginFailed;
+        error = getErrorMessage(result);
       }
     } catch {
       error = t.auth.loginFailed;
@@ -65,7 +55,7 @@
       if (result.success) {
         magicLinkSent = true;
       } else {
-        error = result.error ?? t.auth.loginFailed;
+        error = getErrorMessage(result);
       }
     } catch {
       error = t.auth.loginFailed;
@@ -99,32 +89,25 @@
     {/if}
 
     <div class="flex flex-col gap-[var(--space-3)]">
-      <Button variant="primary" size="lg" disabled={loading !== null} onclick={handleWebAuthn}>
-        {#if loading === 'webauthn'}
-          <LoadingSpinner size="sm" />
-        {:else}
-          <KeyRound size={16} />
-        {/if}
-        {t.auth.signInWithWebAuthn}
-      </Button>
+      {#if passkeySupported}
+        <Button variant="primary" size="lg" disabled={loading !== null} onclick={handlePasskey}>
+          {#if loading === 'passkey'}
+            <LoadingSpinner size="sm" />
+          {:else}
+            <KeyRound size={16} />
+          {/if}
+          {t.auth.signInWithPasskey}
+        </Button>
 
-      <Button variant="secondary" size="lg" disabled={loading !== null} onclick={handleGitHub}>
-        {#if loading === 'github'}
-          <LoadingSpinner size="sm" />
-        {:else}
-          <Github size={16} />
-        {/if}
-        {t.auth.signInWithGitHub}
-      </Button>
-
-      <div class="relative my-[var(--space-2)]">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-[var(--color-border)]"></div>
+        <div class="relative my-[var(--space-2)]">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-[var(--color-border)]"></div>
+          </div>
+          <div class="relative flex justify-center">
+            <span class="bg-[var(--color-surface)] px-[var(--space-3)] text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wider">{t.auth.or}</span>
+          </div>
         </div>
-        <div class="relative flex justify-center">
-          <span class="bg-[var(--color-surface)] px-[var(--space-3)] text-[var(--text-aux)] text-[var(--color-text-muted)] uppercase tracking-wider">{t.auth.or}</span>
-        </div>
-      </div>
+      {/if}
 
       <form onsubmit={handleMagicLink} class="flex flex-col gap-[var(--space-3)]">
         <div class="flex items-center focus-within:border-[var(--color-accent)] focus-within:shadow-[0_0_0_1px_var(--color-accent-medium)] input-field">
