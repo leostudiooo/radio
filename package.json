@@ -14,7 +14,7 @@
 		"gen-types": "supabase gen types typescript --linked > src/lib/logic/types/database.ts",
 		"format": "prettier --write .",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "pnpm run test:unit -- --run"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.4",
