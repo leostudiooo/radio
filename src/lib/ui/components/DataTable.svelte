@@ -94,7 +94,7 @@
             >
               {#if column.sortable}
                 <button
-                  class="inline-flex items-center gap-[var(--space-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded-[var(--radius-sm)] cursor-pointer hover:text-[var(--color-text-secondary)]"
+                  class="inline-flex items-center gap-[var(--space-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] cursor-pointer hover:text-[var(--color-text-secondary)]"
                   onclick={() => handleSort(column)}
                   aria-label={t.common.sortBy.replace('{column}', column.header)}
                 >
@@ -134,7 +134,7 @@
                 {#if cellSnippets[column.key]}
                   {@render cellSnippets[column.key](row)}
                 {:else if column.badge}
-                  <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
+                  <span class="inline-block px-[var(--space-2)] py-[1px] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
                 {:else if column.html}
                   {@html getCellValue(row, column)}
                 {:else}
@@ -163,7 +163,7 @@
               {#if cellSnippets[column.key]}
                 {@render cellSnippets[column.key](row)}
               {:else if column.badge}
-                 <span class="inline-block px-[var(--space-2)] py-[1px] rounded-[var(--radius-sm)] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
+                 <span class="inline-block px-[var(--space-2)] py-[1px] bg-[var(--color-accent)]" style="color: var(--color-text-on-accent)">{getCellValue(row, column)}</span>
                {:else if column.html}
                  {@html getCellValue(row, column)}
                {:else}

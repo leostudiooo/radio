@@ -82,7 +82,7 @@
 
   {#if open}
     <div
-      class="absolute right-0 mt-[var(--space-1)] min-w-[10rem] bg-[var(--color-elevated)] border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-lg z-50"
+      class="absolute right-0 mt-[var(--space-1)] min-w-[10rem] bg-[var(--color-elevated)] border border-[var(--color-border)] shadow-lg z-50"
       role="menu"
       tabindex="-1"
       onkeydown={handleMenuKeydown}

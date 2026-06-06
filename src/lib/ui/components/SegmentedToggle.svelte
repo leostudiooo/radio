@@ -39,7 +39,7 @@
 </script>
 
 <div
-  class="inline-flex items-center card-panel rounded-full p-[var(--space-0-5)]"
+  class="inline-flex items-center card-panel p-[var(--space-0-5)]"
   role="radiogroup"
   tabindex="0"
   onkeydown={handleKeydown}
@@ -52,7 +52,7 @@
       aria-checked={option.value === value}
       style={option.value === value ? 'color: var(--color-text-on-accent)' : ''}
       class="px-[var(--space-2)] py-[var(--space-0-5)] text-[var(--text-body)] font-medium transition-all duration-100 {option.value === value
-        ? 'bg-[var(--color-accent)] rounded-full'
+        ? 'bg-[var(--color-accent)]'
         : 'text-[var(--color-text-secondary)]'}"
     >
       {option.label}

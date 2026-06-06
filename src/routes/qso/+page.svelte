@@ -208,7 +208,7 @@
       {#snippet actions(row)}
         <div class="flex justify-end gap-[var(--space-1)]">
           <button
-            class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+            class="p-[var(--space-1)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
             aria-label={t.qso.viewQso}
             onclick={() => goto(`/qso/${row.id}`)}
           >
@@ -216,14 +216,14 @@
           </button>
           {#if authStore.isAdmin}
             <button
-              class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+              class="p-[var(--space-1)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
               aria-label={t.qso.editQso}
               onclick={() => goto(`/qso/${row.id}/edit`)}
             >
               <Pencil size={16} />
             </button>
             <button
-              class="p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+              class="p-[var(--space-1)] text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] hover:bg-[var(--color-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
               aria-label={t.qso.deleteQso}
               onclick={() => confirmDelete(row.id as string)}
             >

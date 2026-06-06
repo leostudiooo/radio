@@ -133,7 +133,7 @@
         <div class="flex items-center justify-end gap-[var(--space-1)]">
           <button
             type="button"
-            class="inline-flex items-center justify-center p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+            class="inline-flex items-center justify-center p-[var(--space-1)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             onclick={() => goto(`/equipment/${row.id}`)}
             aria-label={t.equipment.editItem.replace('{name}', String(row.name ?? ''))}
           >
@@ -141,7 +141,7 @@
           </button>
           <button
             type="button"
-            class="inline-flex items-center justify-center p-[var(--space-1)] rounded-[var(--radius-sm)] text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+            class="inline-flex items-center justify-center p-[var(--space-1)] text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             onclick={() => { deleteTarget = row as unknown as Equipment; showDeleteConfirm = true; }}
             aria-label={t.equipment.deleteItem.replace('{name}', String(row.name ?? ''))}
           >

@@ -222,7 +222,7 @@
       {:else}
         <div class="flex flex-col gap-[var(--space-3)]">
           {#each passkeys as passkey (passkey.id)}
-            <div class="flex flex-col gap-[var(--space-2)] p-[var(--space-3)] border border-[var(--color-border)] rounded-[var(--radius-md)]">
+            <div class="flex flex-col gap-[var(--space-2)] p-[var(--space-3)] border border-[var(--color-border)]">
               {#if renamingId === passkey.id}
                 <div class="flex items-center gap-[var(--space-2)]">
                   <input
@@ -230,7 +230,7 @@
                     value={renameValue}
                     oninput={(e) => { renameValue = (e.target as HTMLInputElement).value; }}
                     placeholder={t.auth.passkeyNamePlaceholder}
-                    class="flex-1 bg-transparent px-[var(--space-3)] text-[var(--text-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none border border-[var(--color-border)] rounded-[var(--radius-sm)] h-[var(--height-control-sm)]"
+                    class="flex-1 bg-transparent px-[var(--space-3)] text-[var(--text-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none border border-[var(--color-border)] h-[var(--height-control-sm)]"
                   />
                   <Button size="icon" onclick={() => handleRenamePasskey(passkey.id)}>
                     <Save size={14} />
