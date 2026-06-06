@@ -22,7 +22,7 @@
   const typeOptions = EQUIPMENT_TYPES.map((t) => ({ value: t, label: t }));
 
   const t = $derived(localeStore.translation);
-  const id: string = $derived($page.params.id);
+  const id = $derived($page.params.id!);
 
   let equipment: Equipment | null = $state(null);
   let loading = $state(true);

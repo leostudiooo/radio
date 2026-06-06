@@ -21,15 +21,15 @@
   import Button from '$lib/ui/components/Button.svelte';
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
-  import { Eye, Pencil, Trash2 } from 'lucide-svelte';
+  import { Eye, Pencil, Trash2 } from '@lucide/svelte';
   import { SITE_CONFIG } from '$lib/config';
 
   const PAGE_SIZE = 25;
 
+  const t = $derived(localeStore.translation);
+
   const bandOptions = $derived([{ value: '', label: t.qso.allBands }, ...BANDS.map((b) => ({ value: b, label: b }))]);
   const modeOptions = $derived([{ value: '', label: t.qso.allModes }, ...MODES.map((m) => ({ value: m, label: m }))]);
-
-  const t = $derived(localeStore.translation);
 
   let filterCallsign = $state('');
   let filterBand = $state('');
@@ -44,7 +44,7 @@
   let loading = $state(true);
   let initialLoaded = $state(false);
 
-  let sortField = $state('time_on');
+  let sortField = $state<keyof QSO>('time_on');
   let sortDir = $state<'asc' | 'desc'>('desc');
 
   let deleteTarget = $state<string | null>(null);
@@ -118,7 +118,7 @@
   }
 
   function handleSort(key: string, dir: 'asc' | 'desc') {
-    sortField = key;
+    sortField = key as keyof QSO;
     sortDir = dir;
     loadData();
   }

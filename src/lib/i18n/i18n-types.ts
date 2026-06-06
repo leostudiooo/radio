@@ -40,6 +40,10 @@ export type BaseTranslation = {
     grid: string;
     qth: string;
     closeDialog: string;
+    toggleNav: string;
+    closeNav: string;
+    sortBy: string;
+    dismiss: string;
     placeholder: {
       callsign: string;
       freq: string;

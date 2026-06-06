@@ -82,6 +82,8 @@
   const modeOptions = MODES.map((m) => ({ value: m, label: m }));
   const contOptions = CONTINENTS.map((c) => ({ value: c, label: c }));
   const qslStatusOptions = ADIF_QSL_STATUS.map((s) => ({ value: s, label: s }));
+  const t = $derived(localeStore.translation);
+
   const qslViaOptions = $derived([
     { value: '', label: '\u2014' },
     { value: 'B', label: t.qso.qslViaBureau },
@@ -89,8 +91,6 @@
     { value: 'E', label: t.qso.qslViaElectronic },
     { value: 'M', label: t.qso.qslViaManager },
   ]);
-
-  const t = $derived(localeStore.translation);
 
   let callsign = $state('');
   let timeOn = $state(formMode === 'create' ? utcNow() : '');

@@ -23,10 +23,10 @@
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import { SITE_CONFIG } from '$lib/config';
 
+  const t = $derived(localeStore.translation);
+
   const bandOptions = $derived([{ value: '', label: t.qso.allBands }, ...BANDS.map((b) => ({ value: b, label: b }))]);
   const modeOptions = $derived([{ value: '', label: t.qso.allModes }, ...MODES.map((m) => ({ value: m, label: m }))]);
-
-  const t = $derived(localeStore.translation);
 
   type ImportStep = 'upload' | 'preview' | 'result';
   type ActiveTab = 'import' | 'export';
@@ -165,7 +165,7 @@
   <SegmentedToggle
     options={[{ value: 'import', label: t.adif.importTitle }, { value: 'export', label: t.adif.exportTitle }]}
     value={activeTab}
-    onchange={(v) => { activeTab = v; }}
+    onchange={(v) => { activeTab = v as ActiveTab; }}
   />
 </div>
 
@@ -207,7 +207,7 @@
       <DataTable
         columns={previewColumns}
         data={(parsedQSOs.slice(0, 10) as unknown) as Record<string, unknown>[]}
-        keyExtractor={(_row, i) => String(i)}
+        keyExtractor={(row) => String(row.callsign ?? '') + String(row.time_on ?? '')}
         emptyMessage=""
       />
 

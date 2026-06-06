@@ -11,7 +11,7 @@
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
 
   const t = $derived(localeStore.translation);
-  const id: string = $derived($page.params.id);
+  const id = $derived($page.params.id!);
 
   let qso: QSO | null = $state(null);
   let loading = $state(true);

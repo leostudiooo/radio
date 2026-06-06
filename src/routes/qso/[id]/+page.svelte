@@ -11,7 +11,7 @@
   import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/ui/components/EmptyState.svelte';
 
-  const id: string = $derived($page.params.id);
+  const id = $derived($page.params.id!);
   const t = $derived(localeStore.translation);
 
   let qso: QSO | null = $state(null);
