@@ -1,0 +1,4 @@
+[submodule "vendors/wterm"]
+	path = vendors/wterm
+	url = git@github.com:leostudiooo/wterm.git
+	branch = radio-input-proxy
