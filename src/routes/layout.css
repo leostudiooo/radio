@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@wterm/dom/css';
 
 @theme {
 	--color-base: oklch(0.145 0 0);
