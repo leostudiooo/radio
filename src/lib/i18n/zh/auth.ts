@@ -1,9 +1,9 @@
 const auth = {
 	login: '登录',
 	logout: '退出登录',
-	signInWithPasskey: '使用 Passkey 登录',
+	signInWithPasskey: '使用通行密钥登录 (WebAuthn)',
 	signInWithMagicLink: '使用魔法链接登录',
-	passkeyNotSupported: '此浏览器不支持 Passkey',
+	passkeyNotSupported: '此浏览器不支持通行密钥 (需要 WebAuthn 支持)',
 	passkeys: '通行密钥',
 	registerPasskey: '注册通行密钥',
 	passkeyName: '名称',
