@@ -13,7 +13,7 @@
 </svelte:head>
 
 <div
-	class="relative flex min-h-[calc(100vh-3.5rem-var(--space-12))] items-center justify-center"
+	class="relative flex min-h-[calc(100vh-3.5rem-var(--space-12))] items-center justify-center supports-[height:100dvh]:min-h-[calc(100dvh-3.5rem-var(--space-12))]"
 >
 	{#if !terminalComplete}
 		<button
