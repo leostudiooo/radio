@@ -308,6 +308,7 @@ export type BaseTranslation = {
 	};
 	terminal: {
 		skip: string;
+		viewQsos: string;
 	};
 };
 

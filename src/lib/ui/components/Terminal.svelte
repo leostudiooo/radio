@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { authStore } from '$lib/ui/stores/auth.svelte';
 	import { createBrowserTerminalSession, type TerminalSession } from './terminalSession';
+	import { createStationOS } from '$lib/ui/os';
+	import { createBrowserStationOSAdapters } from '$lib/ui/os/browserAdapter';
+	import siteEntries from 'virtual:station-site-fs';
 
 	let { skipSignal = 0, oncomplete = () => {} }: { skipSignal?: number; oncomplete?: () => void } =
 		$props();
@@ -56,11 +58,15 @@
 				return;
 			}
 
+			const os = createStationOS({
+				adapters: createBrowserStationOSAdapters((data) => {
+					if (!disposed) term.write(data);
+				}),
+				siteEntries
+			});
 			const browserSession = createBrowserTerminalSession(
-				(data) => {
-					term.write(data);
-				},
-				() => authStore.callsign ?? 'guest',
+				os,
+				(data) => term.write(data),
 				notifyComplete
 			);
 
@@ -125,7 +131,9 @@
 		--terminal-padding-y: calc(var(--space-6) * 2);
 		font-family: var(--font-mono);
 		font-size: var(--text-body);
-		max-width: calc((var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x));
+		max-width: calc(
+			(var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x)
+		);
 		max-height: calc(
 			(var(--text-body) * var(--line-height-tight) * var(--terminal-rows)) +
 				var(--terminal-padding-y)
@@ -135,7 +143,9 @@
 	:global(.station-terminal.wterm) {
 		box-sizing: border-box;
 		width: 100%;
-		max-width: calc((var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x));
+		max-width: calc(
+			(var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x)
+		);
 		height: calc(
 			(var(--text-body) * var(--line-height-tight) * var(--terminal-rows)) +
 				var(--terminal-padding-y)

@@ -1,3 +1,4 @@
 export default {
-	skip: 'Skip →'
+	skip: 'Skip →',
+	viewQsos: 'View QSOs →'
 };
