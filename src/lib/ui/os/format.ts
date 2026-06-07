@@ -17,7 +17,7 @@ export function lines(...linesToJoin: string[]): string {
 }
 
 export function formatJSON(value: unknown): string {
-	return JSON.stringify(value, null, '\t');
+	return JSON.stringify(value, null, 2).replace(/\n/g, '\r\n');
 }
 
 export function formatOperatorInfo(operatorInfo: Record<string, string>): string {

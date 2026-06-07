@@ -221,6 +221,16 @@ describe('Station OS core', () => {
 		expect(catOutput).toContain('guest:/$ ');
 	});
 
+	it('cat route metadata uses space-indented JSON for stable terminal columns', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const catOutput = await execAndCollect(harness.os, harness.output, 'cat qso/index');
+		expect(catOutput).toContain('{\r\n  "type": "route",');
+		expect(catOutput).toContain('  "route": "/qso"\r\n}');
+		expect(catOutput).not.toContain('\t');
+	});
+
 	it('lazy-loads QSO and equipment entries through ls and cat', async () => {
 		const harness = createHarness();
 		await bootInstant(harness.os, harness.output);
