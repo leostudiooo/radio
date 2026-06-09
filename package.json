@@ -4,7 +4,9 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
+		"predev": "node scripts/generate-font-css.mjs",
 		"dev": "vite dev",
+		"prebuild": "node scripts/generate-font-css.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync && simple-git-hooks",
@@ -32,13 +34,15 @@
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
+		"subset-font": "^2.5.0",
 		"svelte": "^5.55.2",
 		"svelte-check": "^4.4.6",
 		"tailwindcss": "^4.2.2",
 		"typescript": "^6.0.2",
 		"typescript-eslint": "^8.58.1",
 		"vite": "^8.0.7",
-		"vitest": "^4.1.3"
+		"vitest": "^4.1.3",
+		"wrangler": "^4.98.0"
 	},
 	"dependencies": {
 		"@lucide/svelte": "^1.17.0",

@@ -6,6 +6,7 @@
 	import Toast from '$lib/ui/components/Toast.svelte';
 	import AppHeader from '$lib/ui/components/AppHeader.svelte';
 	import { SITE_CONFIG } from '$lib/config';
+	import { fontStylesheetHrefs } from '$lib/generated/font-links';
 
 	let { children } = $props();
 
@@ -14,6 +15,9 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	{#each fontStylesheetHrefs as href}
+		<link rel="stylesheet" {href} />
+	{/each}
 	<title>{SITE_CONFIG.siteTitle}</title>
 </svelte:head>
 

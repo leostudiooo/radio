@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@wterm/dom/css';
+@import '../lib/generated/fonts.css';
 
 @theme {
 	--color-base: oklch(0.145 0 0);
@@ -54,8 +55,12 @@
 	--radius-md: 0.5rem;
 	--radius-lg: 0.75rem;
 
-	--font-body: 'Iosevka Aile', 'Source Han Sans SC', sans-serif;
-	--font-mono: 'Iosevka Term', 'Source Han Sans SC HW', monospace;
+	--font-body:
+		'Iosevka Aile Web', 'Iosevka Aile', 'Source Han Sans SC Web', 'Source Han Sans SC',
+		'Noto Sans SC', 'PingFang SC', sans-serif;
+	--font-mono:
+		'Iosevka Term Web', 'Iosevka Term', 'Source Han Sans SC Web', 'Source Han Sans SC HW',
+		'Noto Sans SC', 'PingFang SC', monospace;
 	--space-0-5: 0.125rem;
 	--space-1: 0.25rem;
 	--space-2: 0.5rem;
