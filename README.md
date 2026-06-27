@@ -1,42 +1,56 @@
-# sv
+# BA4VUN QSO Log
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+个人业余电台 QSO 日志单页应用。呼号 BA4VUN,常驻南京。
 
-## Creating a project
+## 技术栈
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **前端**: SvelteKit 5(SPA,SSR 关闭)+ Svelte 5 runes + Tailwind 4
+- **后端**: Supabase(PostgreSQL 17 + Auth + Passkey)
+- **部署**: Cloudflare Pages + Pages Functions
+- **终端**: 主页使用 vendored wterm(submodule)
 
-```sh
-# create a new project
-npx sv create my-app
+## 主要功能
+
+- QSO 日志增删改查,支持呼号、频段、模式、日期筛选
+- 设备管理(收发信机、天线、调谐器等),可激活/停用
+- QSL 卡片管理
+- ADIF 格式导入/导出
+- Passkey 与 Magic Link 登录(管理员可写,公开只读)
+- 主页终端界面,支持 `ls` / `cd` / `cat` / `auth` / `qso` / `equipment` 等命令
+- QRZ.com 呼号查询(经 Cloudflare Function 代理)
+
+## 本地开发
+
+需要 Node.js、pnpm、Supabase CLI。克隆时记得带 submodule:
+
+```bash
+git clone --recursive <repo-url>
+cd radio
+pnpm install
+pnpm gen-types    # 需要先 supabase link
+pnpm dev
 ```
 
-To recreate this project with the same configuration:
+常用命令:`pnpm build` / `pnpm test` / `pnpm check` / `pnpm lint` / `pnpm format`。
+本地 Supabase:`supabase start` → `supabase db push`。
 
-```sh
-# recreate this project
-npx sv@0.15.3 create --template minimal --types ts --add prettier eslint vitest="usages:unit" tailwindcss="plugins:none" sveltekit-adapter="adapter:static" --no-download-check --install npm .
-```
+## 环境变量
 
-## Developing
+参考 `.env.example`。Supabase、QRZ、Cloudflare 相关变量都在里面。
+`QRZ_USERNAME` / `QRZ_PASSWORD` 应配置在 Cloudflare Pages 后台,不要写进 `.env`。
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## 项目结构
 
-```sh
-npm run dev
+- `src/lib/logic/` — 纯 TS 业务逻辑(ESLint 禁止 import Svelte/UI/浏览器全局)
+- `src/lib/ui/` — Svelte 5 组件 + runes stores
+- `src/lib/i18n/` — typesafe-i18n(en/zh)
+- `src/routes/` — SvelteKit 路由(SPA 模式,用 `onMount` 加载数据)
+- `functions/` — Cloudflare Pages Functions(呼号查询 API)
+- `supabase/` — 数据库迁移 + 本地配置
+- `vendors/wterm/` — wterm 终端组件源码(submodule)
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+详细架构约束、设计系统规则、命名约定见 `AGENTS.md`。
 
-## Building
+## 部署
 
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+`pnpm build` 后部署到 Cloudflare Pages,Functions 随仓库自动走。
