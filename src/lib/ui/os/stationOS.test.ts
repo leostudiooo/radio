@@ -727,3 +727,140 @@ describe('Station OS non-navigation mode', () => {
 		expect(out).toContain('equipment open: ghost: no such record');
 	});
 });
+
+describe('Station OS Tab completion', () => {
+	it('completes a unique command prefix with trailing space', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('he');
+		expect(result).toEqual({ candidates: [], completedLine: 'help', suffix: ' ' });
+	});
+
+	it('returns all command candidates when prefix is ambiguous', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('c');
+		expect(result.candidates.sort()).toEqual(['cat', 'cd', 'clear']);
+		expect(result.completedLine).toBe('c');
+		expect(result.suffix).toBe('');
+	});
+
+	it('returns no match when prefix matches nothing', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('xyz');
+		expect(result).toEqual({ candidates: [], completedLine: 'xyz', suffix: '' });
+	});
+
+	it('completes unique auth subcommand', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('auth logo');
+		expect(result).toEqual({ candidates: [], completedLine: 'auth logout', suffix: ' ' });
+	});
+
+	it('returns ambiguous auth subcommand candidates', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('auth l');
+		expect(result.candidates.sort()).toEqual(['login', 'logout']);
+		expect(result.completedLine).toBe('auth l');
+		expect(result.suffix).toBe('');
+	});
+
+	it('completes auth login --passkey uniquely', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('auth login --p');
+		expect(result).toEqual({
+			candidates: [],
+			completedLine: 'auth login --passkey',
+			suffix: ' '
+		});
+	});
+
+	it('completes qso subcommand uniquely', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('qso vie');
+		expect(result).toEqual({ candidates: [], completedLine: 'qso view', suffix: ' ' });
+	});
+
+	it('completes equipment subcommand uniquely', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('equipment ac');
+		expect(result).toEqual({
+			candidates: [],
+			completedLine: 'equipment activate',
+			suffix: ' '
+		});
+	});
+
+	it('completes static directory path with trailing slash', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('ls /et');
+		expect(result).toEqual({ candidates: [], completedLine: 'ls /etc', suffix: '/' });
+	});
+
+	it('completes static file path with trailing space', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('cat /etc/m');
+		expect(result).toEqual({ candidates: [], completedLine: 'cat /etc/motd', suffix: ' ' });
+	});
+
+	it('completes route node path with trailing slash', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('cd /q');
+		expect(result).toEqual({ candidates: [], completedLine: 'cd /qso', suffix: '/' });
+	});
+
+	it('returns multiple candidates when path prefix is ambiguous', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('open /e');
+		expect(result.candidates.sort()).toEqual(['equipment', 'etc']);
+		expect(result.completedLine).toBe('open /e');
+		expect(result.suffix).toBe('');
+	});
+
+	it('returns no match when path prefix does not exist', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('cat /nonexistent/x');
+		expect(result).toEqual({ candidates: [], completedLine: 'cat /nonexistent/x', suffix: '' });
+	});
+
+	it('does not attempt completion inside arguments without known context', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const result = await harness.os.complete('pwd extra');
+		expect(result).toEqual({ candidates: [], completedLine: 'pwd extra', suffix: '' });
+	});
+
+	it('completes path relative to cwd', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+		await harness.os.exec('cd /etc');
+
+		const result = await harness.os.complete('cat m');
+		expect(result).toEqual({ candidates: [], completedLine: 'cat motd', suffix: ' ' });
+	});
+});

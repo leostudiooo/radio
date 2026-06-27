@@ -9,7 +9,8 @@ import {
 	formatQSOList,
 	lines
 } from './format';
-import type { StationOS, StationOSAdapters, StationOSOptions } from './types';
+import type { CompletionResult, StationOS, StationOSAdapters, StationOSOptions } from './types';
+import type { VFSListEntry } from './types';
 
 const STATUS_LINES = [
 	'Initializing RF Module ....... ',
@@ -17,6 +18,54 @@ const STATUS_LINES = [
 	'Initializing Codec ........... ',
 	'ALL SYSTEMS .................. '
 ];
+
+const COMMANDS = [
+	'help',
+	'ls',
+	'cd',
+	'open',
+	'cat',
+	'pwd',
+	'clear',
+	'whoami',
+	'auth',
+	'qso',
+	'equipment'
+];
+
+const AUTH_SUBS = ['status', 'whoami', 'login', 'logout'];
+const AUTH_LOGIN_FLAGS = ['--passkey', '--magic'];
+const QSO_SUBS = ['list', 'view', 'open', 'add', 'edit'];
+const EQUIPMENT_SUBS = ['list', 'view', 'open', 'add', 'edit', 'activate', 'deactivate'];
+const PATH_COMMANDS = new Set(['ls', 'cd', 'cat', 'open']);
+
+function filterByPrefix(list: readonly string[], prefix: string): string[] {
+	return list.filter((item) => item.startsWith(prefix));
+}
+
+function singleMatch(
+	matches: string[],
+	buildLine: (match: string) => string,
+	suffix: string,
+	line: string
+): CompletionResult {
+	if (matches.length === 1) {
+		return { candidates: [], completedLine: buildLine(matches[0]), suffix };
+	}
+	if (matches.length > 1) {
+		return { candidates: matches, completedLine: line, suffix: '' };
+	}
+	return { candidates: [], completedLine: line, suffix: '' };
+}
+
+function splitLine(line: string): { before: string; lastToken: string } {
+	const lastSpace = line.lastIndexOf(' ');
+	if (lastSpace === -1) return { before: '', lastToken: line };
+	return {
+		before: line.slice(0, lastSpace + 1),
+		lastToken: line.slice(lastSpace + 1)
+	};
+}
 
 function randomDelay(min: number, max: number) {
 	return min + Math.random() * (max - min);
@@ -462,6 +511,78 @@ export function createStationOS({
 		);
 	}
 
+	async function completePath(partial: string, line: string): Promise<CompletionResult> {
+		const lastSlash = partial.lastIndexOf('/');
+		const parentPrefix = lastSlash >= 0 ? partial.slice(0, lastSlash + 1) : '';
+		const segment = lastSlash >= 0 ? partial.slice(lastSlash + 1) : partial;
+		const resolvedParent = resolvePath(cwd, parentPrefix || '.');
+
+		let entries: VFSListEntry[];
+		try {
+			entries = await vfs.list(resolvedParent, '/');
+		} catch {
+			return { candidates: [], completedLine: line, suffix: '' };
+		}
+
+		const matches = entries.filter((entry) => entry.name.startsWith(segment));
+		if (matches.length === 0) {
+			return { candidates: [], completedLine: line, suffix: '' };
+		}
+
+		if (matches.length === 1) {
+			const match = matches[0];
+			const beforeLine = line.slice(0, line.length - partial.length);
+			return {
+				candidates: [],
+				completedLine: `${beforeLine}${parentPrefix}${match.name}`,
+				suffix: match.kind === 'file' ? ' ' : '/'
+			};
+		}
+
+		return {
+			candidates: matches.map((entry) => entry.name),
+			completedLine: line,
+			suffix: ''
+		};
+	}
+
+	async function complete(line: string): Promise<CompletionResult> {
+		const { before, lastToken } = splitLine(line);
+
+		if (!before) {
+			const matches = filterByPrefix(COMMANDS, lastToken);
+			return singleMatch(matches, (match) => match, ' ', line);
+		}
+
+		const tokens = before.trim().split(/\s+/);
+		const command = tokens[0];
+
+		if (command === 'auth') {
+			if (tokens.length === 1) {
+				const matches = filterByPrefix(AUTH_SUBS, lastToken);
+				return singleMatch(matches, (match) => `auth ${match}`, ' ', line);
+			}
+			if (tokens.length === 2 && tokens[1] === 'login') {
+				const matches = filterByPrefix(AUTH_LOGIN_FLAGS, lastToken);
+				return singleMatch(matches, (match) => `auth login ${match}`, ' ', line);
+			}
+		}
+
+		if (command === 'qso' || command === 'equipment') {
+			if (tokens.length === 1) {
+				const subs = command === 'qso' ? QSO_SUBS : EQUIPMENT_SUBS;
+				const matches = filterByPrefix(subs, lastToken);
+				return singleMatch(matches, (match) => `${command} ${match}`, ' ', line);
+			}
+		}
+
+		if (PATH_COMMANDS.has(command)) {
+			return await completePath(lastToken, line);
+		}
+
+		return { candidates: [], completedLine: line, suffix: '' };
+	}
+
 	return {
 		async boot(options = {}) {
 			bootRun += 1;
@@ -524,6 +645,8 @@ export function createStationOS({
 
 			emitPrompt();
 		},
+
+		complete,
 
 		getPrompt,
 

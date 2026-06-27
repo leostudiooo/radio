@@ -24,6 +24,28 @@ export function createBrowserTerminalSession(
 		onBootComplete();
 	}
 
+	async function handleTab() {
+		if (!lineBuffer) return;
+
+		const result = await os.complete(lineBuffer);
+		if (disposed) return;
+
+		if (result.candidates.length > 0) {
+			emit('\r\n');
+			emit(result.candidates.join('  '));
+			emit('\r\n');
+			emit(os.getPrompt());
+			emit(lineBuffer);
+			return;
+		}
+
+		if (result.completedLine !== lineBuffer || result.suffix) {
+			const newBuffer = `${result.completedLine}${result.suffix}`;
+			emit(newBuffer.slice(lineBuffer.length));
+			lineBuffer = newBuffer;
+		}
+	}
+
 	return {
 		async start(options = {}) {
 			lineBuffer = '';
@@ -57,6 +79,11 @@ export function createBrowserTerminalSession(
 					if (lineBuffer.length === 0) continue;
 					lineBuffer = lineBuffer.slice(0, -1);
 					emit('\b \b');
+					continue;
+				}
+
+				if (char === '\t') {
+					void handleTab();
 					continue;
 				}
 

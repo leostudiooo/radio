@@ -69,6 +69,12 @@ export interface StationOSAdapters {
 	};
 }
 
+export interface CompletionResult {
+	candidates: string[];
+	completedLine: string;
+	suffix: string;
+}
+
 export interface StationOSState {
 	cwd: string;
 	bootComplete: boolean;
@@ -78,6 +84,7 @@ export interface StationOS {
 	boot: (options?: { instant?: boolean }) => Promise<void>;
 	skipBoot: () => void;
 	exec: (line: string) => Promise<void>;
+	complete: (line: string) => Promise<CompletionResult>;
 	getPrompt: () => string;
 	getState: () => StationOSState;
 }
