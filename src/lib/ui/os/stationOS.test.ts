@@ -235,7 +235,7 @@ describe('Station OS core', () => {
 		const lsOutput = await execAndCollect(harness.os, harness.output, 'ls ../');
 		expect(lsOutput).toContain('operator_info.json');
 		expect(lsOutput).toContain('etc');
-		expect(lsOutput).toContain('index');
+		expect(lsOutput).toContain('dev');
 
 		const unknownOutput = await execAndCollect(harness.os, harness.output, 'frobnicate');
 		expect(unknownOutput).toContain('frobnicate: command not found');
@@ -301,51 +301,67 @@ describe('Station OS core', () => {
 		expect(catOutput).toContain('guest:/$ ');
 	});
 
-	it('cat route metadata uses space-indented JSON for stable terminal columns', async () => {
+	it('cat on operator info still uses formatted profile output', async () => {
 		const harness = createHarness();
 		await bootInstant(harness.os, harness.output);
 
-		const catOutput = await execAndCollect(harness.os, harness.output, 'cat qso/index');
-		expect(catOutput).toContain('{\r\n  "type": "route",');
-		expect(catOutput).toContain('  "route": "/qso"\r\n}');
-		expect(catOutput).not.toContain('\t');
+		const catOutput = await execAndCollect(harness.os, harness.output, 'cat /operator_info.json');
+		expect(catOutput).toContain('// operator_info.json');
+		expect(catOutput).toContain('"callsign": "BA4VUN"');
 	});
 
 	it('lazy-loads QSO and equipment entries through ls and cat (alias filenames)', async () => {
 		const harness = createHarness();
 		await bootInstant(harness.os, harness.output);
 
-		const qsoAliasFile = '2026-01-15_1234Z_k1abc_20m_ssb_qso-1.json';
+		const qsoAliasName = '2026-01-15_1234Z_k1abc_20m_ssb_qso-1';
 		const qsoListOutput = await execAndCollect(harness.os, harness.output, 'ls /qso');
 		expect(harness.qsoList).toHaveBeenCalledTimes(1);
 		expect(harness.qsoGet).not.toHaveBeenCalled();
-		expect(qsoListOutput).toContain(qsoAliasFile);
+		expect(qsoListOutput).toContain(qsoAliasName);
 
 		const qsoCatOutput = await execAndCollect(
 			harness.os,
 			harness.output,
-			`cat /qso/${qsoAliasFile}`
+			`cat /qso/${qsoAliasName}`
 		);
 		expect(harness.qsoGet).toHaveBeenCalledTimes(1);
 		expect(harness.qsoGet).toHaveBeenCalledWith('qso-1');
 		expect(qsoCatOutput).toContain('"id": "qso-1"');
 		expect(qsoCatOutput).toContain('guest:/$ ');
 
-		const equipmentAliasFile = 'transceiver_yaesu-ft-991a_eq-1.json';
+		const equipmentAliasName = 'transceiver_yaesu-ft-991a_eq-1';
 		const equipmentListOutput = await execAndCollect(harness.os, harness.output, 'ls /equipment');
 		expect(harness.equipmentList).toHaveBeenCalledTimes(1);
 		expect(harness.equipmentGet).not.toHaveBeenCalled();
-		expect(equipmentListOutput).toContain(equipmentAliasFile);
+		expect(equipmentListOutput).toContain(equipmentAliasName);
 
 		const equipmentCatOutput = await execAndCollect(
 			harness.os,
 			harness.output,
-			`cat /equipment/${equipmentAliasFile}`
+			`cat /equipment/${equipmentAliasName}`
 		);
 		expect(harness.equipmentGet).toHaveBeenCalledTimes(1);
 		expect(harness.equipmentGet).toHaveBeenCalledWith('eq-1');
 		expect(equipmentCatOutput).toContain('"id": "eq-1"');
 		expect(equipmentCatOutput).toContain('guest:/$ ');
+	});
+
+	it('exposes /dev as an alias of /equipment', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const lsOutput = await execAndCollect(harness.os, harness.output, 'ls /dev');
+		expect(harness.equipmentList).toHaveBeenCalledTimes(1);
+		expect(lsOutput).toContain('transceiver_yaesu-ft-991a_eq-1');
+
+		const catOutput = await execAndCollect(
+			harness.os,
+			harness.output,
+			'cat /dev/transceiver_yaesu-ft-991a_eq-1'
+		);
+		expect(harness.equipmentGet).toHaveBeenCalledWith('eq-1');
+		expect(catOutput).toContain('"id": "eq-1"');
 	});
 
 	it('falls back to raw UUID stems when cat target is a canonical UUID', async () => {
@@ -364,10 +380,18 @@ describe('Station OS core', () => {
 				: null
 		);
 
-		const out = await execAndCollect(harness.os, harness.output, `cat /qso/${uuid}.json`);
+		const out = await execAndCollect(harness.os, harness.output, `cat /qso/${uuid}`);
 		expect(harness.qsoList).not.toHaveBeenCalled();
 		expect(harness.qsoGet).toHaveBeenCalledWith(uuid);
 		expect(out).toContain(`"id": "${uuid}"`);
+	});
+
+	it('cat on a directory reports "is a directory"', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'cat /qso');
+		expect(out).toContain('is a directory');
 	});
 
 	it('denies guest and user write commands, but lets admin activate equipment', async () => {

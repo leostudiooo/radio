@@ -5,6 +5,7 @@ import {
 	ANSI,
 	formatEquipmentList,
 	formatJSON,
+	formatLsOutput,
 	formatOperatorInfo,
 	formatQSOList,
 	lines
@@ -174,9 +175,7 @@ export function createStationOS({
 	let bootRun = 0;
 
 	function emit(text: string) {
-		if (state.bootComplete) {
-			state.transcript.push(text);
-		}
+		state.transcript.push(text);
 		adapters.emit(text);
 	}
 
@@ -241,7 +240,7 @@ export function createStationOS({
 
 		if (command === 'ls') {
 			const entries = await vfs.list(rest[0] ?? '.', state.cwd);
-			emitLine(entries.map((entry) => entry.name).join('  '));
+			emitLine(formatLsOutput(entries));
 			return;
 		}
 
@@ -389,7 +388,7 @@ export function createStationOS({
 			}
 
 			try {
-				emitLine(await vfs.read(`/qso/${target}.json`, '/'));
+				emitLine(await vfs.read(`/qso/${target}`, '/'));
 			} catch {
 				emitLine(`qso view: ${target}: no such record`);
 			}
@@ -462,7 +461,7 @@ export function createStationOS({
 			}
 
 			try {
-				emitLine(await vfs.read(`/equipment/${target}.json`, '/'));
+				emitLine(await vfs.read(`/equipment/${target}`, '/'));
 			} catch {
 				emitLine(`equipment view: ${target}: no such record`);
 			}

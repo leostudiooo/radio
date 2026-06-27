@@ -13,34 +13,19 @@ import type { SiteFSEntry, StaticFSEntry, StationOSAdapters, VFSListEntry } from
 
 const PAGE_SIZE = 25;
 
+const EQUIPMENT_ALIASED_ROOTS = new Set(['/equipment', '/dev']);
+
 function routeNodePath(route: string): string {
 	if (route === '/') return '/';
 	return normalizeAbsolutePath(route);
 }
 
-function routeIndexPath(route: string): string {
-	if (route === '/') return '/index';
-	return normalizeAbsolutePath(`${route}/index`);
-}
-
-function recordStemFromPath(path: string, root: '/qso' | '/equipment'): string | null {
-	const normalized = normalizeAbsolutePath(path);
+function childNameUnder(target: string, root: string): string | null {
 	const prefix = `${root}/`;
-
-	if (!normalized.startsWith(prefix) || !normalized.endsWith('.json')) return null;
-
-	const rest = normalized.slice(prefix.length);
-	if (rest.includes('/')) return null;
-
-	return rest.slice(0, -'.json'.length);
-}
-
-function routeDescription(path: string, route: string): string {
-	return formatJSON({
-		type: 'route',
-		path,
-		route
-	});
+	if (!target.startsWith(prefix)) return null;
+	const rest = target.slice(prefix.length);
+	if (!rest || rest.includes('/')) return null;
+	return rest;
 }
 
 function normalizeLineEndings(content: string): string {
@@ -67,7 +52,6 @@ export class StationVFS {
 
 		for (const entry of this.visibleRoutes) {
 			this.routes.set(routeNodePath(entry.path), entry);
-			this.routes.set(routeIndexPath(entry.path), entry);
 		}
 	}
 
@@ -81,7 +65,7 @@ export class StationVFS {
 		const names = [
 			...this.staticChildNames(target),
 			...(target === '/qso' ? await this.qsoRecordNames() : []),
-			...(target === '/equipment' ? await this.equipmentRecordNames() : [])
+			...(EQUIPMENT_ALIASED_ROOTS.has(target) ? await this.equipmentRecordNames() : [])
 		];
 
 		return uniqueSorted(names).map((name) => ({
@@ -93,6 +77,10 @@ export class StationVFS {
 	async read(path: string, cwd: string): Promise<string> {
 		const target = resolvePath(cwd, path);
 
+		if (await this.isDirectory(target)) {
+			throw new Error(`${target}: is a directory`);
+		}
+
 		if (target === '/operator_info.json') {
 			return formatOperatorInfo(this.adapters.station.operatorInfo());
 		}
@@ -102,15 +90,18 @@ export class StationVFS {
 			return normalizeLineEndings(content);
 		}
 
-		const qsoStem = recordStemFromPath(target, '/qso');
-		if (qsoStem) return this.readQSO(qsoStem);
+		const qsoStem = childNameUnder(target, '/qso');
+		if (qsoStem) {
+			const content = await this.readQSO(qsoStem);
+			if (content !== null) return content;
+		}
 
-		const equipmentStem = recordStemFromPath(target, '/equipment');
-		if (equipmentStem) return this.readEquipment(equipmentStem);
-
-		const route = this.routes.get(target);
-		if (route) {
-			return routeDescription(target, route.route);
+		for (const root of EQUIPMENT_ALIASED_ROOTS) {
+			const stem = childNameUnder(target, root);
+			if (stem) {
+				const content = await this.readEquipment(stem);
+				if (content !== null) return content;
+			}
 		}
 
 		throw new Error(`${target}: no such file`);
@@ -118,8 +109,8 @@ export class StationVFS {
 
 	async isDirectory(path: string): Promise<boolean> {
 		const target = normalizeAbsolutePath(path);
-		if (target === '/qso' || target === '/equipment') return true;
-		if (this.routes.has(target) && !target.endsWith('/index')) return true;
+		if (target === '/qso' || EQUIPMENT_ALIASED_ROOTS.has(target)) return true;
+		if (this.routes.has(target)) return true;
 
 		return this.staticChildNames(target).length > 0;
 	}
@@ -137,7 +128,7 @@ export class StationVFS {
 		const names: string[] = [];
 
 		if (target === '/') {
-			names.push('operator_info.json', 'etc', 'index');
+			names.push('operator_info.json', 'etc', 'dev');
 		}
 
 		for (const staticPath of this.staticEntryPaths) {
@@ -150,11 +141,7 @@ export class StationVFS {
 
 		for (const route of this.visibleRoutes) {
 			const routePath = routeNodePath(route.path);
-			if (routePath === target) {
-				names.push('index');
-				continue;
-			}
-
+			if (routePath === target) continue;
 			if (dirname(routePath) === target) {
 				names.push(basename(routePath));
 			}
@@ -174,10 +161,7 @@ export class StationVFS {
 		const child = normalizeAbsolutePath(parent === '/' ? `/${name}` : `${parent}/${name}`);
 
 		if (child === '/operator_info.json' || this.staticEntryPaths.has(child)) return 'file';
-		if (child === '/index' || this.routes.has(child) || this.routes.has(routeIndexPath(child))) {
-			return 'route';
-		}
-
+		if (this.routes.has(child)) return 'route';
 		return 'dir';
 	}
 
@@ -191,26 +175,22 @@ export class StationVFS {
 		return items.slice(0, PAGE_SIZE).map((item: Equipment) => equipmentAlias(item));
 	}
 
-	private async readQSO(stem: string): Promise<string> {
+	private async readQSO(stem: string): Promise<string | null> {
 		const id = isUuidLike(stem)
 			? stem
 			: findQSOIdByAlias((await this.adapters.qso.list()).data, stem);
-
-		if (!id) throw new Error(`/qso/${stem}.json: no such file`);
+		if (!id) return null;
 		const qso = await this.adapters.qso.get(id);
-		if (!qso) throw new Error(`/qso/${stem}.json: no such file`);
-
+		if (!qso) return null;
 		return formatJSON(qso);
 	}
 
-	private async readEquipment(stem: string): Promise<string> {
+	private async readEquipment(stem: string): Promise<string | null> {
 		const items = await this.adapters.equipment.list();
 		const id = isUuidLike(stem) ? stem : findEquipmentIdByAlias(items, stem);
-
-		if (!id) throw new Error(`/equipment/${stem}.json: no such file`);
+		if (!id) return null;
 		const item = await this.adapters.equipment.get(id);
-		if (!item) throw new Error(`/equipment/${stem}.json: no such file`);
-
+		if (!item) return null;
 		return formatJSON(item);
 	}
 }

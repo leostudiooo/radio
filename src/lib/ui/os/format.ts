@@ -1,5 +1,6 @@
 import type { Equipment } from '$lib/logic/types/equipment';
 import type { QSO } from '$lib/logic/types/qso';
+import type { VFSListEntry } from './types';
 
 export const ESC = '\x1b[';
 
@@ -69,4 +70,31 @@ export function formatEquipmentList(items: Equipment[]): string {
 			].join('  ')
 		)
 	);
+}
+
+const TERM_WIDTH = 80;
+
+export function formatLsOutput(entries: VFSListEntry[]): string {
+	if (entries.length === 0) return '';
+
+	const names = entries.map((entry) => entry.name);
+	const maxLen = Math.max(...names.map((name) => name.length));
+	const colWidth = maxLen + 2;
+	const cols = Math.max(1, Math.floor(TERM_WIDTH / colWidth));
+
+	if (cols === 1 || names.length === 1) {
+		return names.join('\r\n');
+	}
+
+	const rows: string[] = [];
+	for (let i = 0; i < names.length; i += cols) {
+		const row = names.slice(i, i + cols);
+		rows.push(
+			row
+				.map((name) => name.padEnd(colWidth))
+				.join('')
+				.trimEnd()
+		);
+	}
+	return rows.join('\r\n');
 }

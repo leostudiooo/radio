@@ -30,7 +30,7 @@ export function qsoAlias(qso: QSO): string {
 	const callsign = slug(qso.callsign);
 	const band = slug(qso.band ?? '');
 	const mode = slug(qso.mode ?? '');
-	return `${date}_${time}Z_${callsign}_${band}_${mode}_${shortId(qso.id)}.json`;
+	return `${date}_${time}Z_${callsign}_${band}_${mode}_${shortId(qso.id)}`;
 }
 
 export function equipmentAlias(item: Equipment): string {
@@ -39,7 +39,7 @@ export function equipmentAlias(item: Equipment): string {
 		item.manufacturer && item.model
 			? slug(`${item.manufacturer}-${item.model}`)
 			: slug(item.model ?? item.manufacturer ?? item.name);
-	return `${type}_${model}_${shortId(item.id)}.json`;
+	return `${type}_${model}_${shortId(item.id)}`;
 }
 
 export function isUuidLike(stem: string): boolean {
@@ -48,14 +48,14 @@ export function isUuidLike(stem: string): boolean {
 
 export function findQSOIdByAlias(qsos: QSO[], aliasStem: string): string | null {
 	for (const qso of qsos) {
-		if (qsoAlias(qso).replace(/\.json$/, '') === aliasStem) return qso.id;
+		if (qsoAlias(qso) === aliasStem) return qso.id;
 	}
 	return null;
 }
 
 export function findEquipmentIdByAlias(items: Equipment[], aliasStem: string): string | null {
 	for (const item of items) {
-		if (equipmentAlias(item).replace(/\.json$/, '') === aliasStem) return item.id;
+		if (equipmentAlias(item) === aliasStem) return item.id;
 	}
 	return null;
 }

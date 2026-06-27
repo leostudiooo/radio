@@ -46,38 +46,38 @@ function createEquipment(overrides: Partial<Equipment> = {}): Equipment {
 }
 
 describe('qsoAlias', () => {
-	it('builds YYYY-MM-DD_HHMMZ_CALLSIGN_BAND_MODE_uuid8.json from a UTC ISO timestamp', () => {
+	it('builds YYYY-MM-DD_HHMMZ_CALLSIGN_BAND_MODE_uuid8 from a UTC ISO timestamp', () => {
 		const alias = qsoAlias(createQSO());
-		expect(alias).toBe('2026-06-24_0918Z_ba4vun_40m_cw_9f31ab02.json');
+		expect(alias).toBe('2026-06-24_0918Z_ba4vun_40m_cw_9f31ab02');
 	});
 
 	it('lowercases callsign and strips slash suffixes', () => {
 		const alias = qsoAlias(createQSO({ callsign: 'BA4VUN/P' }));
-		expect(alias).toBe('2026-06-24_0918Z_ba4vun-p_40m_cw_9f31ab02.json');
+		expect(alias).toBe('2026-06-24_0918Z_ba4vun-p_40m_cw_9f31ab02');
 	});
 
 	it('handles +00:00 timezone designator the same as Z', () => {
 		const alias = qsoAlias(createQSO({ time_on: '2026-06-24T09:18:00+00:00' }));
-		expect(alias).toBe('2026-06-24_0918Z_ba4vun_40m_cw_9f31ab02.json');
+		expect(alias).toBe('2026-06-24_0918Z_ba4vun_40m_cw_9f31ab02');
 	});
 
 	it('uses first 8 chars of id, lowercased', () => {
 		const alias = qsoAlias(createQSO({ id: 'ABCDEF1234-5678-9abc-def012345678' }));
-		expect(alias).toBe('2026-06-24_0918Z_ba4vun_40m_cw_abcdef12.json');
+		expect(alias).toBe('2026-06-24_0918Z_ba4vun_40m_cw_abcdef12');
 	});
 });
 
 describe('equipmentAlias', () => {
-	it('builds TYPE_MANUFACTURER-MODEL_uuid8.json when both manufacturer and model exist', () => {
+	it('builds TYPE_MANUFACTURER-MODEL_uuid8 when both manufacturer and model exist', () => {
 		const alias = equipmentAlias(createEquipment());
-		expect(alias).toBe('transceiver_yaesu-ft-991a_a1b2c3d4.json');
+		expect(alias).toBe('transceiver_yaesu-ft-991a_a1b2c3d4');
 	});
 
 	it('falls back to model only when manufacturer is missing', () => {
 		const alias = equipmentAlias(
 			createEquipment({ manufacturer: undefined, model: 'IC-7300', name: 'IC-7300' })
 		);
-		expect(alias).toBe('transceiver_ic-7300_a1b2c3d4.json');
+		expect(alias).toBe('transceiver_ic-7300_a1b2c3d4');
 	});
 
 	it('falls back to name when both manufacturer and model are missing', () => {
@@ -89,14 +89,14 @@ describe('equipmentAlias', () => {
 				type: 'filter'
 			})
 		);
-		expect(alias).toBe('filter_manual-tuner_a1b2c3d4.json');
+		expect(alias).toBe('filter_manual-tuner_a1b2c3d4');
 	});
 
 	it('lowercases manufacturer/model and collapses non-slug characters', () => {
 		const alias = equipmentAlias(
 			createEquipment({ manufacturer: 'Diamond Co', model: 'X 50', type: 'antenna' })
 		);
-		expect(alias).toBe('antenna_diamond-co-x-50_a1b2c3d4.json');
+		expect(alias).toBe('antenna_diamond-co-x-50_a1b2c3d4');
 	});
 });
 
@@ -121,7 +121,7 @@ describe('isUuidLike', () => {
 describe('findQSOIdByAlias', () => {
 	it('returns the id when an alias stem matches', () => {
 		const qso = createQSO();
-		const stem = qsoAlias(qso).replace(/\.json$/, '');
+		const stem = qsoAlias(qso);
 		expect(findQSOIdByAlias([qso], stem)).toBe(qso.id);
 	});
 
@@ -133,7 +133,7 @@ describe('findQSOIdByAlias', () => {
 describe('findEquipmentIdByAlias', () => {
 	it('returns the id when an alias stem matches', () => {
 		const item = createEquipment();
-		const stem = equipmentAlias(item).replace(/\.json$/, '');
+		const stem = equipmentAlias(item);
 		expect(findEquipmentIdByAlias([item], stem)).toBe(item.id);
 	});
 
