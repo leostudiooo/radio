@@ -85,6 +85,7 @@ export interface StationOS {
 	skipBoot: () => void;
 	exec: (line: string) => Promise<void>;
 	complete: (line: string) => Promise<CompletionResult>;
+	echo: (text: string) => void;
 	getPrompt: () => string;
 	getState: () => StationOSState;
 }
@@ -93,6 +94,7 @@ export interface StationOSOptions {
 	adapters: StationOSAdapters;
 	siteEntries: SiteFSEntry[];
 	staticEntries: StaticFSEntry[];
+	persistent?: boolean;
 }
 
 export type VFSNodeKind = 'dir' | 'file' | 'route';

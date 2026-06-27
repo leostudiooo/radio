@@ -64,13 +64,10 @@
 					if (!disposed) term.write(data);
 				}),
 				siteEntries,
-				staticEntries
+				staticEntries,
+				persistent: true
 			});
-			const browserSession = createBrowserTerminalSession(
-				os,
-				(data) => term.write(data),
-				notifyComplete
-			);
+			const browserSession = createBrowserTerminalSession(os, notifyComplete);
 
 			terminal = term;
 			session = browserSession;

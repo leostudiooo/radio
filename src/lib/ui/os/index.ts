@@ -1,6 +1,7 @@
 export { createStationOS } from './stationOS';
 export type {
 	AuthStatus,
+	CompletionResult,
 	SiteFSEntry,
 	StaticFSEntry,
 	StationOS,

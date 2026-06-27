@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { createStationOS } from './stationOS';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createStationOS, resetStationOSPersistentState } from './stationOS';
 import type {
 	AuthCommandResult,
 	AuthStatus,
@@ -862,5 +862,131 @@ describe('Station OS Tab completion', () => {
 
 		const result = await harness.os.complete('cat m');
 		expect(result).toEqual({ candidates: [], completedLine: 'cat motd', suffix: ' ' });
+	});
+});
+
+describe('Station OS persistence', () => {
+	beforeEach(() => {
+		resetStationOSPersistentState();
+	});
+
+	afterAll(() => {
+		resetStationOSPersistentState();
+	});
+
+	it('survives cwd across createStationOS remounts', async () => {
+		const baseHarness = createHarness();
+		const output1: string[] = [];
+		const adapters1: StationOSAdapters = {
+			...baseHarness.adapters,
+			emit: (text) => output1.push(text)
+		};
+		const os1 = createStationOS({
+			adapters: adapters1,
+			siteEntries: SITE_ENTRIES,
+			staticEntries: STATIC_ENTRIES,
+			persistent: true
+		});
+		await os1.boot({ instant: true });
+		await os1.exec('cd /etc');
+
+		expect(os1.getState().cwd).toBe('/etc');
+
+		const output2: string[] = [];
+		const adapters2: StationOSAdapters = {
+			...baseHarness.adapters,
+			emit: (text) => output2.push(text)
+		};
+		const os2 = createStationOS({
+			adapters: adapters2,
+			siteEntries: SITE_ENTRIES,
+			staticEntries: STATIC_ENTRIES,
+			persistent: true
+		});
+
+		expect(os2.getState().cwd).toBe('/etc');
+		expect(os2.getState().bootComplete).toBe(true);
+
+		await os2.boot();
+		const replayed = output2.join('');
+		expect(replayed).toContain('guest:/etc$');
+	});
+
+	it('replays transcript of previous session on next boot', async () => {
+		const output1: string[] = [];
+		const baseHarness = createHarness();
+		const adapters1: StationOSAdapters = {
+			...baseHarness.adapters,
+			emit: (text) => output1.push(text)
+		};
+		const os1 = createStationOS({
+			adapters: adapters1,
+			siteEntries: SITE_ENTRIES,
+			staticEntries: STATIC_ENTRIES,
+			persistent: true
+		});
+		await os1.boot({ instant: true });
+		await os1.exec('help');
+
+		const output2: string[] = [];
+		const adapters2: StationOSAdapters = {
+			...baseHarness.adapters,
+			emit: (text) => output2.push(text)
+		};
+		const os2 = createStationOS({
+			adapters: adapters2,
+			siteEntries: SITE_ENTRIES,
+			staticEntries: STATIC_ENTRIES,
+			persistent: true
+		});
+
+		await os2.boot();
+		const replayed = output2.join('');
+		expect(replayed).toContain('Available commands');
+		expect(replayed).toContain('auth login --passkey');
+	});
+
+	it('does not share state when persistent is false', async () => {
+		const harness1 = createHarness();
+		await bootInstant(harness1.os, harness1.output);
+		await harness1.os.exec('cd /qso');
+
+		const harness2 = createHarness();
+		await bootInstant(harness2.os, harness2.output);
+		expect(harness2.os.getState().cwd).toBe('/');
+	});
+
+	it('clear wipes the transcript so next remount starts empty', async () => {
+		const baseHarness = createHarness();
+		const output1: string[] = [];
+		const adapters1: StationOSAdapters = {
+			...baseHarness.adapters,
+			emit: (text) => output1.push(text)
+		};
+		const os1 = createStationOS({
+			adapters: adapters1,
+			siteEntries: SITE_ENTRIES,
+			staticEntries: STATIC_ENTRIES,
+			persistent: true
+		});
+		await os1.boot({ instant: true });
+		await os1.exec('help');
+		await os1.exec('clear');
+
+		const output2: string[] = [];
+		const adapters2: StationOSAdapters = {
+			...baseHarness.adapters,
+			emit: (text) => output2.push(text)
+		};
+		const os2 = createStationOS({
+			adapters: adapters2,
+			siteEntries: SITE_ENTRIES,
+			staticEntries: STATIC_ENTRIES,
+			persistent: true
+		});
+
+		await os2.boot();
+		const replayed = output2.join('');
+		expect(replayed).not.toContain('Available commands');
 	});
 });

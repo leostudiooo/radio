@@ -1,7 +1,5 @@
 import type { StationOS } from '$lib/ui/os';
 
-type Emit = (data: string) => void;
-
 export interface TerminalSession {
 	start(options?: { instant?: boolean }): Promise<void>;
 	input(data: string): void;
@@ -11,7 +9,6 @@ export interface TerminalSession {
 
 export function createBrowserTerminalSession(
 	os: StationOS,
-	emit: Emit,
 	onBootComplete: () => void = () => {}
 ): TerminalSession {
 	let disposed = false;
@@ -31,17 +28,17 @@ export function createBrowserTerminalSession(
 		if (disposed) return;
 
 		if (result.candidates.length > 0) {
-			emit('\r\n');
-			emit(result.candidates.join('  '));
-			emit('\r\n');
-			emit(os.getPrompt());
-			emit(lineBuffer);
+			os.echo('\r\n');
+			os.echo(result.candidates.join('  '));
+			os.echo('\r\n');
+			os.echo(os.getPrompt());
+			os.echo(lineBuffer);
 			return;
 		}
 
 		if (result.completedLine !== lineBuffer || result.suffix) {
 			const newBuffer = `${result.completedLine}${result.suffix}`;
-			emit(newBuffer.slice(lineBuffer.length));
+			os.echo(newBuffer.slice(lineBuffer.length));
 			lineBuffer = newBuffer;
 		}
 	}
@@ -61,7 +58,7 @@ export function createBrowserTerminalSession(
 
 			for (const char of data) {
 				if (char === '\r' || char === '\n') {
-					emit('\r\n');
+					os.echo('\r\n');
 					const command = lineBuffer;
 					lineBuffer = '';
 					void os.exec(command);
@@ -69,16 +66,16 @@ export function createBrowserTerminalSession(
 				}
 
 				if (char === '\u0003') {
-					emit('^C\r\n');
+					os.echo('^C\r\n');
 					lineBuffer = '';
-					emit(os.getPrompt());
+					os.echo(os.getPrompt());
 					continue;
 				}
 
 				if (char === '\u007f' || char === '\b') {
 					if (lineBuffer.length === 0) continue;
 					lineBuffer = lineBuffer.slice(0, -1);
-					emit('\b \b');
+					os.echo('\b \b');
 					continue;
 				}
 
@@ -89,7 +86,7 @@ export function createBrowserTerminalSession(
 
 				if (char >= ' ') {
 					lineBuffer += char;
-					emit(char);
+					os.echo(char);
 				}
 			}
 		},

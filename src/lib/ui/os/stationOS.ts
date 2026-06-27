@@ -67,6 +67,27 @@ function splitLine(line: string): { before: string; lastToken: string } {
 	};
 }
 
+interface OSState {
+	cwd: string;
+	bootComplete: boolean;
+	transcript: string[];
+}
+
+function createOSState(): OSState {
+	return { cwd: '/', bootComplete: false, transcript: [] };
+}
+
+let persistentState: OSState | null = null;
+
+function getPersistentState(): OSState {
+	if (!persistentState) persistentState = createOSState();
+	return persistentState;
+}
+
+export function resetStationOSPersistentState(): void {
+	persistentState = null;
+}
+
 function randomDelay(min: number, max: number) {
 	return min + Math.random() * (max - min);
 }
@@ -145,14 +166,17 @@ function helpText() {
 export function createStationOS({
 	adapters,
 	siteEntries,
-	staticEntries
+	staticEntries,
+	persistent = false
 }: StationOSOptions): StationOS {
 	const vfs = createStationVFS(siteEntries, staticEntries, adapters);
-	let cwd = '/';
-	let bootComplete = false;
+	const state: OSState = persistent ? getPersistentState() : createOSState();
 	let bootRun = 0;
 
 	function emit(text: string) {
+		if (state.bootComplete) {
+			state.transcript.push(text);
+		}
 		adapters.emit(text);
 	}
 
@@ -161,7 +185,7 @@ export function createStationOS({
 	}
 
 	function getPrompt() {
-		return `${authName(adapters)}:${cwd}$ `;
+		return `${authName(adapters)}:${state.cwd}$ `;
 	}
 
 	function emitPrompt() {
@@ -169,7 +193,7 @@ export function createStationOS({
 	}
 
 	function completeBoot() {
-		bootComplete = true;
+		state.bootComplete = true;
 	}
 
 	function emitInstantBootTranscript() {
@@ -183,6 +207,12 @@ export function createStationOS({
 		emitPrompt();
 	}
 
+	function replayTranscript() {
+		for (const text of state.transcript) {
+			adapters.emit(text);
+		}
+	}
+
 	async function runShell(args: string[]): Promise<void> {
 		const [command, ...rest] = args;
 
@@ -194,11 +224,12 @@ export function createStationOS({
 		}
 
 		if (command === 'pwd') {
-			emitLine(cwd);
+			emitLine(state.cwd);
 			return;
 		}
 
 		if (command === 'clear') {
+			state.transcript = [];
 			emit(ANSI.clear);
 			return;
 		}
@@ -209,7 +240,7 @@ export function createStationOS({
 		}
 
 		if (command === 'ls') {
-			const entries = await vfs.list(rest[0] ?? '.', cwd);
+			const entries = await vfs.list(rest[0] ?? '.', state.cwd);
 			emitLine(entries.map((entry) => entry.name).join('  '));
 			return;
 		}
@@ -221,18 +252,18 @@ export function createStationOS({
 				return;
 			}
 
-			emitLine(await vfs.read(target, cwd));
+			emitLine(await vfs.read(target, state.cwd));
 			return;
 		}
 
 		if (command === 'cd') {
-			const next = resolvePath(cwd, rest[0] ?? '/');
+			const next = resolvePath(state.cwd, rest[0] ?? '/');
 			if (!(await vfs.isDirectory(next))) {
 				emitLine(`${next}: not a directory`);
 				return;
 			}
 
-			cwd = next;
+			state.cwd = next;
 			return;
 		}
 
@@ -243,7 +274,7 @@ export function createStationOS({
 				return;
 			}
 
-			const next = resolvePath(cwd, target);
+			const next = resolvePath(state.cwd, target);
 			const route = vfs.routeFor(next);
 			if (!route) {
 				emitLine(`open: ${next}: not a route`);
@@ -515,7 +546,7 @@ export function createStationOS({
 		const lastSlash = partial.lastIndexOf('/');
 		const parentPrefix = lastSlash >= 0 ? partial.slice(0, lastSlash + 1) : '';
 		const segment = lastSlash >= 0 ? partial.slice(lastSlash + 1) : partial;
-		const resolvedParent = resolvePath(cwd, parentPrefix || '.');
+		const resolvedParent = resolvePath(state.cwd, parentPrefix || '.');
 
 		let entries: VFSListEntry[];
 		try {
@@ -585,10 +616,15 @@ export function createStationOS({
 
 	return {
 		async boot(options = {}) {
+			if (state.bootComplete) {
+				replayTranscript();
+				return;
+			}
+
 			bootRun += 1;
 			const runId = bootRun;
-			bootComplete = false;
-			cwd = '/';
+			state.bootComplete = false;
+			state.cwd = '/';
 
 			if (options.instant) {
 				emitInstantBootTranscript();
@@ -627,7 +663,7 @@ export function createStationOS({
 		},
 
 		skipBoot() {
-			if (bootComplete) return;
+			if (state.bootComplete) return;
 			bootRun += 1;
 			emit(ANSI.clear);
 			emitInstantBootTranscript();
@@ -635,7 +671,7 @@ export function createStationOS({
 		},
 
 		async exec(line: string) {
-			if (!bootComplete) return;
+			if (!state.bootComplete) return;
 
 			try {
 				await runShell(parseArgs(line));
@@ -648,10 +684,12 @@ export function createStationOS({
 
 		complete,
 
+		echo: emit,
+
 		getPrompt,
 
 		getState() {
-			return { cwd, bootComplete };
+			return { cwd: state.cwd, bootComplete: state.bootComplete };
 		}
 	};
 }
