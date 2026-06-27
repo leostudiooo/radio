@@ -4,6 +4,7 @@
 	import { createStationOS } from '$lib/ui/os';
 	import { createBrowserStationOSAdapters } from '$lib/ui/os/browserAdapter';
 	import siteEntries from 'virtual:station-site-fs';
+	import staticEntries from 'virtual:station-static-fs';
 
 	let { skipSignal = 0, oncomplete = () => {} }: { skipSignal?: number; oncomplete?: () => void } =
 		$props();
@@ -62,7 +63,8 @@
 				adapters: createBrowserStationOSAdapters((data) => {
 					if (!disposed) term.write(data);
 				}),
-				siteEntries
+				siteEntries,
+				staticEntries
 			});
 			const browserSession = createBrowserTerminalSession(
 				os,

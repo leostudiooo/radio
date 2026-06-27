@@ -47,3 +47,4 @@ qsl-card/
 # Local Agents
 .sisyphus
 .playwright-mcp
+.omo/

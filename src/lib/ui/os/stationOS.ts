@@ -77,8 +77,12 @@ function helpText() {
 	);
 }
 
-export function createStationOS({ adapters, siteEntries }: StationOSOptions): StationOS {
-	const vfs = createStationVFS(siteEntries, adapters);
+export function createStationOS({
+	adapters,
+	siteEntries,
+	staticEntries
+}: StationOSOptions): StationOS {
+	const vfs = createStationVFS(siteEntries, staticEntries, adapters);
 	let cwd = '/';
 	let bootComplete = false;
 	let bootRun = 0;

@@ -73,6 +73,13 @@ export function createBrowserStationOSAdapters(emit: (text: string) => void): St
 		},
 		station: {
 			operatorInfo: () => operatorData
+		},
+		fs: {
+			read: async (path) => {
+				const response = await fetch(`/vfs${path}`);
+				if (!response.ok) throw new Error(`${path}: no such file`);
+				return response.text();
+			}
 		}
 	};
 }

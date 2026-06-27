@@ -2,7 +2,7 @@ import type { Equipment } from '$lib/logic/types/equipment';
 import type { QSO } from '$lib/logic/types/qso';
 import { basename, dirname, normalizeAbsolutePath, resolvePath, uniqueSorted } from './path';
 import { formatJSON, formatOperatorInfo } from './format';
-import type { SiteFSEntry, StationOSAdapters, VFSListEntry } from './types';
+import type { SiteFSEntry, StaticFSEntry, StationOSAdapters, VFSListEntry } from './types';
 
 const PAGE_SIZE = 25;
 
@@ -36,15 +36,27 @@ function routeDescription(path: string, route: string): string {
 	});
 }
 
+function normalizeLineEndings(content: string): string {
+	return content
+		.replace(/\r\n/g, '\n')
+		.replace(/\n/g, '\r\n')
+		.replace(/(?:\r\n)+$/, '');
+}
+
 export class StationVFS {
 	private readonly routes = new Map<string, SiteFSEntry>();
 	private readonly visibleRoutes: SiteFSEntry[];
+	private readonly staticEntryPaths: Set<string>;
 
 	constructor(
 		private readonly siteEntries: SiteFSEntry[],
+		private readonly staticEntries: StaticFSEntry[],
 		private readonly adapters: StationOSAdapters
 	) {
 		this.visibleRoutes = siteEntries.filter((entry) => entry.kind === 'page');
+		this.staticEntryPaths = new Set(
+			staticEntries.map((entry) => normalizeAbsolutePath(entry.path))
+		);
 
 		for (const entry of this.visibleRoutes) {
 			this.routes.set(routeNodePath(entry.path), entry);
@@ -78,12 +90,9 @@ export class StationVFS {
 			return formatOperatorInfo(this.adapters.station.operatorInfo());
 		}
 
-		if (target === '/etc/motd') {
-			return 'See you in the air.';
-		}
-
-		if (target === '/etc/profile') {
-			return 'cat /etc/motd\r\ncat /operator_info.json';
+		if (this.staticEntryPaths.has(target)) {
+			const content = await this.adapters.fs.read(target);
+			return normalizeLineEndings(content);
 		}
 
 		const qsoId = recordIdFromPath(target, '/qso');
@@ -102,7 +111,6 @@ export class StationVFS {
 
 	async isDirectory(path: string): Promise<boolean> {
 		const target = normalizeAbsolutePath(path);
-		if (target === '/etc') return true;
 		if (target === '/qso' || target === '/equipment') return true;
 		if (this.routes.has(target) && !target.endsWith('/index')) return true;
 
@@ -125,8 +133,12 @@ export class StationVFS {
 			names.push('operator_info.json', 'etc', 'index');
 		}
 
-		if (target === '/etc') {
-			names.push('motd', 'profile');
+		for (const staticPath of this.staticEntryPaths) {
+			const relative = this.relativeTo(staticPath, target);
+			if (relative) {
+				const firstSegment = relative.split('/')[0];
+				if (firstSegment) names.push(firstSegment);
+			}
 		}
 
 		for (const route of this.visibleRoutes) {
@@ -144,10 +156,17 @@ export class StationVFS {
 		return names;
 	}
 
+	private relativeTo(staticPath: string, parent: string): string | null {
+		if (staticPath === parent) return null;
+		if (!staticPath.startsWith(parent === '/' ? '/' : `${parent}/`)) return null;
+
+		return staticPath.slice(parent === '/' ? 1 : parent.length + 1);
+	}
+
 	private kindForChild(parent: string, name: string): VFSListEntry['kind'] {
 		const child = normalizeAbsolutePath(parent === '/' ? `/${name}` : `${parent}/${name}`);
 
-		if (child.endsWith('.json') || child.startsWith('/etc/')) return 'file';
+		if (child === '/operator_info.json' || this.staticEntryPaths.has(child)) return 'file';
 		if (child === '/index' || this.routes.has(child) || this.routes.has(routeIndexPath(child))) {
 			return 'route';
 		}
@@ -180,6 +199,10 @@ export class StationVFS {
 	}
 }
 
-export function createStationVFS(siteEntries: SiteFSEntry[], adapters: StationOSAdapters) {
-	return new StationVFS(siteEntries, adapters);
+export function createStationVFS(
+	siteEntries: SiteFSEntry[],
+	staticEntries: StaticFSEntry[],
+	adapters: StationOSAdapters
+) {
+	return new StationVFS(siteEntries, staticEntries, adapters);
 }

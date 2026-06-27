@@ -20,6 +20,10 @@ export interface SiteFSEntry {
 	params: string[];
 }
 
+export interface StaticFSEntry {
+	path: string;
+}
+
 export interface StationOSAdapters {
 	emit: (text: string) => void;
 	sleep: (ms: number) => Promise<void>;
@@ -52,6 +56,9 @@ export interface StationOSAdapters {
 	station: {
 		operatorInfo: () => Record<string, string>;
 	};
+	fs: {
+		read: (path: string) => Promise<string>;
+	};
 }
 
 export interface StationOSState {
@@ -70,6 +77,7 @@ export interface StationOS {
 export interface StationOSOptions {
 	adapters: StationOSAdapters;
 	siteEntries: SiteFSEntry[];
+	staticEntries: StaticFSEntry[];
 }
 
 export type VFSNodeKind = 'dir' | 'file' | 'route';

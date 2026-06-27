@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createStationOS } from './stationOS';
-import type { AuthStatus, SiteFSEntry, StationOSAdapters } from './types';
+import type { AuthStatus, SiteFSEntry, StaticFSEntry, StationOSAdapters } from './types';
 import type { Equipment } from '$lib/logic/types/equipment';
 import type { PaginatedResult, QSO } from '$lib/logic/types/qso';
 
@@ -9,6 +9,8 @@ const SITE_ENTRIES: SiteFSEntry[] = [
 	{ path: '/equipment', route: '/equipment', kind: 'page', params: [] },
 	{ path: '/qso', route: '/qso', kind: 'page', params: [] }
 ];
+
+const STATIC_ENTRIES: StaticFSEntry[] = [{ path: '/etc/motd' }, { path: '/etc/profile' }];
 
 function createQSO(id = 'qso-1'): QSO {
 	return {
@@ -89,6 +91,12 @@ function createHarness(initialAuth: Partial<AuthStatus> = {}) {
 	const equipmentNavigateAdd = vi.fn(async () => undefined);
 	const equipmentNavigateEdit = vi.fn(async () => undefined);
 
+	const fsRead = vi.fn(async (path: string) => {
+		if (path === '/etc/motd') return 'See you in the air.';
+		if (path === '/etc/profile') return 'cat /etc/motd\ncat /operator_info.json';
+		throw new Error(`${path}: no such file`);
+	});
+
 	const adapters: StationOSAdapters = {
 		emit: (text) => {
 			output.push(text);
@@ -126,10 +134,17 @@ function createHarness(initialAuth: Partial<AuthStatus> = {}) {
 				operator: 'Station OS',
 				qth: 'Shanghai'
 			}))
+		},
+		fs: {
+			read: fsRead
 		}
 	};
 
-	const os = createStationOS({ adapters, siteEntries: SITE_ENTRIES });
+	const os = createStationOS({
+		adapters,
+		siteEntries: SITE_ENTRIES,
+		staticEntries: STATIC_ENTRIES
+	});
 
 	return {
 		os,
@@ -143,6 +158,7 @@ function createHarness(initialAuth: Partial<AuthStatus> = {}) {
 		equipmentList,
 		equipmentGet,
 		equipmentActivate,
+		fsRead,
 		authStatusRef: {
 			get value() {
 				return authStatus;
@@ -208,6 +224,55 @@ describe('Station OS core', () => {
 
 		const unknownOutput = await execAndCollect(harness.os, harness.output, 'frobnicate');
 		expect(unknownOutput).toContain('frobnicate: command not found');
+	});
+
+	it('lists static files in /etc directory', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const lsOutput = await execAndCollect(harness.os, harness.output, 'ls /etc');
+		expect(lsOutput).toContain('motd');
+		expect(lsOutput).toContain('profile');
+	});
+
+	it('reads static files via cat with lazy fs adapter', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const motdOutput = await execAndCollect(harness.os, harness.output, 'cat /etc/motd');
+		expect(harness.fsRead).toHaveBeenCalledTimes(1);
+		expect(harness.fsRead).toHaveBeenCalledWith('/etc/motd');
+		expect(motdOutput).toContain('See you in the air.');
+
+		const profileOutput = await execAndCollect(harness.os, harness.output, 'cat /etc/profile');
+		expect(harness.fsRead).toHaveBeenCalledTimes(2);
+		expect(harness.fsRead).toHaveBeenCalledWith('/etc/profile');
+		expect(profileOutput).toContain('cat /etc/motd');
+		expect(profileOutput).toContain('cat /operator_info.json');
+	});
+
+	it('supports cd into static directories and path normalization', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const cdOutput = await execAndCollect(harness.os, harness.output, 'cd /etc');
+		expect(cdOutput).toContain('guest:/etc$ ');
+		expect(harness.os.getState().cwd).toBe('/etc');
+
+		const pwdOutput = await execAndCollect(harness.os, harness.output, 'pwd');
+		expect(pwdOutput).toContain('/etc\r\n');
+
+		const catOutput = await execAndCollect(harness.os, harness.output, 'cat ../etc/motd');
+		expect(catOutput).toContain('See you in the air.');
+		expect(harness.fsRead).toHaveBeenCalledWith('/etc/motd');
+	});
+
+	it('rejects cd into static files', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const cdOutput = await execAndCollect(harness.os, harness.output, 'cd /etc/motd');
+		expect(cdOutput).toContain('not a directory');
 	});
 
 	it('cat /operator_info.json prints the formatted operator profile', async () => {
