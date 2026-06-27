@@ -1,6 +1,13 @@
 import type { Equipment } from '$lib/logic/types/equipment';
 import type { QSO } from '$lib/logic/types/qso';
 import { basename, dirname, normalizeAbsolutePath, resolvePath, uniqueSorted } from './path';
+import {
+	equipmentAlias,
+	findEquipmentIdByAlias,
+	findQSOIdByAlias,
+	isUuidLike,
+	qsoAlias
+} from './alias';
 import { formatJSON, formatOperatorInfo } from './format';
 import type { SiteFSEntry, StaticFSEntry, StationOSAdapters, VFSListEntry } from './types';
 
@@ -16,7 +23,7 @@ function routeIndexPath(route: string): string {
 	return normalizeAbsolutePath(`${route}/index`);
 }
 
-function recordIdFromPath(path: string, root: '/qso' | '/equipment'): string | null {
+function recordStemFromPath(path: string, root: '/qso' | '/equipment'): string | null {
 	const normalized = normalizeAbsolutePath(path);
 	const prefix = `${root}/`;
 
@@ -95,11 +102,11 @@ export class StationVFS {
 			return normalizeLineEndings(content);
 		}
 
-		const qsoId = recordIdFromPath(target, '/qso');
-		if (qsoId) return this.readQSO(qsoId);
+		const qsoStem = recordStemFromPath(target, '/qso');
+		if (qsoStem) return this.readQSO(qsoStem);
 
-		const equipmentId = recordIdFromPath(target, '/equipment');
-		if (equipmentId) return this.readEquipment(equipmentId);
+		const equipmentStem = recordStemFromPath(target, '/equipment');
+		if (equipmentStem) return this.readEquipment(equipmentStem);
 
 		const route = this.routes.get(target);
 		if (route) {
@@ -176,24 +183,33 @@ export class StationVFS {
 
 	private async qsoRecordNames(): Promise<string[]> {
 		const result = await this.adapters.qso.list();
-		return result.data.slice(0, PAGE_SIZE).map((qso: QSO) => `${qso.id}.json`);
+		return result.data.slice(0, PAGE_SIZE).map((qso: QSO) => qsoAlias(qso));
 	}
 
 	private async equipmentRecordNames(): Promise<string[]> {
 		const items = await this.adapters.equipment.list();
-		return items.slice(0, PAGE_SIZE).map((item: Equipment) => `${item.id}.json`);
+		return items.slice(0, PAGE_SIZE).map((item: Equipment) => equipmentAlias(item));
 	}
 
-	private async readQSO(id: string): Promise<string> {
+	private async readQSO(stem: string): Promise<string> {
+		const id = isUuidLike(stem)
+			? stem
+			: findQSOIdByAlias((await this.adapters.qso.list()).data, stem);
+
+		if (!id) throw new Error(`/qso/${stem}.json: no such file`);
 		const qso = await this.adapters.qso.get(id);
-		if (!qso) throw new Error(`/qso/${id}.json: no such file`);
+		if (!qso) throw new Error(`/qso/${stem}.json: no such file`);
 
 		return formatJSON(qso);
 	}
 
-	private async readEquipment(id: string): Promise<string> {
+	private async readEquipment(stem: string): Promise<string> {
+		const items = await this.adapters.equipment.list();
+		const id = isUuidLike(stem) ? stem : findEquipmentIdByAlias(items, stem);
+
+		if (!id) throw new Error(`/equipment/${stem}.json: no such file`);
 		const item = await this.adapters.equipment.get(id);
-		if (!item) throw new Error(`/equipment/${id}.json: no such file`);
+		if (!item) throw new Error(`/equipment/${stem}.json: no such file`);
 
 		return formatJSON(item);
 	}

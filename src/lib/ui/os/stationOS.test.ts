@@ -310,37 +310,63 @@ describe('Station OS core', () => {
 		expect(catOutput).not.toContain('\t');
 	});
 
-	it('lazy-loads QSO and equipment entries through ls and cat', async () => {
+	it('lazy-loads QSO and equipment entries through ls and cat (alias filenames)', async () => {
 		const harness = createHarness();
 		await bootInstant(harness.os, harness.output);
 
+		const qsoAliasFile = '2026-01-15_1234Z_k1abc_20m_ssb_qso-1.json';
 		const qsoListOutput = await execAndCollect(harness.os, harness.output, 'ls /qso');
 		expect(harness.qsoList).toHaveBeenCalledTimes(1);
 		expect(harness.qsoGet).not.toHaveBeenCalled();
-		expect(qsoListOutput).toContain('qso-1.json');
+		expect(qsoListOutput).toContain(qsoAliasFile);
 
-		const qsoCatOutput = await execAndCollect(harness.os, harness.output, 'cat /qso/qso-1.json');
-		expect(harness.qsoList).toHaveBeenCalledTimes(1);
+		const qsoCatOutput = await execAndCollect(
+			harness.os,
+			harness.output,
+			`cat /qso/${qsoAliasFile}`
+		);
 		expect(harness.qsoGet).toHaveBeenCalledTimes(1);
 		expect(harness.qsoGet).toHaveBeenCalledWith('qso-1');
 		expect(qsoCatOutput).toContain('"id": "qso-1"');
 		expect(qsoCatOutput).toContain('guest:/$ ');
 
+		const equipmentAliasFile = 'transceiver_yaesu-ft-991a_eq-1.json';
 		const equipmentListOutput = await execAndCollect(harness.os, harness.output, 'ls /equipment');
 		expect(harness.equipmentList).toHaveBeenCalledTimes(1);
 		expect(harness.equipmentGet).not.toHaveBeenCalled();
-		expect(equipmentListOutput).toContain('eq-1.json');
+		expect(equipmentListOutput).toContain(equipmentAliasFile);
 
 		const equipmentCatOutput = await execAndCollect(
 			harness.os,
 			harness.output,
-			'cat /equipment/eq-1.json'
+			`cat /equipment/${equipmentAliasFile}`
 		);
-		expect(harness.equipmentList).toHaveBeenCalledTimes(1);
 		expect(harness.equipmentGet).toHaveBeenCalledTimes(1);
 		expect(harness.equipmentGet).toHaveBeenCalledWith('eq-1');
 		expect(equipmentCatOutput).toContain('"id": "eq-1"');
 		expect(equipmentCatOutput).toContain('guest:/$ ');
+	});
+
+	it('falls back to raw UUID stems when cat target is a canonical UUID', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const uuid = '9f31ab02-1234-5678-9abc-def012345678';
+		harness.qsoGet.mockImplementationOnce(async (id: string) =>
+			id === uuid
+				? {
+						...createQSO(uuid),
+						callsign: 'JA1ABC',
+						band: '20m',
+						mode: 'FT8'
+					}
+				: null
+		);
+
+		const out = await execAndCollect(harness.os, harness.output, `cat /qso/${uuid}.json`);
+		expect(harness.qsoList).not.toHaveBeenCalled();
+		expect(harness.qsoGet).toHaveBeenCalledWith(uuid);
+		expect(out).toContain(`"id": "${uuid}"`);
 	});
 
 	it('denies guest and user write commands, but lets admin activate equipment', async () => {
