@@ -220,7 +220,8 @@ describe('Station OS core', () => {
 
 		const helpOutput = await execAndCollect(harness.os, harness.output, 'help');
 		expect(helpOutput).toContain('Available commands');
-		expect(helpOutput).toContain('qso list|view <id>|add|edit <id>');
+		expect(helpOutput).toContain('qso view <alias-or-id>');
+		expect(helpOutput).toContain('open <path>');
 
 		const pwdOutput = await execAndCollect(harness.os, harness.output, 'pwd');
 		expect(pwdOutput).toContain('/\r\n');
@@ -228,7 +229,7 @@ describe('Station OS core', () => {
 
 		const cdOutput = await execAndCollect(harness.os, harness.output, 'cd ./qso/../equipment');
 		expect(cdOutput).toBe('guest:/equipment$ ');
-		expect(harness.adapters.router.goto).toHaveBeenCalledWith('/equipment');
+		expect(harness.adapters.router.goto).not.toHaveBeenCalled();
 		expect(harness.os.getState()).toEqual({ cwd: '/equipment', bootComplete: true });
 
 		const lsOutput = await execAndCollect(harness.os, harness.output, 'ls ../');
@@ -584,5 +585,145 @@ describe('Station OS auth app', () => {
 		expect(out).toContain('usage: auth status');
 		expect(out).toContain('login --passkey');
 		expect(out).toContain('login --magic <email>');
+	});
+});
+
+describe('Station OS non-navigation mode', () => {
+	const QSO_ALIAS = '2026-01-15_1234Z_k1abc_20m_ssb_qso-1';
+	const EQUIPMENT_ALIAS = 'transceiver_yaesu-ft-991a_eq-1';
+
+	it('cd into a route does not navigate, only changes cwd', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		await execAndCollect(harness.os, harness.output, 'cd /qso');
+		expect(harness.os.getState().cwd).toBe('/qso');
+		expect(harness.adapters.router.goto).not.toHaveBeenCalled();
+	});
+
+	it('open <route-path> navigates via router.goto', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		await execAndCollect(harness.os, harness.output, 'open /qso');
+		expect(harness.adapters.router.goto).toHaveBeenCalledWith('/qso');
+	});
+
+	it('open from a cwd resolves relative paths', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+		await execAndCollect(harness.os, harness.output, 'cd /qso');
+
+		await execAndCollect(harness.os, harness.output, 'open ../equipment');
+		expect(harness.adapters.router.goto).toHaveBeenCalledWith('/equipment');
+	});
+
+	it('open on a non-route path prints "not a route" and does not navigate', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'open /etc/motd');
+		expect(out).toContain('not a route');
+		expect(harness.adapters.router.goto).not.toHaveBeenCalled();
+	});
+
+	it('open with no argument prints "missing operand"', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'open');
+		expect(out).toContain('open: missing operand');
+	});
+
+	it('qso view <alias> prints the record JSON and does not navigate', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, `qso view ${QSO_ALIAS}`);
+		expect(harness.adapters.qso.navigateView).not.toHaveBeenCalled();
+		expect(harness.qsoGet).toHaveBeenCalledWith('qso-1');
+		expect(out).toContain('"id": "qso-1"');
+	});
+
+	it('qso view <missing> prints "no such record" and does not navigate', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'qso view nonexistent-stem');
+		expect(harness.adapters.qso.navigateView).not.toHaveBeenCalled();
+		expect(out).toContain('qso view: nonexistent-stem: no such record');
+	});
+
+	it('qso view with no argument prints usage', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'qso view');
+		expect(out).toContain('usage: qso view <alias-or-id>');
+	});
+
+	it('qso open <alias> resolves to id and calls navigateView', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, `qso open ${QSO_ALIAS}`);
+		expect(harness.adapters.qso.navigateView).toHaveBeenCalledWith('qso-1');
+		expect(out).toContain('opening /qso/qso-1');
+	});
+
+	it('qso open <uuid> skips alias lookup and goes straight to navigateView', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const uuid = '9f31ab02-1234-5678-9abc-def012345678';
+		const out = await execAndCollect(harness.os, harness.output, `qso open ${uuid}`);
+		expect(harness.qsoList).not.toHaveBeenCalled();
+		expect(harness.adapters.qso.navigateView).toHaveBeenCalledWith(uuid);
+		expect(out).toContain(`opening /qso/${uuid}`);
+	});
+
+	it('qso open <missing> prints "no such record"', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'qso open no-such-stem');
+		expect(harness.adapters.qso.navigateView).not.toHaveBeenCalled();
+		expect(out).toContain('qso open: no-such-stem: no such record');
+	});
+
+	it('equipment view <alias> prints the record JSON and does not navigate', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(
+			harness.os,
+			harness.output,
+			`equipment view ${EQUIPMENT_ALIAS}`
+		);
+		expect(harness.adapters.equipment.navigateView).not.toHaveBeenCalled();
+		expect(harness.equipmentGet).toHaveBeenCalledWith('eq-1');
+		expect(out).toContain('"id": "eq-1"');
+	});
+
+	it('equipment open <alias> resolves to id and calls navigateView', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(
+			harness.os,
+			harness.output,
+			`equipment open ${EQUIPMENT_ALIAS}`
+		);
+		expect(harness.adapters.equipment.navigateView).toHaveBeenCalledWith('eq-1');
+		expect(out).toContain('opening /equipment/eq-1');
+	});
+
+	it('equipment open <missing> prints "no such record"', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'equipment open ghost');
+		expect(harness.adapters.equipment.navigateView).not.toHaveBeenCalled();
+		expect(out).toContain('equipment open: ghost: no such record');
 	});
 });

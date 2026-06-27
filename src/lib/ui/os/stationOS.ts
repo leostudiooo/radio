@@ -1,5 +1,6 @@
 import { createStationVFS } from './vfs';
 import { resolvePath } from './path';
+import { findEquipmentIdByAlias, findQSOIdByAlias, isUuidLike } from './alias';
 import {
 	ANSI,
 	formatEquipmentList,
@@ -66,7 +67,8 @@ function helpText() {
 		`${ANSI.bold}Available commands${ANSI.reset}`,
 		'help                         Show commands',
 		'ls [path]                    List files',
-		'cd [path]                    Change directory and navigate site routes',
+		'cd [path]                    Change directory (no navigation)',
+		'open <path>                  Open a route in the browser',
 		'cat <path>                   Print a file',
 		'pwd                          Print working directory',
 		'clear                        Clear the terminal',
@@ -76,8 +78,18 @@ function helpText() {
 		'auth login --passkey         Sign in with passkey',
 		'auth login --magic <email>   Send magic-link email',
 		'auth logout                  Sign out (no navigation)',
-		'qso list|view <id>|add|edit <id>',
-		'equipment list|view <id>|add|edit <id>|activate <id>|deactivate <id>'
+		'qso list                     List recent QSOs',
+		'qso view <alias-or-id>       Print QSO JSON',
+		'qso open <alias-or-id>       Open QSO in browser',
+		'qso add                      Open new QSO form (admin)',
+		'qso edit <id>                Open edit form (admin)',
+		'equipment list               List equipment',
+		'equipment view <alias-or-id> Print equipment JSON',
+		'equipment open <alias-or-id> Open equipment in browser',
+		'equipment add                Open new equipment form (admin)',
+		'equipment edit <id>          Open edit form (admin)',
+		'equipment activate <id>      Mark active (admin)',
+		'equipment deactivate <id>    Mark inactive (admin)'
 	);
 }
 
@@ -172,8 +184,24 @@ export function createStationOS({
 			}
 
 			cwd = next;
+			return;
+		}
+
+		if (command === 'open') {
+			const target = rest[0];
+			if (!target) {
+				emitLine('open: missing operand');
+				return;
+			}
+
+			const next = resolvePath(cwd, target);
 			const route = vfs.routeFor(next);
-			if (route) await adapters.router.goto(route);
+			if (!route) {
+				emitLine(`open: ${next}: not a route`);
+				return;
+			}
+
+			await adapters.router.goto(route);
 			return;
 		}
 
@@ -266,7 +294,7 @@ export function createStationOS({
 	}
 
 	async function runQSOApp(args: string[]) {
-		const [action, id] = args;
+		const [action, target] = args;
 
 		if (action === 'list') {
 			const result = await adapters.qso.list();
@@ -275,8 +303,30 @@ export function createStationOS({
 		}
 
 		if (action === 'view') {
+			if (!target) {
+				emitLine('usage: qso view <alias-or-id>');
+				return;
+			}
+
+			try {
+				emitLine(await vfs.read(`/qso/${target}.json`, '/'));
+			} catch {
+				emitLine(`qso view: ${target}: no such record`);
+			}
+			return;
+		}
+
+		if (action === 'open') {
+			if (!target) {
+				emitLine('usage: qso open <alias-or-id>');
+				return;
+			}
+
+			const id = isUuidLike(target)
+				? target
+				: findQSOIdByAlias((await adapters.qso.list()).data, target);
 			if (!id) {
-				emitLine('usage: qso view <id>');
+				emitLine(`qso open: ${target}: no such record`);
 				return;
 			}
 
@@ -304,21 +354,21 @@ export function createStationOS({
 				return;
 			}
 
-			if (!id) {
+			if (!target) {
 				emitLine('usage: qso edit <id>');
 				return;
 			}
 
-			await adapters.qso.navigateEdit(id);
-			emitLine(`opening /qso/${id}/edit`);
+			await adapters.qso.navigateEdit(target);
+			emitLine(`opening /qso/${target}/edit`);
 			return;
 		}
 
-		emitLine('usage: qso list|view <id>|add|edit <id>');
+		emitLine('usage: qso list | view <alias-or-id> | open <alias-or-id> | add | edit <id>');
 	}
 
 	async function runEquipmentApp(args: string[]) {
-		const [action, id] = args;
+		const [action, target] = args;
 
 		if (action === 'list') {
 			emitLine(formatEquipmentList(await adapters.equipment.list()));
@@ -326,8 +376,30 @@ export function createStationOS({
 		}
 
 		if (action === 'view') {
+			if (!target) {
+				emitLine('usage: equipment view <alias-or-id>');
+				return;
+			}
+
+			try {
+				emitLine(await vfs.read(`/equipment/${target}.json`, '/'));
+			} catch {
+				emitLine(`equipment view: ${target}: no such record`);
+			}
+			return;
+		}
+
+		if (action === 'open') {
+			if (!target) {
+				emitLine('usage: equipment open <alias-or-id>');
+				return;
+			}
+
+			const id = isUuidLike(target)
+				? target
+				: findEquipmentIdByAlias(await adapters.equipment.list(), target);
 			if (!id) {
-				emitLine('usage: equipment view <id>');
+				emitLine(`equipment open: ${target}: no such record`);
 				return;
 			}
 
@@ -355,13 +427,13 @@ export function createStationOS({
 				return;
 			}
 
-			if (!id) {
+			if (!target) {
 				emitLine('usage: equipment edit <id>');
 				return;
 			}
 
-			await adapters.equipment.navigateEdit(id);
-			emitLine(`opening /equipment/${id}`);
+			await adapters.equipment.navigateEdit(target);
+			emitLine(`opening /equipment/${target}`);
 			return;
 		}
 
@@ -372,20 +444,22 @@ export function createStationOS({
 				return;
 			}
 
-			if (!id) {
+			if (!target) {
 				emitLine(`usage: equipment ${action} <id>`);
 				return;
 			}
 
 			const item =
 				action === 'activate'
-					? await adapters.equipment.activate(id)
-					: await adapters.equipment.deactivate(id);
+					? await adapters.equipment.activate(target)
+					: await adapters.equipment.deactivate(target);
 			emitLine(`${item.name}: ${item.is_active ? 'active' : 'inactive'}`);
 			return;
 		}
 
-		emitLine('usage: equipment list|view <id>|add|edit <id>|activate <id>|deactivate <id>');
+		emitLine(
+			'usage: equipment list | view <alias-or-id> | open <alias-or-id> | add | edit <id> | activate <id> | deactivate <id>'
+		);
 	}
 
 	return {
