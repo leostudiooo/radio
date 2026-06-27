@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createStationOS } from './stationOS';
-import type { AuthStatus, SiteFSEntry, StaticFSEntry, StationOSAdapters } from './types';
+import type {
+	AuthCommandResult,
+	AuthStatus,
+	SiteFSEntry,
+	StaticFSEntry,
+	StationOSAdapters
+} from './types';
 import type { Equipment } from '$lib/logic/types/equipment';
 import type { PaginatedResult, QSO } from '$lib/logic/types/qso';
 
@@ -97,6 +103,10 @@ function createHarness(initialAuth: Partial<AuthStatus> = {}) {
 		throw new Error(`${path}: no such file`);
 	});
 
+	const authLoginWithPasskey = vi.fn(async (): Promise<AuthCommandResult> => ({ success: true }));
+	const authLoginWithMagicLink = vi.fn(async (): Promise<AuthCommandResult> => ({ success: true }));
+	const authLogout = vi.fn(async () => undefined);
+
 	const adapters: StationOSAdapters = {
 		emit: (text) => {
 			output.push(text);
@@ -104,8 +114,9 @@ function createHarness(initialAuth: Partial<AuthStatus> = {}) {
 		sleep: vi.fn(async () => undefined),
 		auth: {
 			status: () => authStatus,
-			login: vi.fn(async () => undefined),
-			logout: vi.fn(async () => undefined)
+			loginWithPasskey: authLoginWithPasskey,
+			loginWithMagicLink: authLoginWithMagicLink,
+			logout: authLogout
 		},
 		router: {
 			goto: vi.fn(async () => undefined)
@@ -159,6 +170,9 @@ function createHarness(initialAuth: Partial<AuthStatus> = {}) {
 		equipmentGet,
 		equipmentActivate,
 		fsRead,
+		authLoginWithPasskey,
+		authLoginWithMagicLink,
+		authLogout,
 		authStatusRef: {
 			get value() {
 				return authStatus;
@@ -374,5 +388,175 @@ describe('Station OS core', () => {
 		expect(harness.equipmentActivate).toHaveBeenCalledWith('eq-1');
 		expect(adminActivate).toContain('Linear Amp: active');
 		expect(adminActivate).toContain('BA4VUN:/$ ');
+	});
+});
+
+describe('Station OS auth app', () => {
+	it('auth status prints structured JSON with role and callsign', async () => {
+		const harness = createHarness({
+			isAuthenticated: true,
+			isAdmin: true,
+			role: 'admin',
+			callsign: 'BA4VUN',
+			email: 'op@example.com',
+			userId: 'user-1'
+		});
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth status');
+		expect(out).toContain('"isAuthenticated": true');
+		expect(out).toContain('"isAdmin": true');
+		expect(out).toContain('"role": "admin"');
+		expect(out).toContain('"callsign": "BA4VUN"');
+		expect(out).toContain('"email": "op@example.com"');
+	});
+
+	it('auth whoami prints "guest" when unauthenticated', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth whoami');
+		expect(out).toContain('guest\r\n');
+	});
+
+	it('auth whoami prints "<callsign> admin <email>" for admin', async () => {
+		const harness = createHarness({
+			isAuthenticated: true,
+			isAdmin: true,
+			role: 'admin',
+			callsign: 'BA4VUN',
+			email: 'op@example.com'
+		});
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth whoami');
+		expect(out).toContain('BA4VUN admin op@example.com\r\n');
+	});
+
+	it('auth whoami prints "<callsign> user <email>" for non-admin authenticated', async () => {
+		const harness = createHarness({
+			isAuthenticated: true,
+			isAdmin: false,
+			role: 'user',
+			callsign: 'K1ABC',
+			email: 'k1abc@example.com'
+		});
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth whoami');
+		expect(out).toContain('K1ABC user k1abc@example.com\r\n');
+	});
+
+	it('auth login --passkey calls adapter and prints success on success', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		harness.authLoginWithPasskey.mockResolvedValueOnce({ success: true });
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth login --passkey');
+		expect(harness.authLoginWithPasskey).toHaveBeenCalledTimes(1);
+		expect(out).toContain('passkey authenticated\r\n');
+	});
+
+	it('auth login --passkey prints friendly message when passkey_not_supported', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		harness.authLoginWithPasskey.mockResolvedValueOnce({
+			success: false,
+			errorCode: 'passkey_not_supported'
+		});
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth login --passkey');
+		expect(out).toContain('passkey not supported on this device\r\n');
+	});
+
+	it('auth login --passkey prints underlying error on other failure', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		harness.authLoginWithPasskey.mockResolvedValueOnce({
+			success: false,
+			error: 'network down'
+		});
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth login --passkey');
+		expect(out).toContain('network down\r\n');
+	});
+
+	it('auth login --magic <email> calls adapter with email and prints "magic link sent"', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(
+			harness.os,
+			harness.output,
+			'auth login --magic op@example.com'
+		);
+		expect(harness.authLoginWithMagicLink).toHaveBeenCalledWith('op@example.com');
+		expect(out).toContain('magic link sent\r\n');
+	});
+
+	it('auth login --magic without email prints usage and does not call adapter', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth login --magic');
+		expect(harness.authLoginWithMagicLink).not.toHaveBeenCalled();
+		expect(out).toContain('usage: auth login --magic <email>');
+	});
+
+	it('auth login with no flag prints usage and does not call any login adapter', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth login');
+		expect(harness.authLoginWithPasskey).not.toHaveBeenCalled();
+		expect(harness.authLoginWithMagicLink).not.toHaveBeenCalled();
+		expect(out).toContain('usage: auth login --passkey | --magic <email>');
+	});
+
+	it('auth login with unknown flag prints usage and does not call any login adapter', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth login --github');
+		expect(harness.authLoginWithPasskey).not.toHaveBeenCalled();
+		expect(harness.authLoginWithMagicLink).not.toHaveBeenCalled();
+		expect(out).toContain('usage: auth login --passkey | --magic <email>');
+	});
+
+	it('auth logout when unauthenticated prints "not logged in" and does not call adapter', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth logout');
+		expect(harness.authLogout).not.toHaveBeenCalled();
+		expect(out).toContain('not logged in\r\n');
+	});
+
+	it('auth logout when authenticated calls adapter and prints "logged out" without navigating', async () => {
+		const harness = createHarness({
+			isAuthenticated: true,
+			isAdmin: true,
+			role: 'admin',
+			callsign: 'BA4VUN'
+		});
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth logout');
+		expect(harness.authLogout).toHaveBeenCalledTimes(1);
+		expect(harness.adapters.router.goto).not.toHaveBeenCalled();
+		expect(out).toContain('logged out\r\n');
+	});
+
+	it('auth with no subcommand prints top-level usage', async () => {
+		const harness = createHarness();
+		await bootInstant(harness.os, harness.output);
+
+		const out = await execAndCollect(harness.os, harness.output, 'auth');
+		expect(out).toContain('usage: auth status');
+		expect(out).toContain('login --passkey');
+		expect(out).toContain('login --magic <email>');
 	});
 });

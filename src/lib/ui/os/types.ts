@@ -13,6 +13,13 @@ export interface AuthStatus {
 	userId?: string | null;
 }
 
+export interface AuthCommandResult {
+	success: boolean;
+	message?: string;
+	error?: string;
+	errorCode?: string;
+}
+
 export interface SiteFSEntry {
 	path: string;
 	route: string;
@@ -29,7 +36,8 @@ export interface StationOSAdapters {
 	sleep: (ms: number) => Promise<void>;
 	auth: {
 		status: () => AuthStatus;
-		login: () => Promise<void> | void;
+		loginWithPasskey: () => Promise<AuthCommandResult>;
+		loginWithMagicLink: (email: string) => Promise<AuthCommandResult>;
 		logout: () => Promise<void> | void;
 	};
 	router: {

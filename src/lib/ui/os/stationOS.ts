@@ -71,7 +71,11 @@ function helpText() {
 		'pwd                          Print working directory',
 		'clear                        Clear the terminal',
 		'whoami                       Print current station callsign',
-		'auth status|login|logout',
+		'auth status                  Print auth state as JSON',
+		'auth whoami                  Print short identity',
+		'auth login --passkey         Sign in with passkey',
+		'auth login --magic <email>   Send magic-link email',
+		'auth logout                  Sign out (no navigation)',
 		'qso list|view <id>|add|edit <id>',
 		'equipment list|view <id>|add|edit <id>|activate <id>|deactivate <id>'
 	);
@@ -192,16 +196,57 @@ export function createStationOS({
 	}
 
 	async function runAuthApp(args: string[]) {
-		const [action] = args;
+		const [action, ...rest] = args;
 
 		if (action === 'status') {
 			emitLine(formatJSON(adapters.auth.status()));
 			return;
 		}
 
+		if (action === 'whoami') {
+			const status = adapters.auth.status();
+			if (!status.isAuthenticated || !status.callsign) {
+				emitLine('guest');
+				return;
+			}
+
+			const role = status.isAdmin ? 'admin' : 'user';
+			const email = status.email ?? '';
+			emitLine(`${status.callsign} ${role} ${email}`.trim());
+			return;
+		}
+
 		if (action === 'login') {
-			await adapters.auth.login();
-			emitLine('opening /auth/login');
+			const [flag, email] = rest;
+
+			if (flag === '--passkey') {
+				const result = await adapters.auth.loginWithPasskey();
+				if (result.success) {
+					emitLine(result.message ?? 'passkey authenticated');
+				} else if (result.errorCode === 'passkey_not_supported') {
+					emitLine('passkey not supported on this device');
+				} else {
+					emitLine(result.error ?? 'login failed');
+				}
+				return;
+			}
+
+			if (flag === '--magic') {
+				if (!email) {
+					emitLine('usage: auth login --magic <email>');
+					return;
+				}
+
+				const result = await adapters.auth.loginWithMagicLink(email);
+				if (result.success) {
+					emitLine('magic link sent');
+				} else {
+					emitLine(result.error ?? 'login failed');
+				}
+				return;
+			}
+
+			emitLine('usage: auth login --passkey | --magic <email>');
 			return;
 		}
 
@@ -217,7 +262,7 @@ export function createStationOS({
 			return;
 		}
 
-		emitLine('usage: auth status|login|logout');
+		emitLine('usage: auth status | whoami | login --passkey | login --magic <email> | logout');
 	}
 
 	async function runQSOApp(args: string[]) {

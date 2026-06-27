@@ -1,12 +1,12 @@
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { supabase } from '$lib/supabase';
-import { signOut } from '$lib/logic/auth';
+import { signInWithPasskey, signInWithMagicLink, signOut } from '$lib/logic/auth';
 import { getQSOs, getQSOById } from '$lib/logic/data/qso';
 import { getEquipment, getEquipmentById, updateEquipment } from '$lib/logic/data/equipment';
 import { authStore } from '$lib/ui/stores/auth.svelte';
 import operatorData from '$lib/logic/config/operator.json';
-import type { AuthStatus, StationOSAdapters } from './types';
+import type { AuthCommandResult, AuthStatus, StationOSAdapters } from './types';
 import type { Pathname } from '$app/types';
 
 type ResolvablePath = Pathname;
@@ -32,10 +32,31 @@ export function createBrowserStationOSAdapters(emit: (text: string) => void): St
 		sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 		auth: {
 			status: authStatus,
-			login: () => goto(resolve('/auth/login')),
+			async loginWithPasskey(): Promise<AuthCommandResult> {
+				const result = await signInWithPasskey(supabase);
+				if (!result.success) {
+					return {
+						success: false,
+						error: result.error,
+						errorCode: result.errorCode
+					};
+				}
+				return { success: true };
+			},
+			async loginWithMagicLink(email: string): Promise<AuthCommandResult> {
+				const redirectTo = `${window.location.origin}/auth/callback`;
+				const result = await signInWithMagicLink(supabase, email, redirectTo);
+				if (!result.success) {
+					return {
+						success: false,
+						error: result.error,
+						errorCode: result.errorCode
+					};
+				}
+				return { success: true };
+			},
 			async logout() {
 				await signOut(supabase);
-				await goto(resolve('/auth/login'));
 			}
 		},
 		router: {
