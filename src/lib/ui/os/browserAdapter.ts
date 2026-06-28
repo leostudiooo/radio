@@ -11,6 +11,9 @@ import type { Pathname } from '$app/types';
 
 type ResolvablePath = Pathname;
 
+const AUTH_SETTLE_TIMEOUT_MS = 2000;
+const AUTH_SETTLE_POLL_MS = 50;
+
 function authStatus(): AuthStatus {
 	const isAuthenticated = authStore.isAuthenticated;
 	const isAdmin = authStore.isAdmin;
@@ -24,6 +27,14 @@ function authStatus(): AuthStatus {
 		email: authStore.user?.email ?? null,
 		userId: authStore.user?.id ?? null
 	};
+}
+
+async function waitForAuthStoreSettled(): Promise<void> {
+	const deadline = Date.now() + AUTH_SETTLE_TIMEOUT_MS;
+	while (Date.now() < deadline) {
+		if (authStore.isAuthenticated && authStore.callsign) return;
+		await new Promise((r) => setTimeout(r, AUTH_SETTLE_POLL_MS));
+	}
 }
 
 export function createBrowserStationOSAdapters(emit: (text: string) => void): StationOSAdapters {
@@ -41,6 +52,7 @@ export function createBrowserStationOSAdapters(emit: (text: string) => void): St
 						errorCode: result.errorCode
 					};
 				}
+				await waitForAuthStoreSettled();
 				return { success: true };
 			},
 			async loginWithMagicLink(email: string): Promise<AuthCommandResult> {
