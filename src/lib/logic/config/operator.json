@@ -4,6 +4,6 @@
 	"city": "Nanjing",
 	"province": "JIANGSU [Z4]",
 	"country": "CHN",
-	"itu_zone": "ITU-44",
-	"mh_grid": "OM91jv/OM92"
+	"itu_cq": "44_24",
+	"mh_grid": "OM91jv"
 }
