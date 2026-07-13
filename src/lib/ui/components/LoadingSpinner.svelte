@@ -11,7 +11,7 @@
 		lg: 32
 	};
 
-	const s = sizeMap[size];
+	const s = $derived(sizeMap[size]);
 </script>
 
 <svg
