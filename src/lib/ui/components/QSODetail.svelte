@@ -2,13 +2,13 @@
 	import type { QSO } from '$lib/logic/types/qso';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
 	import { formatDate, formatTime } from '$lib/ui/utils/format';
+	import StatusBadge from './StatusBadge.svelte';
 
 	interface Props {
 		qso: QSO;
-		isAdmin: boolean;
 	}
 
-	let { qso, isAdmin }: Props = $props();
+	let { qso }: Props = $props();
 	const t = $derived(localeStore.translation);
 
 	const DASH = '\u2014';
@@ -40,6 +40,14 @@
 			{t.qso.sectionDetails}
 		</h2>
 		<dl class="grid grid-cols-1 gap-x-[var(--space-8)] gap-y-[var(--space-3)] md:grid-cols-2">
+			<div>
+				<dt class="tracking-wide text-[var(--color-text-muted)] text-[var(--text-body)] uppercase">
+					{t.qso.confirmation}
+				</dt>
+				<dd class="text-[var(--color-text-primary)] text-[var(--text-body)]">
+					{#if qso.verified_at}<StatusBadge status="confirmed" label="CFM" />{:else}{DASH}{/if}
+				</dd>
+			</div>
 			<div>
 				<dt class="tracking-wide text-[var(--color-text-muted)] text-[var(--text-body)] uppercase">
 					{t.qso.callsign}

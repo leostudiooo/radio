@@ -36,7 +36,7 @@ const COMMANDS = [
 
 const AUTH_SUBS = ['status', 'whoami', 'login', 'logout'];
 const AUTH_LOGIN_FLAGS = ['--passkey', '--magic'];
-const QSO_SUBS = ['list', 'view', 'open', 'add', 'edit'];
+const QSO_SUBS = ['list', 'view', 'open', 'cfm', 'add', 'edit'];
 const EQUIPMENT_SUBS = ['list', 'view', 'open', 'add', 'edit', 'activate', 'deactivate'];
 const PATH_COMMANDS = new Set(['ls', 'cd', 'cat', 'open']);
 
@@ -152,6 +152,7 @@ function helpText() {
 		'qso list                     List recent QSOs',
 		'qso view <alias-or-id>       Print QSO JSON',
 		'qso open <alias-or-id>       Open QSO in browser',
+		'qso cfm <code>               Open QSL confirmation page',
 		'qso add                      Open new QSO form (admin)',
 		'qso edit <id>                Open edit form (admin)',
 		'equipment list               List equipment',
@@ -414,6 +415,24 @@ export function createStationOS({
 			return;
 		}
 
+		if (action === 'cfm') {
+			if (!target) {
+				emitLine('usage: qso cfm <code>');
+				return;
+			}
+
+			const normalized = target.replaceAll('-', '').toUpperCase();
+			if (!/^[0-9A-HJKMNP-TV-Z]{8}$/.test(normalized)) {
+				emitLine(`qso cfm: ${target}: invalid verification code`);
+				return;
+			}
+
+			const code = `${normalized.slice(0, 4)}-${normalized.slice(4)}`;
+			await adapters.router.goto(`/qso/confirm/${code}`);
+			emitLine(`opening /qso/confirm/${code}`);
+			return;
+		}
+
 		if (action === 'add') {
 			const error = ensureAdmin(adapters);
 			if (error) {
@@ -443,7 +462,9 @@ export function createStationOS({
 			return;
 		}
 
-		emitLine('usage: qso list | view <alias-or-id> | open <alias-or-id> | add | edit <id>');
+		emitLine(
+			'usage: qso list | view <alias-or-id> | open <alias-or-id> | cfm <code> | add | edit <id>'
+		);
 	}
 
 	async function runEquipmentApp(args: string[]) {

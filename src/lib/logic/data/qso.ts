@@ -11,7 +11,7 @@ import type {
 import { validateQSO } from '$lib/logic/validation';
 
 const QSO_COLUMNS =
-	'id, profile_id, callsign, time_on, time_off, band, freq, mode, submode, rst_sent, rst_rcvd, tx_pwr, name, qth, grid_square, comment, dxcc, country, cq_zone, itu_zone, cont, qsl_sent, qsl_sent_via, qsl_rcvd, qsl_rcvd_via, lotw_qsl_sent, lotw_qsl_rcvd, eqsl_qsl_sent, eqsl_qsl_rcvd, prop_mode, sat_name, ant_az, ant_el, distance, operator, is_eyeball, latitude, longitude, created_at, updated_at';
+	'id, profile_id, callsign, time_on, time_off, band, freq, mode, submode, rst_sent, rst_rcvd, tx_pwr, name, qth, grid_square, comment, dxcc, country, cq_zone, itu_zone, cont, qsl_sent, qsl_sent_via, qsl_rcvd, qsl_rcvd_via, lotw_qsl_sent, lotw_qsl_rcvd, eqsl_qsl_sent, eqsl_qsl_rcvd, prop_mode, sat_name, ant_az, ant_el, distance, operator, is_eyeball, latitude, longitude, verified_at, created_at, updated_at';
 
 function validationError(qso: QSOInsert): Error | null {
 	const result = validateQSO(qso);

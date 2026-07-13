@@ -208,6 +208,25 @@ export type BaseTranslation = {
 		qslViaDirect: string;
 		qslViaElectronic: string;
 		qslViaManager: string;
+		verificationTitle: string;
+		verificationDescription: string;
+		verificationCode: string;
+		verificationHint: string;
+		lookupVerification: string;
+		invalidVerificationCode: string;
+		verificationLoadFailed: string;
+		confirmQSO: string;
+		confirmationSuccess: string;
+		alreadyConfirmed: string;
+		confirmedOn: string;
+		sendQSLCard: string;
+		qslCardSent: string;
+		qslCardSendFailed: string;
+		copyCode: string;
+		copyLink: string;
+		copied: string;
+		confirmation: string;
+		confirmationPageUrl: string;
 		validation: {
 			callsign: { INVALID_FORMAT?: string; REQUIRED?: string };
 			band: { INVALID_BAND?: string; REQUIRED?: string };

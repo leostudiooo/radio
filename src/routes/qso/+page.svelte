@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { supabase } from '$lib/supabase';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
 	import { settingsStore } from '$lib/ui/stores/settings.svelte';
@@ -20,6 +21,7 @@
 	import FormDate from '$lib/ui/components/FormDate.svelte';
 	import Button from '$lib/ui/components/Button.svelte';
 	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
+	import StatusBadge from '$lib/ui/components/StatusBadge.svelte';
 	import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
 	import { Eye, Pencil, Trash2 } from '@lucide/svelte';
 	import { SITE_CONFIG } from '$lib/config';
@@ -88,6 +90,7 @@
 		{ key: 'mode', header: t.qso.mode, sortable: true },
 		{ key: 'rst_sent', header: t.qso.rstSent },
 		{ key: 'rst_rcvd', header: t.qso.rstRcvd },
+		{ key: 'verified_at', header: t.qso.confirmation },
 		{ key: 'country', header: t.qso.country, sortable: true }
 	]);
 
@@ -173,7 +176,9 @@
 <PageHeader title={t.qso.title}>
 	{#snippet action()}
 		{#if authStore.isAdmin}
-			<Button variant="secondary" size="sm" onclick={() => goto('/qso/new')}>{t.qso.newQSO}</Button>
+			<Button variant="secondary" size="sm" onclick={() => goto(resolve('/qso/new'))}
+				>{t.qso.newQSO}</Button
+			>
 		{/if}
 	{/snippet}
 </PageHeader>
@@ -186,7 +191,9 @@
 	<EmptyState icon="📻" message={t.qso.noQSOsYet}>
 		{#snippet cta()}
 			{#if authStore.isAdmin}
-				<Button variant="primary" onclick={() => goto('/qso/new')}>{t.qso.logYourFirst}</Button>
+				<Button variant="primary" onclick={() => goto(resolve('/qso/new'))}
+					>{t.qso.logYourFirst}</Button
+				>
 			{/if}
 		{/snippet}
 	</EmptyState>
@@ -247,12 +254,15 @@
 			sort={{ key: sortField, dir: sortDir }}
 			onsort={handleSort}
 		>
+			{#snippet cell_verified_at(row)}
+				{#if row.verified_at}<StatusBadge status="confirmed" label="CFM" />{:else}—{/if}
+			{/snippet}
 			{#snippet actions(row)}
 				<div class="flex justify-end gap-[var(--space-1)]">
 					<button
 						class="p-[var(--space-1)] text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
 						aria-label={t.qso.viewQso}
-						onclick={() => goto(`/qso/${row.id}`)}
+						onclick={() => goto(resolve('/qso/[id]', { id: String(row.id) }))}
 					>
 						<Eye size={16} />
 					</button>
@@ -260,7 +270,7 @@
 						<button
 							class="p-[var(--space-1)] text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
 							aria-label={t.qso.editQso}
-							onclick={() => goto(`/qso/${row.id}/edit`)}
+							onclick={() => goto(resolve('/qso/[id]/edit', { id: String(row.id) }))}
 						>
 							<Pencil size={16} />
 						</button>
