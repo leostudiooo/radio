@@ -512,7 +512,7 @@
 
 			<FormTime label={t.qso.time} value={timePart} required={true} onchange={handleTimeChange} />
 
-			<FormDate label={t.qso.timeOff} value={datePartOff} onchange={handleDateOffChange} />
+			<FormDate label={t.qso.dateOff} value={datePartOff} onchange={handleDateOffChange} />
 
 			<FormTime label={t.qso.timeOff} value={timePartOff} onchange={handleTimeOffChange} />
 

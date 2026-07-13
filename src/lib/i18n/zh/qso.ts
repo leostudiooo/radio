@@ -5,6 +5,7 @@ const qso = {
 	callsign: '呼号',
 	date: '日期',
 	time: '时间',
+	dateOff: '结束日期',
 	timeOff: '结束时间',
 	band: '波段',
 	freq: '频率',

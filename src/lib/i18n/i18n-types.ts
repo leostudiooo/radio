@@ -134,6 +134,7 @@ export type BaseTranslation = {
 		callsign: string;
 		date: string;
 		time: string;
+		dateOff: string;
 		timeOff: string;
 		band: string;
 		freq: string;

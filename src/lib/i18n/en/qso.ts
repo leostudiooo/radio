@@ -5,6 +5,7 @@ const qso = {
 	callsign: 'Callsign',
 	date: 'Date',
 	time: 'Time',
+	dateOff: 'End Date',
 	timeOff: 'End Time',
 	band: 'Band',
 	freq: 'Frequency',
