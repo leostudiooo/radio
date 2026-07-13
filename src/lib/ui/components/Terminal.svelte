@@ -87,12 +87,17 @@
 
 <div class="card-panel terminal-card mx-auto w-full p-0" data-testid="terminal-card">
 	<div
-		bind:this={terminalHost}
-		class="station-terminal w-full overflow-hidden"
-		data-testid="terminal-output"
-		role="log"
-		aria-live="polite"
-	></div>
+		class="terminal-scroll"
+		data-testid="terminal-scroll"
+	>
+		<div
+			bind:this={terminalHost}
+			class="station-terminal overflow-hidden"
+			data-testid="terminal-output"
+			role="log"
+			aria-live="polite"
+		></div>
+	</div>
 </div>
 
 <style>
@@ -137,11 +142,23 @@
 			(var(--text-body) * var(--line-height-tight) * var(--terminal-rows)) +
 				var(--terminal-padding-y)
 		);
+		overflow: hidden;
+	}
+
+	.terminal-scroll {
+		width: 100%;
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		scrollbar-color: var(--color-border-hover) transparent;
+		touch-action: pan-x pan-y;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	:global(.station-terminal.wterm) {
 		box-sizing: border-box;
-		width: 100%;
+		width: calc((var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x));
+		min-width: calc((var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x));
 		max-width: calc(
 			(var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x)
 		);
