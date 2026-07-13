@@ -36,8 +36,8 @@
 		}
 	};
 
-	const config = statusConfig[status];
-	const displayLabel = label ?? status.toUpperCase();
+	const config = $derived(statusConfig[status]);
+	const displayLabel = $derived(label ?? status.toUpperCase());
 </script>
 
 <span

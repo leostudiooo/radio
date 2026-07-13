@@ -17,7 +17,7 @@
 		onchange
 	}: Props = $props();
 
-	const timeId = `time-${label.toLowerCase().replace(/\s+/g, '-')}-${Math.random().toString(36).slice(2, 7)}`;
+	const timeId = `time-${Math.random().toString(36).slice(2, 9)}`;
 
 	function handleChange(e: Event) {
 		const target = e.target as HTMLInputElement;

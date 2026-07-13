@@ -50,6 +50,7 @@
 
 <div
 	class="flex flex-col gap-[var(--space-3)]"
+	role="group"
 	ondragover={handleDragOver}
 	ondragleave={handleDragLeave}
 	ondrop={handleDrop}

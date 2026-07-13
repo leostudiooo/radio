@@ -28,7 +28,7 @@
 		onchange
 	}: Props = $props();
 
-	const selectId = `select-${label.toLowerCase().replace(/\s+/g, '-')}-${Math.random().toString(36).slice(2, 7)}`;
+	const selectId = `select-${Math.random().toString(36).slice(2, 9)}`;
 
 	function handleChange(e: Event) {
 		const target = e.target as HTMLSelectElement;
@@ -56,7 +56,7 @@
 			{#if placeholder}
 				<option value="" disabled selected={!value}>{placeholder}</option>
 			{/if}
-			{#each options as option}
+			{#each options as option (option.value)}
 				<option value={option.value}>{option.label}</option>
 			{/each}
 		</select>

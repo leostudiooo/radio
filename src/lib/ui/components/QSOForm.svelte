@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
 	import { settingsStore } from '$lib/ui/stores/settings.svelte';
 	import { BANDS, MODES, CONTINENTS, ADIF_QSL_STATUS } from '$lib/logic/types/qso';
@@ -83,6 +84,38 @@
 		return PHONE_MODES.has(mode) ? '59' : '599';
 	}
 
+	function initialTimeOn(): string {
+		return formMode === 'create' ? utcNow() : '';
+	}
+
+	function replaceLocalDate(value: string, newDate: string): string {
+		const current = new Date(value);
+		const [year, month, day] = newDate.split('-').map(Number);
+		const updated = new Date(
+			year,
+			month - 1,
+			day,
+			current.getHours(),
+			current.getMinutes(),
+			current.getSeconds()
+		);
+		return updated.toISOString().slice(0, 19) + 'Z';
+	}
+
+	function replaceLocalTime(value: string, newTime: string): string {
+		const current = new Date(value);
+		const [hours, minutes] = newTime.split(':').map(Number);
+		const updated = new Date(
+			current.getFullYear(),
+			current.getMonth(),
+			current.getDate(),
+			hours,
+			minutes,
+			0
+		);
+		return updated.toISOString().slice(0, 19) + 'Z';
+	}
+
 	const bandOptions = BANDS.map((b) => ({ value: b, label: b }));
 	const modeOptions = MODES.map((m) => ({ value: m, label: m }));
 	const contOptions = CONTINENTS.map((c) => ({ value: c, label: c }));
@@ -98,7 +131,7 @@
 	]);
 
 	let callsign = $state('');
-	let timeOn = $state(formMode === 'create' ? utcNow() : '');
+	let timeOn = $state(initialTimeOn());
 	let band = $state('');
 	let freq = $state('');
 	let qsoMode = $state('');
@@ -121,10 +154,7 @@
 		if (!settingsStore.useLocalTime) {
 			timeOn = `${newDate}T${timePart}:00Z`;
 		} else {
-			const d = new Date(timeOn);
-			const [y, m, day] = newDate.split('-').map(Number);
-			d.setFullYear(y, m - 1, day);
-			timeOn = d.toISOString().slice(0, 19) + 'Z';
+			timeOn = replaceLocalDate(timeOn, newDate);
 		}
 		saved = false;
 	}
@@ -133,10 +163,7 @@
 		if (!settingsStore.useLocalTime) {
 			timeOn = `${datePart}T${newTime}:00Z`;
 		} else {
-			const d = new Date(timeOn);
-			const [h, m] = newTime.split(':').map(Number);
-			d.setHours(h, m, 0, 0);
-			timeOn = d.toISOString().slice(0, 19) + 'Z';
+			timeOn = replaceLocalTime(timeOn, newTime);
 		}
 		saved = false;
 	}
@@ -199,10 +226,7 @@
 		} else if (!settingsStore.useLocalTime) {
 			timeOff = `${newDate}T${timePartOff}:00Z`;
 		} else {
-			const d = new Date(timeOff);
-			const [y, m, day] = newDate.split('-').map(Number);
-			d.setFullYear(y, m - 1, day);
-			timeOff = d.toISOString().slice(0, 19) + 'Z';
+			timeOff = replaceLocalDate(timeOff, newDate);
 		}
 		saved = false;
 	}
@@ -214,10 +238,7 @@
 		} else if (!settingsStore.useLocalTime) {
 			timeOff = `${datePartOff}T${newTime}:00Z`;
 		} else {
-			const d = new Date(timeOff);
-			const [h, m] = newTime.split(':').map(Number);
-			d.setHours(h, m, 0, 0);
-			timeOff = d.toISOString().slice(0, 19) + 'Z';
+			timeOff = replaceLocalTime(timeOff, newTime);
 		}
 		saved = false;
 	}
@@ -450,7 +471,7 @@
 	<PageHeader title={t.qso.newQSO} />
 	<div class="flex flex-col items-center gap-[var(--space-4)] py-[var(--space-12)] sm:flex-row">
 		<Button variant="primary" onclick={logAnother}>{t.qso.logAnother}</Button>
-		<Button variant="secondary" onclick={() => goto('/qso')}>{t.qso.viewList}</Button>
+		<Button variant="secondary" onclick={() => goto(resolve('/qso'))}>{t.qso.viewList}</Button>
 	</div>
 {:else}
 	{#if formMode === 'edit' && ondelete}
@@ -693,7 +714,7 @@
 				{/if}
 			</Button>
 			{#if formMode === 'edit'}
-				<Button variant="ghost" onclick={() => goto('/qso')}>{t.common.cancel}</Button>
+				<Button variant="ghost" onclick={() => goto(resolve('/qso'))}>{t.common.cancel}</Button>
 			{/if}
 		</div>
 	</form>

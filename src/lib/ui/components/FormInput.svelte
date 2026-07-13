@@ -29,7 +29,7 @@
 		onchange
 	}: Props = $props();
 
-	const inputId = `input-${label.toLowerCase().replace(/\s+/g, '-')}-${Math.random().toString(36).slice(2, 7)}`;
+	const inputId = `input-${Math.random().toString(36).slice(2, 9)}`;
 
 	function handleInput(e: Event) {
 		const target = e.target as HTMLInputElement;

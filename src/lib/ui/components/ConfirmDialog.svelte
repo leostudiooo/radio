@@ -2,8 +2,6 @@
 	import Button from './Button.svelte';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
 
-	const t = $derived(localeStore.translation);
-
 	interface Props {
 		open?: boolean;
 		title: string;
@@ -27,7 +25,7 @@
 	const resolvedConfirmLabel = $derived(confirmLabel ?? localeStore.translation.common.confirm);
 	const resolvedCancelLabel = $derived(cancelLabel ?? localeStore.translation.common.cancel);
 
-	let panelRef: HTMLElement;
+	let panelRef = $state<HTMLElement>();
 
 	function getFocusable(): HTMLElement[] {
 		if (!panelRef) return [];
@@ -77,12 +75,12 @@
 </script>
 
 {#if open}
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="confirm-title"
+		tabindex="-1"
 		onkeydown={handleKeydown}
 	>
 		<button

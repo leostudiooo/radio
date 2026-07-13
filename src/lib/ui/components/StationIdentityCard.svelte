@@ -8,9 +8,9 @@
 
 	let { profile }: Props = $props();
 
-	const callsign = profile?.callsign ?? SITE_CONFIG.callsign;
-	const grid_square = profile?.grid_square;
-	const qth = profile?.qth;
+	const callsign = $derived(profile?.callsign ?? SITE_CONFIG.callsign);
+	const grid_square = $derived(profile?.grid_square);
+	const qth = $derived(profile?.qth);
 </script>
 
 <div class="card-panel p-[var(--space-6)]">

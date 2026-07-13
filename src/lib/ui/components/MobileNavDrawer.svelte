@@ -8,6 +8,7 @@
 	import { handleLogout as doLogout } from '$lib/logic/auth';
 	import { supabase } from '$lib/supabase';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	interface NavItem {
 		path: string;
@@ -25,7 +26,7 @@
 	}
 
 	let { open, onclose, publicNavItems, adminNavItems, isActive, handleNavClick }: Props = $props();
-	let drawerRef: HTMLElement;
+	let drawerRef = $state<HTMLElement>();
 
 	function switchLocale(value: string) {
 		localeStore.setLocale(value as 'en' | 'zh');
@@ -88,7 +89,7 @@
 		class="fixed top-14 bottom-0 left-0 z-50 flex w-[240px] flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] lg:hidden"
 	>
 		<div class="flex-1 py-[var(--space-4)]">
-			{#each publicNavItems as item}
+			{#each publicNavItems as item (item.path)}
 				{@const Icon = item.icon}
 				<button
 					type="button"
@@ -104,7 +105,7 @@
 				</button>
 			{/each}
 			{#if authStore.isAdmin}
-				{#each adminNavItems as item}
+				{#each adminNavItems as item (item.path)}
 					{@const Icon = item.icon}
 					<button
 						type="button"
@@ -130,7 +131,7 @@
 				/>
 			{:else}
 				<a
-					href="/auth/login"
+					href={resolve('/auth/login')}
 					class="text-[var(--color-text-secondary)] text-[var(--text-body)] transition-colors duration-100 hover:text-[var(--color-text-primary)]"
 				>
 					{localeStore.translation.auth.login}

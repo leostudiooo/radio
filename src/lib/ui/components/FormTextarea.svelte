@@ -23,7 +23,7 @@
 		oninput
 	}: Props = $props();
 
-	const textareaId = `textarea-${label.toLowerCase().replace(/\s+/g, '-')}-${Math.random().toString(36).slice(2, 7)}`;
+	const textareaId = `textarea-${Math.random().toString(36).slice(2, 9)}`;
 
 	function handleInput(e: Event) {
 		const target = e.target as HTMLTextAreaElement;
