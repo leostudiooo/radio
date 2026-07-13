@@ -50,15 +50,39 @@ function collectRouteFiles(rootDir: string): string[] {
 	return files;
 }
 
+function createManifestCache<Entry>(
+	collectFiles: () => string[],
+	createEntries: (files: string[]) => Entry[]
+) {
+	let cachedFiles: string[] | null = null;
+	let cachedEntries: Entry[] | null = null;
+
+	function files() {
+		cachedFiles ??= collectFiles();
+		return cachedFiles;
+	}
+
+	function entries() {
+		cachedEntries ??= createEntries(files());
+		return cachedEntries;
+	}
+
+	function invalidate() {
+		cachedFiles = null;
+		cachedEntries = null;
+	}
+
+	return { files, entries, invalidate };
+}
+
 function stationSiteFsManifestPlugin(): Plugin {
 	let routesRoot = '';
 	let server: ViteDevServer | null = null;
 
-	const loadEntries = () => {
-		const files = collectRouteFiles(routesRoot);
-
-		return createSiteFSEntries(files, routesRoot);
-	};
+	const cache = createManifestCache(
+		() => collectRouteFiles(routesRoot),
+		(files) => createSiteFSEntries(files, routesRoot)
+	);
 
 	return {
 		name: 'station-site-fs-manifest',
@@ -74,8 +98,8 @@ function stationSiteFsManifestPlugin(): Plugin {
 		load(id) {
 			if (id !== RESOLVED_STATION_SITE_FS_VIRTUAL_ID) return null;
 
-			const entries = loadEntries();
-			for (const file of collectRouteFiles(routesRoot)) {
+			const entries = cache.entries();
+			for (const file of cache.files()) {
 				this.addWatchFile(file);
 			}
 
@@ -88,6 +112,7 @@ function stationSiteFsManifestPlugin(): Plugin {
 		handleHotUpdate(ctx) {
 			if (!server || !isRouteSourceFile(ctx.file, routesRoot)) return;
 
+			cache.invalidate();
 			const module = server.moduleGraph.getModuleById(RESOLVED_STATION_SITE_FS_VIRTUAL_ID);
 			if (!module) return;
 
@@ -101,10 +126,10 @@ function stationStaticFsPlugin(): Plugin {
 	let staticRoot = '';
 	let server: ViteDevServer | null = null;
 
-	const loadEntries = () => {
-		const files = collectStaticFiles(staticRoot);
-		return createStaticFSEntries(files, staticRoot);
-	};
+	const cache = createManifestCache(
+		() => collectStaticFiles(staticRoot),
+		(files) => createStaticFSEntries(files, staticRoot)
+	);
 
 	return {
 		name: 'station-static-fs-manifest',
@@ -120,8 +145,8 @@ function stationStaticFsPlugin(): Plugin {
 		load(id) {
 			if (id !== RESOLVED_STATION_STATIC_FS_VIRTUAL_ID) return null;
 
-			const entries = loadEntries();
-			for (const file of collectStaticFiles(staticRoot)) {
+			const entries = cache.entries();
+			for (const file of cache.files()) {
 				this.addWatchFile(file);
 			}
 
@@ -158,6 +183,7 @@ function stationStaticFsPlugin(): Plugin {
 		handleHotUpdate(ctx) {
 			if (!server || !isStaticSourceFile(ctx.file, staticRoot)) return;
 
+			cache.invalidate();
 			const module = server.moduleGraph.getModuleById(RESOLVED_STATION_STATIC_FS_VIRTUAL_ID);
 			if (!module) return;
 
@@ -165,8 +191,7 @@ function stationStaticFsPlugin(): Plugin {
 			return [module];
 		},
 		generateBundle() {
-			const files = collectStaticFiles(staticRoot);
-			for (const file of files) {
+			for (const file of cache.files()) {
 				const relativePath = toPosixPath(file).slice(toPosixPath(staticRoot).length + 1);
 				const content = readFileSync(file);
 				this.emitFile({
