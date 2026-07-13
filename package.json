@@ -54,5 +54,11 @@
 	},
 	"simple-git-hooks": {
 		"pre-commit": "sh -c 'grep -rn \"from.*/ui/\\|from.*svelte\\|localStorage\\|window\\.\" src/lib/logic/ && exit 1 || true'"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild",
+			"workerd"
+		]
 	}
 }
