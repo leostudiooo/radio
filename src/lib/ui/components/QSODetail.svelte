@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { QSO } from '$lib/logic/types/qso';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
+	import { settingsStore } from '$lib/ui/stores/settings.svelte';
 	import { formatDate, formatTime } from '$lib/ui/utils/format';
 	import StatusBadge from './StatusBadge.svelte';
 
@@ -15,13 +16,7 @@
 
 	function formatTimestamp(iso: string): string {
 		try {
-			return new Date(iso).toLocaleString(undefined, {
-				year: 'numeric',
-				month: 'short',
-				day: 'numeric',
-				hour: '2-digit',
-				minute: '2-digit'
-			});
+			return `${formatDate(iso, { useLocalTime: settingsStore.useLocalTime })} ${formatTime(iso, { useLocalTime: settingsStore.useLocalTime })}`;
 		} catch {
 			return DASH;
 		}
@@ -61,7 +56,7 @@
 					{t.qso.date}
 				</dt>
 				<dd class="text-[var(--color-text-primary)] text-[var(--text-body)]">
-					{formatDate(qso.time_on)}
+					{formatDate(qso.time_on, { useLocalTime: settingsStore.useLocalTime })}
 				</dd>
 			</div>
 			<div>
@@ -69,7 +64,7 @@
 					{t.qso.time}
 				</dt>
 				<dd class="text-[var(--color-text-primary)] text-[var(--text-body)]">
-					{formatTime(qso.time_on)}
+					{formatTime(qso.time_on, { useLocalTime: settingsStore.useLocalTime })}
 				</dd>
 			</div>
 			{#if qso.time_off}
@@ -80,7 +75,7 @@
 						{t.qso.timeOff}
 					</dt>
 					<dd class="text-[var(--color-text-primary)] text-[var(--text-body)]">
-						{formatTime(qso.time_off!)}
+						{formatTime(qso.time_off!, { useLocalTime: settingsStore.useLocalTime })}
 					</dd>
 				</div>
 			{/if}

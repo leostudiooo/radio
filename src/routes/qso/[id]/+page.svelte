@@ -4,10 +4,12 @@
 	import { supabase } from '$lib/supabase';
 	import { authStore } from '$lib/ui/stores/auth.svelte';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
+	import { settingsStore } from '$lib/ui/stores/settings.svelte';
 	import { getQSOById } from '$lib/logic/data/qso';
 	import { getQSOAdminVerificationCode, markQSOSentWithCode } from '$lib/logic/qso-verification';
 	import type { QSO } from '$lib/logic/types/qso';
 	import { formatDate, formatTime } from '$lib/ui/utils/format';
+	import { createQsoDetailLoader } from '$lib/ui/utils/qso-detail-loader';
 	import PageHeader from '$lib/ui/components/PageHeader.svelte';
 	import QSODetail from '$lib/ui/components/QSODetail.svelte';
 	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
@@ -25,28 +27,25 @@
 	let sendingCard = $state(false);
 	let confirmationUrl = $state('');
 
-	async function loadQSO(loadSecret: boolean) {
-		loading = true;
-		notFound = false;
-		try {
-			const result = await getQSOById(supabase, id);
-			if (result) {
-				qso = result;
-				verificationCode = loadSecret ? await getQSOAdminVerificationCode(supabase, id) : null;
-				confirmationUrl = `${window.location.origin}/qso/confirm`;
-			} else {
-				notFound = true;
-			}
-		} catch {
-			notFound = true;
-		} finally {
-			loading = false;
+	const detailLoader = createQsoDetailLoader(
+		{
+			getQSOById: (qsoId) => getQSOById(supabase, qsoId),
+			getVerificationCode: (qsoId) => getQSOAdminVerificationCode(supabase, qsoId),
+			getConfirmationOrigin: () => window.location.origin
+		},
+		(patch) => {
+			if ('qso' in patch) qso = patch.qso ?? null;
+			if ('loading' in patch) loading = patch.loading ?? false;
+			if ('notFound' in patch) notFound = patch.notFound ?? false;
+			if ('verificationCode' in patch) verificationCode = patch.verificationCode ?? null;
+			if ('confirmationUrl' in patch) confirmationUrl = patch.confirmationUrl ?? '';
 		}
-	}
+	);
 
 	$effect(() => {
+		if (authStore.loading) return;
 		const loadSecret = authStore.isAdmin;
-		if (id) loadQSO(loadSecret);
+		if (id) detailLoader.load(id, loadSecret);
 	});
 
 	async function handleSendQSLCard() {
@@ -70,8 +69,8 @@
 	let subtitle: string = $derived.by(() => {
 		if (!qso) return '';
 		const parts: string[] = [];
-		const d = formatDate(qso.time_on);
-		const t = formatTime(qso.time_on);
+		const d = formatDate(qso.time_on, { useLocalTime: settingsStore.useLocalTime });
+		const t = formatTime(qso.time_on, { useLocalTime: settingsStore.useLocalTime });
 		if (d || t) parts.push([d, t].filter(Boolean).join(' '));
 		if (qso.band) parts.push(qso.band);
 		if (qso.mode) parts.push(qso.mode);

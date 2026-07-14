@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { supabase } from '$lib/supabase';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
+	import { settingsStore } from '$lib/ui/stores/settings.svelte';
 	import {
 		confirmQSOByCode,
 		getQSOByVerificationCode,
@@ -87,11 +88,11 @@
 			<dl class="grid grid-cols-2 gap-[var(--space-4)]">
 				<div>
 					<dt class="text-[var(--color-text-muted)]">{t.qso.date}</dt>
-					<dd>{formatDate(qso.time_on)}</dd>
+					<dd>{formatDate(qso.time_on, { useLocalTime: settingsStore.useLocalTime })}</dd>
 				</div>
 				<div>
 					<dt class="text-[var(--color-text-muted)]">{t.qso.time}</dt>
-					<dd>{formatTime(qso.time_on)}</dd>
+					<dd>{formatTime(qso.time_on, { useLocalTime: settingsStore.useLocalTime })}</dd>
 				</div>
 				<div>
 					<dt class="text-[var(--color-text-muted)]">{t.qso.band}</dt>
@@ -118,7 +119,10 @@
 						{confirmed ? t.qso.confirmationSuccess : t.qso.alreadyConfirmed}
 					</p>
 					<p class="text-[var(--color-text-secondary)]">
-						{t.qso.confirmedOn.replace('{date}', new Date(qso.verified_at).toLocaleString())}
+						{t.qso.confirmedOn.replace(
+							'{date}',
+							`${formatDate(qso.verified_at, { useLocalTime: settingsStore.useLocalTime })} ${formatTime(qso.verified_at, { useLocalTime: settingsStore.useLocalTime })}`
+						)}
 					</p>
 				</div>
 			{:else}
