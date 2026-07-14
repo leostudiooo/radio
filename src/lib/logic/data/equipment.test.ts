@@ -115,6 +115,17 @@ describe('equipment logic helpers', () => {
 		expect(query.eq).toHaveBeenCalledWith('is_active', true);
 	});
 
+	it('can scope active equipment to one profile', async () => {
+		const active = [createEquipmentRow()];
+		const query = createSelectQuery({ data: active, error: null });
+		const from = vi.fn(() => query);
+		const supabase = createSupabase({ from } as unknown as SupabaseClient);
+
+		await expect(getEquipment(supabase, true, 'profile-1')).resolves.toEqual(active);
+		expect(query.eq).toHaveBeenNthCalledWith(1, 'is_active', true);
+		expect(query.eq).toHaveBeenNthCalledWith(2, 'profile_id', 'profile-1');
+	});
+
 	it('toggles active state', async () => {
 		const current = createEquipmentRow({ is_active: true });
 		const toggled = createEquipmentRow({ is_active: false });

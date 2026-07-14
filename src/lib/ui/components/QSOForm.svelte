@@ -23,6 +23,18 @@
 	import SegmentedToggle from '$lib/ui/components/SegmentedToggle.svelte';
 	import { SITE_CONFIG } from '$lib/config';
 	import type { Equipment } from '$lib/logic/types/equipment';
+	import {
+		QUICK_RST_VALUES,
+		activeAntennaOptions as getActiveAntennaOptions,
+		activeEquipmentDefaults,
+		activeRigOptions as getActiveRigOptions,
+		applyQuickModeDefaults,
+		composeQuickComment as composeQuickCommentText,
+		initialQuickDefaults,
+		powerOptions as getPowerOptions,
+		recentFrequencyOptions as getRecentFrequencyOptions,
+		type LogMode
+	} from '$lib/ui/utils/quick-qso';
 
 	interface Props {
 		formMode: 'create' | 'edit';
@@ -47,9 +59,6 @@
 	}: Props = $props();
 
 	const PHONE_MODES = new Set(['SSB', 'FM', 'AM']);
-	const QUICK_RST_VALUES = ['59', '57', '55', '46'];
-	const FALLBACK_FM_FREQUENCIES = ['430.61', '438', '431.7625', '431.7525', '438.5', '145.775'];
-
 	const BAND_FREQ: Record<string, number> = {
 		'160m': 1.85,
 		'80m': 3.75,
@@ -105,24 +114,24 @@
 		return formMode === 'create' ? utcNow() : '';
 	}
 
-	function initialLogMode(): 'quick' | 'standard' {
-		return formMode === 'create' ? 'quick' : 'standard';
+	function initialLogMode(): LogMode {
+		return initialQuickDefaults(formMode).logMode;
 	}
 
 	function initialBand(): string {
-		return formMode === 'create' ? '70cm' : '';
+		return initialQuickDefaults(formMode).band;
 	}
 
 	function initialMode(): string {
-		return formMode === 'create' ? 'FM' : '';
+		return initialQuickDefaults(formMode).mode;
 	}
 
 	function initialRST(): string {
-		return formMode === 'create' ? '59' : '';
+		return initialQuickDefaults(formMode).rstSent;
 	}
 
 	function initialPower(): string {
-		return formMode === 'create' ? '5' : '';
+		return initialQuickDefaults(formMode).power;
 	}
 
 	function replaceLocalDate(value: string, newDate: string): string {
@@ -172,53 +181,14 @@
 		{ value: 'standard', label: t.qso.standardLog }
 	]);
 
-	const recentFrequencyOptions = $derived.by(() => {
-		const values: string[] = [];
+	const recentFrequencyOptions = $derived(getRecentFrequencyOptions(recentQSOs));
+	const powerOptions = $derived(getPowerOptions(recentQSOs));
 
-		for (const qso of recentQSOs) {
-			const value = qso.freq != null ? String(qso.freq) : '';
-			if (value && !values.includes(value)) {
-				values.push(value);
-			}
-		}
+	const activeRigOptions = $derived(getActiveRigOptions(activeEquipment));
 
-		for (const value of FALLBACK_FM_FREQUENCIES) {
-			if (!values.includes(value)) {
-				values.push(value);
-			}
-		}
+	const activeAntennaOptions = $derived(getActiveAntennaOptions(activeEquipment));
 
-		return values.slice(0, 8);
-	});
-
-	const powerOptions = $derived.by(() => {
-		const values: string[] = [];
-
-		for (const qso of recentQSOs) {
-			const value = qso.tx_pwr != null ? String(qso.tx_pwr) : '';
-			if (value && !values.includes(value)) {
-				values.push(value);
-			}
-		}
-
-		for (const value of ['5', '2']) {
-			if (!values.includes(value)) {
-				values.push(value);
-			}
-		}
-
-		return values.slice(0, 5);
-	});
-
-	const activeRigOptions = $derived(
-		activeEquipment.filter((item) => item.type !== 'antenna').map((item) => item.name)
-	);
-
-	const activeAntennaOptions = $derived(
-		activeEquipment.filter((item) => item.type === 'antenna').map((item) => item.name)
-	);
-
-	let logMode = $state<'quick' | 'standard'>(initialLogMode());
+	let logMode = $state<LogMode>(initialLogMode());
 	let callsign = $state('');
 	let timeOn = $state(initialTimeOn());
 	let band = $state(initialBand());
@@ -404,11 +374,19 @@
 		saved = false;
 
 		if (value === 'quick' && formMode === 'create') {
-			if (!qsoMode) qsoMode = 'FM';
-			if (!band) band = '70cm';
-			if (!rstSent) rstSent = defaultRST(qsoMode);
-			if (!rstRcvd) rstRcvd = defaultRST(qsoMode);
-			if (!optPower) optPower = '5';
+			const next = applyQuickModeDefaults({
+				logMode,
+				mode: qsoMode,
+				band,
+				rstSent,
+				rstRcvd,
+				power: optPower
+			});
+			qsoMode = next.mode;
+			band = next.band;
+			rstSent = next.rstSent;
+			rstRcvd = next.rstRcvd;
+			optPower = next.power;
 		}
 	}
 
@@ -441,26 +419,25 @@
 			return optComment.trim();
 		}
 
-		const lines: string[] = [];
-		const notes = optComment.trim();
-		if (notes) lines.push(notes);
-
-		const helperLines = [
-			[t.qso.myRig, quickMyRig],
-			[t.qso.myAntenna, quickMyAntenna],
-			[t.qso.otherRig, quickOtherRig],
-			[t.qso.otherPower, quickOtherPower],
-			[t.qso.otherAntenna, quickOtherAntenna],
-			[t.qso.otherQth, quickOtherQth]
-		]
-			.filter(([, value]) => value.trim())
-			.map(([label, value]) => `${label}: ${value.trim()}`);
-
-		if (helperLines.length > 0) {
-			lines.push(helperLines.join('; '));
-		}
-
-		return lines.join('\n');
+		return composeQuickCommentText(
+			{
+				myRig: t.qso.myRig,
+				myAntenna: t.qso.myAntenna,
+				otherRig: t.qso.otherRig,
+				otherPower: t.qso.otherPower,
+				otherAntenna: t.qso.otherAntenna,
+				otherQth: t.qso.otherQth
+			},
+			{
+				notes: optComment,
+				myRig: quickMyRig,
+				myAntenna: quickMyAntenna,
+				otherRig: quickOtherRig,
+				otherPower: quickOtherPower,
+				otherAntenna: quickOtherAntenna,
+				otherQth: quickOtherQth
+			}
+		);
 	}
 
 	function buildFormData(): QSOInsert {
@@ -585,8 +562,9 @@
 		if (formMode !== 'create' || logMode !== 'quick' || quickEquipmentDefaultsApplied) return;
 		if (activeRigOptions.length === 0 && activeAntennaOptions.length === 0) return;
 
-		quickMyRig ||= activeRigOptions[0] ?? '';
-		quickMyAntenna ||= activeAntennaOptions[0] ?? '';
+		const defaults = activeEquipmentDefaults(activeEquipment);
+		quickMyRig ||= defaults.rig;
+		quickMyAntenna ||= defaults.antenna;
 		quickEquipmentDefaultsApplied = true;
 	});
 
