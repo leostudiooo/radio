@@ -13,26 +13,52 @@
 	import FormSelect from '$lib/ui/components/FormSelect.svelte';
 	import FormDate from '$lib/ui/components/FormDate.svelte';
 	import FormTime from '$lib/ui/components/FormTime.svelte';
+	import FormTextarea from '$lib/ui/components/FormTextarea.svelte';
 	import FormToggle from '$lib/ui/components/FormToggle.svelte';
 	import CollapsibleSection from '$lib/ui/components/CollapsibleSection.svelte';
 	import ValidationErrors from '$lib/ui/components/ValidationErrors.svelte';
 	import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
 	import Button from '$lib/ui/components/Button.svelte';
 	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
+	import SegmentedToggle from '$lib/ui/components/SegmentedToggle.svelte';
 	import { SITE_CONFIG } from '$lib/config';
+	import type { Equipment } from '$lib/logic/types/equipment';
+	import {
+		QUICK_RST_VALUES,
+		activeAntennaOptions as getActiveAntennaOptions,
+		activeEquipmentDefaults,
+		activeRigOptions as getActiveRigOptions,
+		applyQuickModeDefaults,
+		composeQuickComment as composeQuickCommentText,
+		initialQuickDefaults,
+		powerOptions as getPowerOptions,
+		recentFrequencyOptions as getRecentFrequencyOptions,
+		type LogMode
+	} from '$lib/ui/utils/quick-qso';
 
 	interface Props {
 		formMode: 'create' | 'edit';
 		initialData?: QSO;
 		profileId: string;
+		profileQth?: string;
+		recentQSOs?: QSO[];
+		activeEquipment?: Equipment[];
 		onsubmit: (data: QSOInsert) => Promise<void>;
 		ondelete?: () => Promise<void>;
 	}
 
-	let { formMode, initialData, profileId, onsubmit, ondelete }: Props = $props();
+	let {
+		formMode,
+		initialData,
+		profileId,
+		profileQth = '',
+		recentQSOs = [],
+		activeEquipment = [],
+		onsubmit,
+		ondelete
+	}: Props = $props();
 
 	const PHONE_MODES = new Set(['SSB', 'FM', 'AM']);
-
 	const BAND_FREQ: Record<string, number> = {
 		'160m': 1.85,
 		'80m': 3.75,
@@ -88,6 +114,26 @@
 		return formMode === 'create' ? utcNow() : '';
 	}
 
+	function initialLogMode(): LogMode {
+		return initialQuickDefaults(formMode).logMode;
+	}
+
+	function initialBand(): string {
+		return initialQuickDefaults(formMode).band;
+	}
+
+	function initialMode(): string {
+		return initialQuickDefaults(formMode).mode;
+	}
+
+	function initialRST(): string {
+		return initialQuickDefaults(formMode).rstSent;
+	}
+
+	function initialPower(): string {
+		return initialQuickDefaults(formMode).power;
+	}
+
 	function replaceLocalDate(value: string, newDate: string): string {
 		const current = new Date(value);
 		const [year, month, day] = newDate.split('-').map(Number);
@@ -130,13 +176,26 @@
 		{ value: 'M', label: t.qso.qslViaManager }
 	]);
 
+	const logModeOptions = $derived([
+		{ value: 'quick', label: t.qso.quickLog },
+		{ value: 'standard', label: t.qso.standardLog }
+	]);
+
+	const recentFrequencyOptions = $derived(getRecentFrequencyOptions(recentQSOs));
+	const powerOptions = $derived(getPowerOptions(recentQSOs));
+
+	const activeRigOptions = $derived(getActiveRigOptions(activeEquipment));
+
+	const activeAntennaOptions = $derived(getActiveAntennaOptions(activeEquipment));
+
+	let logMode = $state<LogMode>(initialLogMode());
 	let callsign = $state('');
 	let timeOn = $state(initialTimeOn());
-	let band = $state('');
+	let band = $state(initialBand());
 	let freq = $state('');
-	let qsoMode = $state('');
-	let rstSent = $state('');
-	let rstRcvd = $state('');
+	let qsoMode = $state(initialMode());
+	let rstSent = $state(initialRST());
+	let rstRcvd = $state(initialRST());
 	let isEyeball = $state(false);
 
 	let datePart = $derived.by(() => {
@@ -171,9 +230,15 @@
 	let optName = $state('');
 	let optQth = $state('');
 	let optGrid = $state('');
-	let optPower = $state('');
+	let optPower = $state(initialPower());
 	let optComment = $state('');
 	let optPropMode = $state('');
+	let quickMyRig = $state('');
+	let quickMyAntenna = $state('');
+	let quickOtherRig = $state('');
+	let quickOtherPower = $state('');
+	let quickOtherAntenna = $state('');
+	let quickOtherQth = $state('');
 
 	let timeOff = $state('');
 
@@ -206,6 +271,7 @@
 	let submitting = $state(false);
 	let saved = $state(false);
 	let showDeleteConfirm = $state(false);
+	let quickEquipmentDefaultsApplied = $state(false);
 
 	let datePartOff = $derived.by(() => {
 		if (!timeOff) return '';
@@ -302,6 +368,78 @@
 		}
 	}
 
+	function handleLogModeChange(value: string) {
+		if (value !== 'quick' && value !== 'standard') return;
+		logMode = value;
+		saved = false;
+
+		if (value === 'quick' && formMode === 'create') {
+			const next = applyQuickModeDefaults({
+				logMode,
+				mode: qsoMode,
+				band,
+				rstSent,
+				rstRcvd,
+				power: optPower
+			});
+			qsoMode = next.mode;
+			band = next.band;
+			rstSent = next.rstSent;
+			rstRcvd = next.rstRcvd;
+			optPower = next.power;
+		}
+	}
+
+	function useNow() {
+		timeOn = utcNow();
+		saved = false;
+	}
+
+	function useFrequency(value: string) {
+		freq = value;
+		const detected = freqToBand(parseFloat(value));
+		if (detected) band = detected;
+		if (!qsoMode) qsoMode = 'FM';
+		saved = false;
+	}
+
+	function useReport(value: string) {
+		rstSent = value;
+		rstRcvd = value;
+		saved = false;
+	}
+
+	function usePower(value: string) {
+		optPower = value;
+		saved = false;
+	}
+
+	function composeQuickComment(): string {
+		if (logMode !== 'quick' || formMode !== 'create') {
+			return optComment.trim();
+		}
+
+		return composeQuickCommentText(
+			{
+				myRig: t.qso.myRig,
+				myAntenna: t.qso.myAntenna,
+				otherRig: t.qso.otherRig,
+				otherPower: t.qso.otherPower,
+				otherAntenna: t.qso.otherAntenna,
+				otherQth: t.qso.otherQth
+			},
+			{
+				notes: optComment,
+				myRig: quickMyRig,
+				myAntenna: quickMyAntenna,
+				otherRig: quickOtherRig,
+				otherPower: quickOtherPower,
+				otherAntenna: quickOtherAntenna,
+				otherQth: quickOtherQth
+			}
+		);
+	}
+
 	function buildFormData(): QSOInsert {
 		const normalizedTimeOn = timeOn.includes('T')
 			? timeOn
@@ -322,7 +460,7 @@
 			qth: optQth || undefined,
 			grid_square: optGrid || undefined,
 			tx_pwr: optPower ? parseInt(optPower, 10) : undefined,
-			comment: optComment || undefined,
+			comment: composeQuickComment() || undefined,
 			prop_mode: optPropMode || undefined,
 			submode: optSubmode || undefined,
 			sat_name: optSatName || undefined,
@@ -420,19 +558,35 @@
 		}
 	});
 
+	$effect(() => {
+		if (formMode !== 'create' || logMode !== 'quick' || quickEquipmentDefaultsApplied) return;
+		if (activeRigOptions.length === 0 && activeAntennaOptions.length === 0) return;
+
+		const defaults = activeEquipmentDefaults(activeEquipment);
+		quickMyRig ||= defaults.rig;
+		quickMyAntenna ||= defaults.antenna;
+		quickEquipmentDefaultsApplied = true;
+	});
+
 	function logAnother() {
 		callsign = '';
-		band = '';
+		band = logMode === 'quick' ? '70cm' : '';
 		freq = '';
-		qsoMode = '';
-		rstSent = '';
-		rstRcvd = '';
+		qsoMode = logMode === 'quick' ? 'FM' : '';
+		rstSent = logMode === 'quick' ? '59' : '';
+		rstRcvd = logMode === 'quick' ? '59' : '';
 		optName = '';
 		optQth = '';
 		optGrid = '';
-		optPower = '';
+		optPower = logMode === 'quick' ? '5' : '';
 		optComment = '';
 		optPropMode = '';
+		quickMyRig = activeRigOptions[0] ?? '';
+		quickMyAntenna = activeAntennaOptions[0] ?? '';
+		quickOtherRig = '';
+		quickOtherPower = '';
+		quickOtherAntenna = '';
+		quickOtherQth = '';
 		timeOff = '';
 		optSubmode = '';
 		optSatName = '';
@@ -493,6 +647,12 @@
 	<form onsubmit={handleSubmit} class="flex flex-col gap-[var(--space-6)] pb-24 lg:pb-6">
 		<ValidationErrors {errors} namespace="qso" />
 
+		{#if formMode === 'create'}
+			<div>
+				<SegmentedToggle options={logModeOptions} value={logMode} onchange={handleLogModeChange} />
+			</div>
+		{/if}
+
 		<FormToggle
 			label="{t.qso.eyeball} - {t.qso.eyeballDescription}"
 			checked={isEyeball}
@@ -502,9 +662,9 @@
 			}}
 		/>
 
-		<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
-			<div class="sm:col-span-2">
-				{#if formMode === 'create'}
+		{#if formMode === 'create' && logMode === 'quick'}
+			<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+				<div class="sm:col-span-2">
 					<FormInput
 						label={t.qso.callsign}
 						value={callsign}
@@ -519,26 +679,23 @@
 							<LoadingSpinner size="sm" />
 						</span>
 					{/if}
-				{:else}
-					<FormInput
-						label={t.qso.callsign}
-						bind:value={callsign}
-						placeholder={t.common.placeholder.callsign}
-						required={true}
-					/>
-				{/if}
-			</div>
+				</div>
 
-			<FormDate label={t.qso.date} value={datePart} required={true} onchange={handleDateChange} />
+				<FormDate label={t.qso.date} value={datePart} required={true} onchange={handleDateChange} />
 
-			<FormTime label={t.qso.time} value={timePart} required={true} onchange={handleTimeChange} />
+				<div class="flex items-end gap-[var(--space-2)]">
+					<div class="flex-1">
+						<FormTime
+							label={t.qso.time}
+							value={timePart}
+							required={true}
+							onchange={handleTimeChange}
+						/>
+					</div>
+					<Button variant="secondary" onclick={useNow}>{t.qso.now}</Button>
+				</div>
 
-			<FormDate label={t.qso.dateOff} value={datePartOff} onchange={handleDateOffChange} />
-
-			<FormTime label={t.qso.timeOff} value={timePartOff} onchange={handleTimeOffChange} />
-
-			{#if !isEyeball}
-				{#if formMode === 'create'}
+				{#if !isEyeball}
 					<FormSelect
 						label={t.qso.band}
 						value={band}
@@ -558,24 +715,27 @@
 							<span class="text-[var(--text-body)]">{t.common.unit.mhz}</span>
 						{/snippet}
 					</FormInput>
-				{:else}
-					<FormSelect
-						label={t.qso.band}
-						bind:value={band}
-						options={bandOptions}
-						placeholder={t.common.select.band}
-						required={true}
-					/>
 
-					<FormInput label={t.qso.freq} bind:value={freq} placeholder={t.common.placeholder.freq}>
-						{#snippet suffix()}
-							<span class="text-[var(--text-body)]">{t.common.unit.mhz}</span>
-						{/snippet}
-					</FormInput>
+					<div class="flex flex-col gap-[var(--space-2)] sm:col-span-2">
+						<span
+							class="font-medium tracking-[0.05em] text-[var(--color-text-muted)] text-[var(--text-body)] uppercase"
+						>
+							{t.qso.recentFrequencies}
+						</span>
+						<div class="flex flex-wrap gap-[var(--space-2)]">
+							{#each recentFrequencyOptions as option (option)}
+								<button
+									type="button"
+									class="border border-[var(--color-border)] px-[var(--space-2)] py-[var(--space-1)] font-mono text-[var(--color-text-secondary)] text-[var(--text-body)] transition-colors hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)]"
+									onclick={() => useFrequency(option)}
+								>
+									{option}
+								</button>
+							{/each}
+						</div>
+					</div>
 				{/if}
-			{/if}
 
-			{#if formMode === 'create'}
 				<FormSelect
 					label={t.qso.mode}
 					value={qsoMode}
@@ -583,17 +743,8 @@
 					placeholder={t.common.select.mode}
 					onchange={handleModeChange}
 				/>
-			{:else}
-				<FormSelect
-					label={t.qso.mode}
-					bind:value={qsoMode}
-					options={modeOptions}
-					placeholder={t.common.select.mode}
-				/>
-			{/if}
 
-			<div class="grid grid-cols-2 gap-[var(--space-4)] sm:col-span-2">
-				{#if formMode === 'create'}
+				<div class="grid grid-cols-2 gap-[var(--space-4)] sm:col-span-2">
 					<FormInput
 						label={t.qso.rstSent}
 						value={rstSent}
@@ -610,100 +761,324 @@
 							saved = false;
 						}}
 					/>
-				{:else}
-					<FormInput label={t.qso.rstSent} bind:value={rstSent} />
-					<FormInput label={t.qso.rstRcvd} bind:value={rstRcvd} />
-				{/if}
+				</div>
+
+				<div class="flex flex-col gap-[var(--space-2)] sm:col-span-2">
+					<span
+						class="font-medium tracking-[0.05em] text-[var(--color-text-muted)] text-[var(--text-body)] uppercase"
+					>
+						{t.qso.commonReports}
+					</span>
+					<div class="flex flex-wrap gap-[var(--space-2)]">
+						{#each QUICK_RST_VALUES as option (option)}
+							<button
+								type="button"
+								class="border border-[var(--color-border)] px-[var(--space-2)] py-[var(--space-1)] font-mono text-[var(--color-text-secondary)] text-[var(--text-body)] transition-colors hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)]"
+								onclick={() => useReport(option)}
+							>
+								{option}
+							</button>
+						{/each}
+					</div>
+				</div>
+
+				<FormInput
+					label={t.qso.power}
+					value={optPower}
+					placeholder={t.common.unit.watts}
+					oninput={usePower}
+				/>
+
+				<FormInput
+					label={t.qso.qth}
+					bind:value={optQth}
+					placeholder={profileQth || t.common.placeholder.qth}
+				/>
+
+				<div class="flex flex-col gap-[var(--space-2)] sm:col-span-2">
+					<span
+						class="font-medium tracking-[0.05em] text-[var(--color-text-muted)] text-[var(--text-body)] uppercase"
+					>
+						{t.qso.commonPower}
+					</span>
+					<div class="flex flex-wrap gap-[var(--space-2)]">
+						{#each powerOptions as option (option)}
+							<button
+								type="button"
+								class="border border-[var(--color-border)] px-[var(--space-2)] py-[var(--space-1)] font-mono text-[var(--color-text-secondary)] text-[var(--text-body)] transition-colors hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)]"
+								onclick={() => usePower(option)}
+							>
+								{option}
+								{t.common.unit.watts}
+							</button>
+						{/each}
+					</div>
+				</div>
 			</div>
-		</div>
 
-		{#if formMode === 'create'}
-			<CollapsibleSection title={t.qso.sectionDetails}>
+			<CollapsibleSection title={t.qso.quickStationContext} open>
 				<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
-					<FormInput label={t.qso.name} bind:value={optName} />
-					<FormInput label={t.qso.qth} bind:value={optQth} />
-					<FormInput label={t.qso.gridSquare} bind:value={optGrid} />
-					<FormInput label={t.qso.power} bind:value={optPower} placeholder={t.common.unit.watts} />
-					<FormInput label={t.qso.propMode} bind:value={optPropMode} />
-					<FormInput label={t.qso.submode} bind:value={optSubmode} />
-					<FormInput label={t.qso.satName} bind:value={optSatName} />
-					<FormInput label={t.qso.operator} bind:value={optOperator} />
-					<div class="sm:col-span-2">
-						<FormInput label={t.qso.comment} bind:value={optComment} />
-					</div>
+					<FormInput label={t.qso.myRig} bind:value={quickMyRig} />
+					<FormInput label={t.qso.myAntenna} bind:value={quickMyAntenna} />
+
+					{#if activeRigOptions.length > 0}
+						<div class="flex flex-wrap gap-[var(--space-2)] sm:col-span-2">
+							{#each activeRigOptions as option (option)}
+								<button
+									type="button"
+									class="border border-[var(--color-border)] px-[var(--space-2)] py-[var(--space-1)] text-[var(--color-text-secondary)] text-[var(--text-body)] transition-colors hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)]"
+									onclick={() => {
+										quickMyRig = option;
+										saved = false;
+									}}
+								>
+									{option}
+								</button>
+							{/each}
+						</div>
+					{/if}
+
+					{#if activeAntennaOptions.length > 0}
+						<div class="flex flex-wrap gap-[var(--space-2)] sm:col-span-2">
+							{#each activeAntennaOptions as option (option)}
+								<button
+									type="button"
+									class="border border-[var(--color-border)] px-[var(--space-2)] py-[var(--space-1)] text-[var(--color-text-secondary)] text-[var(--text-body)] transition-colors hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)]"
+									onclick={() => {
+										quickMyAntenna = option;
+										saved = false;
+									}}
+								>
+									{option}
+								</button>
+							{/each}
+						</div>
+					{/if}
 				</div>
 			</CollapsibleSection>
+
+			<CollapsibleSection title={t.qso.quickOtherStation} open>
+				<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+					<FormInput label={t.qso.otherRig} bind:value={quickOtherRig} />
+					<FormInput label={t.qso.otherPower} bind:value={quickOtherPower} />
+					<FormInput label={t.qso.otherAntenna} bind:value={quickOtherAntenna} />
+					<FormInput label={t.qso.otherQth} bind:value={quickOtherQth} />
+				</div>
+			</CollapsibleSection>
+
+			<FormTextarea label={t.qso.quickNotes} bind:value={optComment} rows={3} />
 		{:else}
-			<CollapsibleSection title={t.qso.optionalFields}>
-				<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
-					<FormInput label={t.qso.name} bind:value={optName} />
-					<FormInput label={t.qso.qth} bind:value={optQth} />
-					<FormInput label={t.qso.gridSquare} bind:value={optGrid} />
-					<FormInput label={t.qso.power} bind:value={optPower} placeholder={t.common.unit.watts} />
-					<FormInput label={t.qso.propMode} bind:value={optPropMode} />
-					<div class="sm:col-span-2">
-						<FormInput label={t.qso.comment} bind:value={optComment} />
+			<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+				<div class="sm:col-span-2">
+					{#if formMode === 'create'}
+						<FormInput
+							label={t.qso.callsign}
+							value={callsign}
+							placeholder={t.common.placeholder.callsign}
+							required={true}
+							oninput={handleCallsignInput}
+						/>
+						{#if lookingUp}
+							<span
+								class="mt-[var(--space-1)] inline-flex items-center gap-[var(--space-1)] text-[var(--color-text-muted)] text-[var(--text-body)]"
+							>
+								<LoadingSpinner size="sm" />
+							</span>
+						{/if}
+					{:else}
+						<FormInput
+							label={t.qso.callsign}
+							bind:value={callsign}
+							placeholder={t.common.placeholder.callsign}
+							required={true}
+						/>
+					{/if}
+				</div>
+
+				<FormDate label={t.qso.date} value={datePart} required={true} onchange={handleDateChange} />
+
+				<FormTime label={t.qso.time} value={timePart} required={true} onchange={handleTimeChange} />
+
+				<FormDate label={t.qso.dateOff} value={datePartOff} onchange={handleDateOffChange} />
+
+				<FormTime label={t.qso.timeOff} value={timePartOff} onchange={handleTimeOffChange} />
+
+				{#if !isEyeball}
+					{#if formMode === 'create'}
+						<FormSelect
+							label={t.qso.band}
+							value={band}
+							options={bandOptions}
+							placeholder={t.common.select.band}
+							required={true}
+							onchange={handleBandChange}
+						/>
+
+						<FormInput
+							label={t.qso.freq}
+							value={freq}
+							placeholder={t.common.placeholder.freq}
+							oninput={handleFreqInput}
+						>
+							{#snippet suffix()}
+								<span class="text-[var(--text-body)]">{t.common.unit.mhz}</span>
+							{/snippet}
+						</FormInput>
+					{:else}
+						<FormSelect
+							label={t.qso.band}
+							bind:value={band}
+							options={bandOptions}
+							placeholder={t.common.select.band}
+							required={true}
+						/>
+
+						<FormInput label={t.qso.freq} bind:value={freq} placeholder={t.common.placeholder.freq}>
+							{#snippet suffix()}
+								<span class="text-[var(--text-body)]">{t.common.unit.mhz}</span>
+							{/snippet}
+						</FormInput>
+					{/if}
+				{/if}
+
+				{#if formMode === 'create'}
+					<FormSelect
+						label={t.qso.mode}
+						value={qsoMode}
+						options={modeOptions}
+						placeholder={t.common.select.mode}
+						onchange={handleModeChange}
+					/>
+				{:else}
+					<FormSelect
+						label={t.qso.mode}
+						bind:value={qsoMode}
+						options={modeOptions}
+						placeholder={t.common.select.mode}
+					/>
+				{/if}
+
+				<div class="grid grid-cols-2 gap-[var(--space-4)] sm:col-span-2">
+					{#if formMode === 'create'}
+						<FormInput
+							label={t.qso.rstSent}
+							value={rstSent}
+							oninput={(v) => {
+								rstSent = v;
+								saved = false;
+							}}
+						/>
+						<FormInput
+							label={t.qso.rstRcvd}
+							value={rstRcvd}
+							oninput={(v) => {
+								rstRcvd = v;
+								saved = false;
+							}}
+						/>
+					{:else}
+						<FormInput label={t.qso.rstSent} bind:value={rstSent} />
+						<FormInput label={t.qso.rstRcvd} bind:value={rstRcvd} />
+					{/if}
+				</div>
+			</div>
+
+			{#if formMode === 'create'}
+				<CollapsibleSection title={t.qso.sectionDetails}>
+					<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+						<FormInput label={t.qso.name} bind:value={optName} />
+						<FormInput label={t.qso.qth} bind:value={optQth} />
+						<FormInput label={t.qso.gridSquare} bind:value={optGrid} />
+						<FormInput
+							label={t.qso.power}
+							bind:value={optPower}
+							placeholder={t.common.unit.watts}
+						/>
+						<FormInput label={t.qso.propMode} bind:value={optPropMode} />
+						<FormInput label={t.qso.submode} bind:value={optSubmode} />
+						<FormInput label={t.qso.satName} bind:value={optSatName} />
+						<FormInput label={t.qso.operator} bind:value={optOperator} />
+						<div class="sm:col-span-2">
+							<FormInput label={t.qso.comment} bind:value={optComment} />
+						</div>
 					</div>
+				</CollapsibleSection>
+			{:else}
+				<CollapsibleSection title={t.qso.optionalFields}>
+					<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+						<FormInput label={t.qso.name} bind:value={optName} />
+						<FormInput label={t.qso.qth} bind:value={optQth} />
+						<FormInput label={t.qso.gridSquare} bind:value={optGrid} />
+						<FormInput
+							label={t.qso.power}
+							bind:value={optPower}
+							placeholder={t.common.unit.watts}
+						/>
+						<FormInput label={t.qso.propMode} bind:value={optPropMode} />
+						<div class="sm:col-span-2">
+							<FormInput label={t.qso.comment} bind:value={optComment} />
+						</div>
+					</div>
+				</CollapsibleSection>
+
+				<CollapsibleSection title={t.qso.sectionDetails}>
+					<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+						<FormInput label={t.qso.submode} bind:value={optSubmode} />
+						<FormInput label={t.qso.satName} bind:value={optSatName} />
+						<FormInput label={t.qso.operator} bind:value={optOperator} />
+					</div>
+				</CollapsibleSection>
+			{/if}
+
+			<CollapsibleSection title={t.qso.sectionLocation}>
+				<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+					<FormInput label={t.qso.latitude} type={numericType} bind:value={optLatitude} />
+					<FormInput label={t.qso.longitude} type={numericType} bind:value={optLongitude} />
+					<FormInput label={t.qso.antAz} type={numericType} bind:value={optAntAz} />
+					<FormInput label={t.qso.antEl} type={numericType} bind:value={optAntEl} />
+					<FormInput label={t.qso.distance} type={numericType} bind:value={optDistance} />
 				</div>
 			</CollapsibleSection>
 
-			<CollapsibleSection title={t.qso.sectionDetails}>
+			<CollapsibleSection title={t.qso.sectionGeography}>
 				<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
-					<FormInput label={t.qso.submode} bind:value={optSubmode} />
-					<FormInput label={t.qso.satName} bind:value={optSatName} />
-					<FormInput label={t.qso.operator} bind:value={optOperator} />
+					<FormInput label={t.qso.dxcc} type={numericType} bind:value={optDxcc} />
+					<FormInput label={t.qso.country} bind:value={optCountry} />
+					<FormInput label={t.qso.cqZone} type={numericType} bind:value={optCqZone} />
+					<FormInput label={t.qso.ituZone} type={numericType} bind:value={optItuZone} />
+					<FormSelect label={t.qso.continent} bind:value={optCont} options={contOptions} />
+				</div>
+			</CollapsibleSection>
+
+			<CollapsibleSection title={t.qso.sectionQsl}>
+				<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+					<FormSelect label={t.qso.qslSent} bind:value={optQslSent} options={qslStatusOptions} />
+					<FormSelect label={t.qso.qslSentVia} bind:value={optQslSentVia} options={qslViaOptions} />
+					<FormSelect label={t.qso.qslRcvd} bind:value={optQslRcvd} options={qslStatusOptions} />
+					<FormSelect label={t.qso.qslRcvdVia} bind:value={optQslRcvdVia} options={qslViaOptions} />
+					<FormSelect
+						label={t.qso.lotwQslSent}
+						bind:value={optLotwQslSent}
+						options={qslStatusOptions}
+					/>
+					<FormSelect
+						label={t.qso.lotwQslRcvd}
+						bind:value={optLotwQslRcvd}
+						options={qslStatusOptions}
+					/>
+					<FormSelect
+						label={t.qso.eqslQslSent}
+						bind:value={optEqslQslSent}
+						options={qslStatusOptions}
+					/>
+					<FormSelect
+						label={t.qso.eqslQslRcvd}
+						bind:value={optEqslQslRcvd}
+						options={qslStatusOptions}
+					/>
 				</div>
 			</CollapsibleSection>
 		{/if}
-
-		<CollapsibleSection title={t.qso.sectionLocation}>
-			<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
-				<FormInput label={t.qso.latitude} type={numericType} bind:value={optLatitude} />
-				<FormInput label={t.qso.longitude} type={numericType} bind:value={optLongitude} />
-				<FormInput label={t.qso.antAz} type={numericType} bind:value={optAntAz} />
-				<FormInput label={t.qso.antEl} type={numericType} bind:value={optAntEl} />
-				<FormInput label={t.qso.distance} type={numericType} bind:value={optDistance} />
-			</div>
-		</CollapsibleSection>
-
-		<CollapsibleSection title={t.qso.sectionGeography}>
-			<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
-				<FormInput label={t.qso.dxcc} type={numericType} bind:value={optDxcc} />
-				<FormInput label={t.qso.country} bind:value={optCountry} />
-				<FormInput label={t.qso.cqZone} type={numericType} bind:value={optCqZone} />
-				<FormInput label={t.qso.ituZone} type={numericType} bind:value={optItuZone} />
-				<FormSelect label={t.qso.continent} bind:value={optCont} options={contOptions} />
-			</div>
-		</CollapsibleSection>
-
-		<CollapsibleSection title={t.qso.sectionQsl}>
-			<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
-				<FormSelect label={t.qso.qslSent} bind:value={optQslSent} options={qslStatusOptions} />
-				<FormSelect label={t.qso.qslSentVia} bind:value={optQslSentVia} options={qslViaOptions} />
-				<FormSelect label={t.qso.qslRcvd} bind:value={optQslRcvd} options={qslStatusOptions} />
-				<FormSelect label={t.qso.qslRcvdVia} bind:value={optQslRcvdVia} options={qslViaOptions} />
-				<FormSelect
-					label={t.qso.lotwQslSent}
-					bind:value={optLotwQslSent}
-					options={qslStatusOptions}
-				/>
-				<FormSelect
-					label={t.qso.lotwQslRcvd}
-					bind:value={optLotwQslRcvd}
-					options={qslStatusOptions}
-				/>
-				<FormSelect
-					label={t.qso.eqslQslSent}
-					bind:value={optEqslQslSent}
-					options={qslStatusOptions}
-				/>
-				<FormSelect
-					label={t.qso.eqslQslRcvd}
-					bind:value={optEqslQslRcvd}
-					options={qslStatusOptions}
-				/>
-			</div>
-		</CollapsibleSection>
 
 		<div class="flex items-center gap-[var(--space-3)]">
 			<Button type="submit" variant="primary" disabled={submitting}>

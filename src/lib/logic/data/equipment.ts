@@ -44,7 +44,8 @@ export async function createEquipment(
 
 export async function getEquipment(
 	supabase: SupabaseClient,
-	activeOnly = false
+	activeOnly = false,
+	profileId?: string
 ): Promise<Equipment[]> {
 	let query = supabase
 		.from('equipment')
@@ -52,6 +53,10 @@ export async function getEquipment(
 
 	if (activeOnly) {
 		query = query.eq('is_active', true);
+	}
+
+	if (profileId) {
+		query = query.eq('profile_id', profileId);
 	}
 
 	const { data, error } = await query;
