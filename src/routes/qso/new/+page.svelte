@@ -14,26 +14,48 @@
 	const t = $derived(localeStore.translation);
 	let recentQSOs = $state<QSO[]>([]);
 	let activeEquipment = $state<Equipment[]>([]);
+	let mounted = $state(false);
+	let hintRequestId = 0;
+
+	async function loadQuickLogHints(profileId: string) {
+		const requestId = ++hintRequestId;
+
+		try {
+			const [qsoResult, equipmentResult] = await Promise.all([
+				getQSOs(supabase, {}, { field: 'time_on', direction: 'desc' }, 1, 12),
+				getEquipment(supabase, true, profileId)
+			]);
+			if (requestId !== hintRequestId) return;
+
+			recentQSOs = qsoResult.data;
+			activeEquipment = equipmentResult;
+		} catch {
+			if (requestId !== hintRequestId) return;
+			recentQSOs = [];
+			activeEquipment = [];
+		}
+	}
 
 	onMount(() => {
-		async function loadQuickLogHints() {
-			const profileId = authStore.user?.id;
-			if (!profileId) return;
+		mounted = true;
+		return () => {
+			mounted = false;
+			hintRequestId += 1;
+		};
+	});
 
-			try {
-				const [qsoResult, equipmentResult] = await Promise.all([
-					getQSOs(supabase, {}, { field: 'time_on', direction: 'desc' }, 1, 12),
-					getEquipment(supabase, true, profileId)
-				]);
-				recentQSOs = qsoResult.data;
-				activeEquipment = equipmentResult;
-			} catch {
-				recentQSOs = [];
-				activeEquipment = [];
-			}
+	$effect(() => {
+		if (!mounted || authStore.loading) return;
+
+		const profileId = authStore.user?.id;
+		if (!profileId) {
+			hintRequestId += 1;
+			recentQSOs = [];
+			activeEquipment = [];
+			return;
 		}
 
-		void loadQuickLogHints();
+		void loadQuickLogHints(profileId);
 	});
 
 	async function handleSubmit(data: QSOInsert) {

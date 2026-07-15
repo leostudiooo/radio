@@ -816,7 +816,7 @@
 				</div>
 			</div>
 
-			<CollapsibleSection title={t.qso.quickStationContext}>
+			<CollapsibleSection title={t.qso.quickStationContext} open>
 				<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
 					<FormInput label={t.qso.myRig} bind:value={quickMyRig} />
 					<FormInput label={t.qso.myAntenna} bind:value={quickMyAntenna} />
@@ -857,7 +857,7 @@
 				</div>
 			</CollapsibleSection>
 
-			<CollapsibleSection title={t.qso.quickOtherStation}>
+			<CollapsibleSection title={t.qso.quickOtherStation} open>
 				<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
 					<FormInput label={t.qso.otherRig} bind:value={quickOtherRig} />
 					<FormInput label={t.qso.otherPower} bind:value={quickOtherPower} />
