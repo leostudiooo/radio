@@ -51,6 +51,9 @@ pnpm dev
 
 详细架构约束、设计系统规则、命名约定见 `AGENTS.md`。
 
+QSL 验证码的权限模型、Supabase Advisor 告警解释和泄露处置流程见
+[`docs/dev-notes/qsl-verification-security.md`](docs/dev-notes/qsl-verification-security.md)。
+
 ## 部署
 
 `pnpm build` 后部署到 Cloudflare Pages,Functions 随仓库自动走。

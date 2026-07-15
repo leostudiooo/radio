@@ -37,12 +37,17 @@ export interface QSO {
 	is_eyeball: boolean;
 	latitude?: number;
 	longitude?: number;
+	verification_code?: string;
+	verified_at?: string;
 	created_at: string;
 	updated_at: string;
 }
 
-export interface QSOInsert extends Omit<QSO, 'id' | 'created_at' | 'updated_at'> {}
-export interface QSOUpdate extends Partial<QSOInsert> {}
+export type QSOInsert = Omit<
+	QSO,
+	'id' | 'verification_code' | 'verified_at' | 'created_at' | 'updated_at'
+>;
+export type QSOUpdate = Partial<QSOInsert>;
 
 export interface QSOFilter {
 	callsign?: string;

@@ -715,6 +715,26 @@ describe('Station OS non-navigation mode', () => {
 		expect(out).toContain('qso open: no-such-stem: no such record');
 	});
 
+	it('qso cfm <code> opens the normalized confirmation page', async () => {
+		const harness = createHarness();
+		await harness.os.boot({ instant: true });
+
+		const out = await execAndCollect(harness.os, harness.output, 'qso cfm rstvwxyz');
+
+		expect(harness.adapters.router.goto).toHaveBeenCalledWith('/qso/confirm/RSTV-WXYZ');
+		expect(out).toContain('opening /qso/confirm/RSTV-WXYZ');
+	});
+
+	it('qso cfm rejects malformed verification codes', async () => {
+		const harness = createHarness();
+		await harness.os.boot({ instant: true });
+
+		const out = await execAndCollect(harness.os, harness.output, 'qso cfm not-a-code');
+
+		expect(harness.adapters.router.goto).not.toHaveBeenCalled();
+		expect(out).toContain('invalid verification code');
+	});
+
 	it('equipment view <alias> prints the record JSON and does not navigate', async () => {
 		const harness = createHarness();
 		await bootInstant(harness.os, harness.output);
