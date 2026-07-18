@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Monitor, Moon, Sun, type LucideIcon } from '@lucide/svelte';
+	import { Moon, Sun, SunMoon, type LucideIcon } from '@lucide/svelte';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
 	import { settingsStore, type ThemePreference } from '$lib/ui/stores/settings.svelte';
 
@@ -11,7 +11,7 @@
 
 	const t = $derived(localeStore.translation);
 	const options: ThemeOption[] = $derived([
-		{ value: 'system', label: t.common.themeSystem, icon: Monitor },
+		{ value: 'system', label: t.common.themeSystem, icon: SunMoon },
 		{ value: 'light', label: t.common.themeLight, icon: Sun },
 		{ value: 'dark', label: t.common.themeDark, icon: Moon }
 	]);

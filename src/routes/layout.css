@@ -103,8 +103,8 @@ html[data-theme='light'] {
 	--color-surface: oklch(1 0 0);
 	--color-elevated: oklch(0.955 0.005 240);
 	--color-overlay: oklch(0.925 0.007 240);
-	--color-border: oklch(0.82 0.008 240);
-	--color-border-hover: oklch(0.65 0.012 240);
+	--color-border: oklch(0.68 0.01 240);
+	--color-border-hover: oklch(0.48 0.014 240);
 	--color-text-primary: oklch(0.16 0.008 240);
 	--color-text-secondary: oklch(0.36 0.012 240);
 	--color-text-muted: oklch(0.49 0.012 240);
