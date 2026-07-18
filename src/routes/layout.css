@@ -109,11 +109,11 @@ html[data-theme='light'] {
 	--color-text-secondary: oklch(0.36 0.012 240);
 	--color-text-muted: oklch(0.49 0.012 240);
 
-	--color-accent: oklch(0.958 0.207 108);
-	--color-accent-subtle: oklch(0.958 0.207 108 / 0.1);
-	--color-accent-light: oklch(0.958 0.207 108 / 0.15);
-	--color-accent-medium: oklch(0.958 0.207 108 / 0.3);
-	--color-accent-hover: oklch(0.9 0.207 108);
+	--color-accent: oklch(0.89 0.2 100);
+	--color-accent-subtle: oklch(0.89 0.2 100 / 0.12);
+	--color-accent-light: oklch(0.89 0.2 100 / 0.18);
+	--color-accent-medium: oklch(0.89 0.2 100 / 0.35);
+	--color-accent-hover: oklch(0.82 0.22 94);
 
 	--color-status-pending: oklch(0.52 0.13 100);
 	--color-status-pending-bg: oklch(0.96 0.05 100);
