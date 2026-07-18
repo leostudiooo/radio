@@ -81,7 +81,7 @@
 <PageHeader title={t.equipment.title}>
 	{#snippet action()}
 		{#if authStore.isAdmin}
-			<Button variant="primary" size="sm" onclick={() => goto('/equipment/new')}
+			<Button variant="secondary" size="sm" onclick={() => goto('/equipment/new')}
 				>{t.equipment.newEquipment}</Button
 			>
 		{/if}
@@ -114,24 +114,20 @@
 			{#if authStore.isAdmin}
 				<button
 					type="button"
-					style={row.is_active ? 'color: var(--color-text-on-accent)' : ''}
-					class="inline-flex cursor-pointer items-center justify-center border px-[var(--space-2)] py-[var(--space-0-5)] font-mono transition-colors duration-100 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none {row.is_active
-						? 'border-[var(--color-accent)] bg-[var(--color-accent)] font-semibold hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-hover)]'
-						: 'border-transparent text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-elevated)]'}"
+					class="cursor-pointer font-mono focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
 					onclick={() => handleToggleActive(row as unknown as Equipment)}
 					aria-label={row.is_active ? t.equipment.deactivate : t.equipment.activate}
 				>
-					{row.is_active ? '[x]' : '[ ]'}
+					{#if row.is_active}
+						<span class="font-mono text-[var(--color-accent)]">[x]</span>
+					{:else}
+						<span class="font-mono">[ ]</span>
+					{/if}
 				</button>
 			{:else if row.is_active}
-				<span
-					class="inline-flex items-center justify-center bg-[var(--color-accent)] px-[var(--space-2)] py-[var(--space-0-5)] font-mono font-semibold"
-					style="color: var(--color-text-on-accent)"
-				>
-					[x]
-				</span>
+				<span class="font-mono text-[var(--color-accent)]">[x]</span>
 			{:else}
-				<span class="px-[var(--space-2)] py-[var(--space-0-5)] font-mono">[ ]</span>
+				<span class="font-mono">[ ]</span>
 			{/if}
 		{/snippet}
 		{#snippet actions(row)}
