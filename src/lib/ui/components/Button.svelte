@@ -27,7 +27,7 @@
 	const variantClasses = {
 		primary: 'bg-[var(--color-accent)] font-semibold hover:bg-[var(--color-accent-hover)]',
 		secondary:
-			'bg-transparent border border-[var(--color-accent)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-subtle)]',
+			'bg-transparent border border-[var(--color-button-secondary-border)] text-[var(--color-text-primary)] hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-subtle)]',
 		ghost:
 			'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
 	};
