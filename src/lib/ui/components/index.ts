@@ -19,6 +19,7 @@ export { default as FilterBar } from './FilterBar.svelte';
 export { default as Pagination } from './Pagination.svelte';
 export { default as ValidationErrors } from './ValidationErrors.svelte';
 export { default as SegmentedToggle } from './SegmentedToggle.svelte';
+export { default as ThemeToggle } from './ThemeToggle.svelte';
 export { default as StatCard } from './StatCard.svelte';
 export { default as UserDropdown } from './UserDropdown.svelte';
 export { default as StationIdentityCard } from './StationIdentityCard.svelte';

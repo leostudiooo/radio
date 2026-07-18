@@ -32,6 +32,10 @@ export type BaseTranslation = {
 		success: string;
 		useUtc: string;
 		useLocalTime: string;
+		theme: string;
+		themeSystem: string;
+		themeLight: string;
+		themeDark: string;
 		prev: string;
 		next: string;
 		clear: string;

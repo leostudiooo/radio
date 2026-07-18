@@ -43,7 +43,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-[var(--space-1)]">
+<div class="flex min-w-0 flex-col gap-[var(--space-1)]">
 	<label
 		for={inputId}
 		class="font-medium tracking-[0.05em] text-[var(--color-text-muted)] text-[var(--text-body)] uppercase"
@@ -65,7 +65,7 @@
 			{value}
 			oninput={handleInput}
 			onchange={handleChange}
-			class="flex-1 bg-transparent text-[var(--color-text-primary)] text-[var(--text-body)] outline-none placeholder:text-[var(--color-text-muted)] disabled:opacity-40"
+			class="min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] text-[var(--text-body)] outline-none placeholder:text-[var(--color-text-muted)] disabled:opacity-40"
 		/>
 		{#if suffix}
 			<span class="text-[var(--color-text-muted)]">{@render suffix()}</span>

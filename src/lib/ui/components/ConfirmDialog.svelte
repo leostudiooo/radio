@@ -85,7 +85,7 @@
 	>
 		<button
 			type="button"
-			class="absolute inset-0 bg-black/80"
+			class="absolute inset-0 bg-[var(--color-backdrop)]"
 			aria-label={localeStore.translation.common.closeDialog}
 			onclick={handleCancel}
 		></button>

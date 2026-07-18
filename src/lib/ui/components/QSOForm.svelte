@@ -677,7 +677,7 @@
 				<FormDate label={t.qso.date} value={datePart} required={true} onchange={handleDateChange} />
 
 				<div class="flex items-end gap-[var(--space-2)]">
-					<div class="flex-1">
+					<div class="min-w-0 flex-1">
 						<FormTime
 							label={t.qso.time}
 							value={timePart}

@@ -86,10 +86,7 @@
 </script>
 
 <div class="card-panel terminal-card mx-auto w-full p-0" data-testid="terminal-card">
-	<div
-		class="terminal-scroll"
-		data-testid="terminal-scroll"
-	>
+	<div class="terminal-scroll" data-testid="terminal-scroll">
 		<div
 			bind:this={terminalHost}
 			class="station-terminal overflow-hidden"
@@ -102,25 +99,25 @@
 
 <style>
 	.station-terminal {
-		--term-fg: var(--color-text-primary);
+		--term-fg: var(--color-terminal-fg);
 		--term-bg: transparent;
-		--term-cursor: var(--color-text-primary);
-		--term-color-0: var(--color-base);
-		--term-color-1: var(--color-danger);
-		--term-color-2: var(--color-accent);
-		--term-color-3: var(--color-status-confirmed);
-		--term-color-4: var(--color-status-sent);
-		--term-color-5: var(--color-text-secondary);
-		--term-color-6: var(--color-accent);
-		--term-color-7: var(--color-text-primary);
-		--term-color-8: var(--color-text-muted);
-		--term-color-9: var(--color-danger);
-		--term-color-10: var(--color-accent);
-		--term-color-11: var(--color-status-confirmed);
-		--term-color-12: var(--color-status-sent);
-		--term-color-13: var(--color-text-secondary);
-		--term-color-14: var(--color-accent);
-		--term-color-15: var(--color-text-primary);
+		--term-cursor: var(--color-terminal-fg);
+		--term-color-0: var(--color-terminal-bg);
+		--term-color-1: var(--color-terminal-red);
+		--term-color-2: var(--color-terminal-yellow);
+		--term-color-3: var(--color-terminal-amber);
+		--term-color-4: var(--color-terminal-blue);
+		--term-color-5: var(--color-terminal-muted);
+		--term-color-6: var(--color-terminal-yellow);
+		--term-color-7: var(--color-terminal-fg);
+		--term-color-8: var(--color-terminal-muted);
+		--term-color-9: var(--color-terminal-red);
+		--term-color-10: var(--color-terminal-yellow);
+		--term-color-11: var(--color-terminal-amber);
+		--term-color-12: var(--color-terminal-blue);
+		--term-color-13: var(--color-terminal-muted);
+		--term-color-14: var(--color-terminal-yellow);
+		--term-color-15: var(--color-terminal-fg);
 		--term-font-family: var(--font-mono);
 		--term-font-size: var(--text-body);
 		--term-line-height: var(--line-height-tight);
@@ -135,6 +132,8 @@
 		--terminal-padding-y: calc(var(--space-6) * 2);
 		font-family: var(--font-mono);
 		font-size: var(--text-body);
+		background-color: var(--color-terminal-bg);
+		border-color: var(--color-terminal-border);
 		max-width: calc(
 			(var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x)
 		);
@@ -158,7 +157,9 @@
 	:global(.station-terminal.wterm) {
 		box-sizing: border-box;
 		width: calc((var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x));
-		min-width: calc((var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x));
+		min-width: calc(
+			(var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x)
+		);
 		max-width: calc(
 			(var(--terminal-cell-width) * var(--terminal-cols)) + var(--terminal-padding-x)
 		);
@@ -176,6 +177,6 @@
 	}
 
 	:global(.station-terminal.wterm ::selection) {
-		background: color-mix(in oklch, var(--color-accent), transparent 70%);
+		background: color-mix(in oklch, var(--color-terminal-yellow), transparent 70%);
 	}
 </style>

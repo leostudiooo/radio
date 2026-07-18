@@ -7,6 +7,7 @@
 	import { SITE_CONFIG } from '$lib/config';
 	import { Menu, X, Radio, Cpu, Mail, Download } from '@lucide/svelte';
 	import SegmentedToggle from './SegmentedToggle.svelte';
+	import ThemeToggle from './ThemeToggle.svelte';
 	import UserDropdown from './UserDropdown.svelte';
 	import { handleLogout as doLogout } from '$lib/logic/auth';
 	import { supabase } from '$lib/supabase';
@@ -101,6 +102,7 @@
 	</nav>
 
 	<div class="ml-auto hidden items-center gap-[var(--space-3)] lg:flex">
+		<ThemeToggle />
 		<SegmentedToggle
 			options={[
 				{ value: 'utc', label: 'UTC' },

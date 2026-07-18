@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { LucideIcon } from '@lucide/svelte';
 	import SegmentedToggle from './SegmentedToggle.svelte';
+	import ThemeToggle from './ThemeToggle.svelte';
 	import UserDropdown from './UserDropdown.svelte';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
 	import { settingsStore } from '$lib/ui/stores/settings.svelte';
@@ -80,7 +81,7 @@
 {#if open}
 	<button
 		type="button"
-		class="fixed inset-0 z-40 bg-black/80 lg:hidden"
+		class="fixed inset-0 z-40 bg-[var(--color-backdrop)] lg:hidden"
 		aria-label={localeStore.translation.common.closeNav}
 		onclick={onBackdropClick}
 	></button>
@@ -138,7 +139,8 @@
 				</a>
 			{/if}
 
-			<div class="flex items-center gap-[var(--space-2)]">
+			<div class="flex flex-wrap items-center gap-[var(--space-2)]">
+				<ThemeToggle />
 				<SegmentedToggle
 					options={[
 						{ value: 'utc', label: 'UTC' },
