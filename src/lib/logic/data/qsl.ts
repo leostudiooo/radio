@@ -8,6 +8,9 @@ import type {
 	QSLStatus
 } from '$lib/logic/types/qsl';
 
+const QSL_COLUMNS =
+	'*, qso:qsos!qsl_cards_qso_id_fkey(id, callsign, time_on, band, mode, verified_at)';
+
 function createEmptyQSLStats(): QSLStats {
 	return {
 		total: 0,
@@ -26,7 +29,7 @@ function createEmptyQSLStats(): QSLStats {
 	};
 }
 
-function accumulateStatus(stats: QSLStats, status: QSLStatus | undefined): void {
+function accumulateStatus(stats: QSLStats, status: QSLStatus | null | undefined): void {
 	if (!status) {
 		return;
 	}
@@ -65,7 +68,7 @@ export async function getQSLCardsByQSO(
 	supabase: SupabaseClient,
 	qsoId: string
 ): Promise<QSLCard[]> {
-	const { data, error } = await supabase.from('qsl_cards').select('*').eq('qso_id', qsoId);
+	const { data, error } = await supabase.from('qsl_cards').select(QSL_COLUMNS).eq('qso_id', qsoId);
 
 	if (error) {
 		return [];
@@ -78,7 +81,7 @@ export async function getQSLCards(
 	supabase: SupabaseClient,
 	filter?: { method?: QSLMethod; status?: QSLStatus }
 ): Promise<QSLCard[]> {
-	let query = supabase.from('qsl_cards').select('*');
+	let query = supabase.from('qsl_cards').select(QSL_COLUMNS);
 
 	if (filter?.method) {
 		query = query.eq('method', filter.method);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { supabase } from '$lib/supabase';
 	import { authStore } from '$lib/ui/stores/auth.svelte';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
@@ -6,6 +7,7 @@
 	import { QSL_METHODS, QSL_STATUSES } from '$lib/logic/types/qsl';
 	import { getQSLCards, updateQSLCard, getQSLStats } from '$lib/logic/data/qsl';
 	import type { QSLCard, QSLMethod, QSLStatus, QSLStats } from '$lib/logic/types/qsl';
+	import { nextQSLReceivedUpdate, nextQSLSentUpdate } from '$lib/logic/utils';
 	import { formatDate } from '$lib/ui/utils/format';
 
 	import StatCard from '$lib/ui/components/StatCard.svelte';
@@ -15,12 +17,9 @@
 	import FormSelect from '$lib/ui/components/FormSelect.svelte';
 	import EmptyState from '$lib/ui/components/EmptyState.svelte';
 	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
-	import { ArrowUpDown } from '@lucide/svelte';
 	import { SITE_CONFIG } from '$lib/config';
 
 	const t = $derived(localeStore.translation);
-
-	const STATUS_CYCLE: QSLStatus[] = ['pending', 'sent', 'received', 'confirmed'];
 
 	const statusLabel: Record<QSLStatus, string> = $derived({
 		pending: t.qsl.pending,
@@ -50,12 +49,10 @@
 	let filterStatus = $state('');
 	let data = $state<QSLCard[]>([]);
 	let stats = $state<QSLStats | null>(null);
-	let loading = $state(true);
 	let initialLoaded = $state(false);
 	let updatingId = $state<string | null>(null);
 
 	async function loadData() {
-		loading = true;
 		try {
 			const filter: { method?: QSLMethod; status?: QSLStatus } = {};
 			if (filterMethod) filter.method = filterMethod as QSLMethod;
@@ -67,7 +64,6 @@
 			data = [];
 			stats = null;
 		} finally {
-			loading = false;
 			initialLoaded = true;
 		}
 	}
@@ -86,18 +82,14 @@
 		loadData();
 	}
 
-	function nextStatus(current: QSLStatus | undefined): QSLStatus {
-		const safe = current ?? 'pending';
-		const idx = STATUS_CYCLE.indexOf(safe);
-		if (idx === -1 || idx === STATUS_CYCLE.length - 1) return STATUS_CYCLE[0];
-		return STATUS_CYCLE[idx + 1];
-	}
-
 	async function cycleSentStatus(card: QSLCard) {
-		const next = nextStatus(card.sent_status);
 		updatingId = card.id;
 		try {
-			await updateQSLCard(supabase, card.id, { sent_status: next });
+			await updateQSLCard(
+				supabase,
+				card.id,
+				nextQSLSentUpdate(card, new Date().toISOString().slice(0, 10))
+			);
 			toastStore.success(t.qsl.statusUpdated);
 			await loadData();
 		} catch {
@@ -108,10 +100,13 @@
 	}
 
 	async function cycleReceivedStatus(card: QSLCard) {
-		const next = nextStatus(card.received_status);
 		updatingId = card.id;
 		try {
-			await updateQSLCard(supabase, card.id, { received_status: next });
+			await updateQSLCard(
+				supabase,
+				card.id,
+				nextQSLReceivedUpdate(card, new Date().toISOString().slice(0, 10))
+			);
 			toastStore.success(t.qsl.statusUpdated);
 			await loadData();
 		} catch {
@@ -121,9 +116,31 @@
 		}
 	}
 
-	function truncate(s: string | undefined, len = 30): string {
+	function truncate(s: string | null | undefined, len = 30): string {
 		if (!s) return '-';
 		return s.length > len ? s.slice(0, len) + '...' : s;
+	}
+
+	function qsoMetadata(card: QSLCard): string {
+		if (!card.qso) return card.qso_id.slice(0, 8);
+		return [formatDate(card.qso.time_on), card.qso.band, card.qso.mode]
+			.filter(Boolean)
+			.join(' \u00B7 ');
+	}
+
+	function viaLabel(via: string): string {
+		switch (via) {
+			case 'B':
+				return t.qso.qslViaBureau;
+			case 'D':
+				return t.qso.qslViaDirect;
+			case 'E':
+				return t.qso.qslViaElectronic;
+			case 'M':
+				return t.qso.qslViaManager;
+			default:
+				return via;
+		}
 	}
 </script>
 
@@ -210,10 +227,17 @@
 								class="border-b border-[var(--color-border)] transition-colors duration-100 hover:bg-[var(--color-surface)]"
 								class:opacity-50={updatingId === card.id}
 							>
-								<td
-									class="px-[var(--space-3)] py-[var(--space-3)] font-mono text-[var(--color-text-primary)] text-[var(--text-body)]"
-									>{card.qso_id.slice(0, 8)}</td
-								>
+								<td class="px-[var(--space-3)] py-[var(--space-3)]">
+									<a
+										href={resolve('/qso/[id]', { id: card.qso_id })}
+										class="font-mono font-medium text-[var(--color-text-primary)] text-[var(--text-body)] hover:underline"
+									>
+										{card.qso?.callsign ?? card.qso_id.slice(0, 8)}
+									</a>
+									<div class="text-[var(--color-text-muted)] text-[var(--text-aux)]">
+										{qsoMetadata(card)}
+									</div>
+								</td>
 								<td
 									class="px-[var(--space-3)] py-[var(--space-3)] font-mono text-[var(--color-text-primary)] text-[var(--text-body)]"
 								>
@@ -231,10 +255,23 @@
 											class="cursor-pointer"
 											title={t.qsl.cycleSentStatus}
 										>
-											<StatusBadge status={card.sent_status ?? 'pending'} />
+											<StatusBadge
+												status={card.sent_status ?? 'pending'}
+												label={statusLabel[card.sent_status ?? 'pending']}
+											/>
 										</button>
 									{:else}
-										<StatusBadge status={card.sent_status ?? 'pending'} />
+										<StatusBadge
+											status={card.sent_status ?? 'pending'}
+											label={statusLabel[card.sent_status ?? 'pending']}
+										/>
+									{/if}
+									{#if card.sent_via}
+										<div
+											class="mt-[var(--space-1)] text-[var(--color-text-muted)] text-[var(--text-aux)]"
+										>
+											{viaLabel(card.sent_via)}
+										</div>
 									{/if}
 								</td>
 								<td class="px-[var(--space-3)] py-[var(--space-3)]">
@@ -245,10 +282,23 @@
 											class="cursor-pointer"
 											title={t.qsl.cycleReceivedStatus}
 										>
-											<StatusBadge status={card.received_status ?? 'pending'} />
+											<StatusBadge
+												status={card.received_status ?? 'pending'}
+												label={statusLabel[card.received_status ?? 'pending']}
+											/>
 										</button>
 									{:else}
-										<StatusBadge status={card.received_status ?? 'pending'} />
+										<StatusBadge
+											status={card.received_status ?? 'pending'}
+											label={statusLabel[card.received_status ?? 'pending']}
+										/>
+									{/if}
+									{#if card.received_via}
+										<div
+											class="mt-[var(--space-1)] text-[var(--color-text-muted)] text-[var(--text-aux)]"
+										>
+											{viaLabel(card.received_via)}
+										</div>
 									{/if}
 								</td>
 								<td
@@ -280,9 +330,17 @@
 								class="font-medium tracking-[0.05em] text-[var(--color-text-muted)] text-[var(--text-body)] uppercase"
 								>{t.qsl.qsoId}</span
 							>
-							<span class="font-mono text-[var(--color-text-primary)] text-[var(--text-body)]"
-								>{card.qso_id.slice(0, 8)}</span
-							>
+							<div class="flex flex-col items-end">
+								<a
+									href={resolve('/qso/[id]', { id: card.qso_id })}
+									class="font-mono font-medium text-[var(--color-text-primary)] text-[var(--text-body)] hover:underline"
+								>
+									{card.qso?.callsign ?? card.qso_id.slice(0, 8)}
+								</a>
+								<span class="text-right text-[var(--color-text-muted)] text-[var(--text-aux)]">
+									{qsoMetadata(card)}
+								</span>
+							</div>
 						</div>
 						<div class="flex justify-between gap-[var(--space-2)]">
 							<span
@@ -298,36 +356,66 @@
 								class="font-medium tracking-[0.05em] text-[var(--color-text-muted)] text-[var(--text-body)] uppercase"
 								>{t.qsl.sentStatus}</span
 							>
-							{#if authStore.isAdmin}
-								<button
-									type="button"
-									onclick={() => cycleSentStatus(card)}
-									class="cursor-pointer"
-									title={t.qsl.cycleSentStatus}
-								>
-									<StatusBadge status={card.sent_status ?? 'pending'} />
-								</button>
-							{:else}
-								<StatusBadge status={card.sent_status ?? 'pending'} />
-							{/if}
+							<div class="flex flex-col items-end">
+								{#if authStore.isAdmin}
+									<button
+										type="button"
+										onclick={() => cycleSentStatus(card)}
+										class="cursor-pointer"
+										title={t.qsl.cycleSentStatus}
+									>
+										<StatusBadge
+											status={card.sent_status ?? 'pending'}
+											label={statusLabel[card.sent_status ?? 'pending']}
+										/>
+									</button>
+								{:else}
+									<StatusBadge
+										status={card.sent_status ?? 'pending'}
+										label={statusLabel[card.sent_status ?? 'pending']}
+									/>
+								{/if}
+								{#if card.sent_via}
+									<span
+										class="mt-[var(--space-1)] text-[var(--color-text-muted)] text-[var(--text-aux)]"
+									>
+										{viaLabel(card.sent_via)}
+									</span>
+								{/if}
+							</div>
 						</div>
 						<div class="flex items-center justify-between gap-[var(--space-2)]">
 							<span
 								class="font-medium tracking-[0.05em] text-[var(--color-text-muted)] text-[var(--text-body)] uppercase"
 								>{t.qsl.receivedStatus}</span
 							>
-							{#if authStore.isAdmin}
-								<button
-									type="button"
-									onclick={() => cycleReceivedStatus(card)}
-									class="cursor-pointer"
-									title={t.qsl.cycleReceivedStatus}
-								>
-									<StatusBadge status={card.received_status ?? 'pending'} />
-								</button>
-							{:else}
-								<StatusBadge status={card.received_status ?? 'pending'} />
-							{/if}
+							<div class="flex flex-col items-end">
+								{#if authStore.isAdmin}
+									<button
+										type="button"
+										onclick={() => cycleReceivedStatus(card)}
+										class="cursor-pointer"
+										title={t.qsl.cycleReceivedStatus}
+									>
+										<StatusBadge
+											status={card.received_status ?? 'pending'}
+											label={statusLabel[card.received_status ?? 'pending']}
+										/>
+									</button>
+								{:else}
+									<StatusBadge
+										status={card.received_status ?? 'pending'}
+										label={statusLabel[card.received_status ?? 'pending']}
+									/>
+								{/if}
+								{#if card.received_via}
+									<span
+										class="mt-[var(--space-1)] text-[var(--color-text-muted)] text-[var(--text-aux)]"
+									>
+										{viaLabel(card.received_via)}
+									</span>
+								{/if}
+							</div>
 						</div>
 						<div class="flex justify-between gap-[var(--space-2)]">
 							<span

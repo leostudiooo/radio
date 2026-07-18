@@ -52,21 +52,6 @@ function publicQSOFromRow(row: VerificationRow): PublicQSOInfo {
 	};
 }
 
-async function markPaperCardSent(supabase: SupabaseClient, qsoId: string): Promise<void> {
-	const today = new Date().toISOString().slice(0, 10);
-	const { error } = await supabase.from('qsl_cards').upsert(
-		{
-			qso_id: qsoId,
-			method: 'paper',
-			sent_status: 'sent',
-			sent_date: today
-		},
-		{ onConflict: 'qso_id,method' }
-	);
-
-	if (error) throw error;
-}
-
 export function generateVerificationCode(
 	randomValues: RandomValues = (values) => crypto.getRandomValues(values)
 ): string {
@@ -80,12 +65,6 @@ export async function markQSOSentWithCode(
 	qsoId: string,
 	codeGenerator: () => string = generateVerificationCode
 ): Promise<{ code: string }> {
-	const existingCode = await getQSOAdminVerificationCode(supabase, qsoId);
-	if (existingCode) {
-		await markPaperCardSent(supabase, qsoId);
-		return { code: formatVerificationCode(existingCode) };
-	}
-
 	for (let attempt = 0; attempt < MAX_CODE_ATTEMPTS; attempt += 1) {
 		const displayCode = codeGenerator();
 		const storedCode = normalizeVerificationCode(displayCode);
@@ -99,14 +78,7 @@ export async function markQSOSentWithCode(
 
 		const savedCode = typeof data === 'string' ? data : null;
 		if (savedCode) {
-			await markPaperCardSent(supabase, qsoId);
 			return { code: formatVerificationCode(savedCode) };
-		}
-
-		const concurrentCode = await getQSOAdminVerificationCode(supabase, qsoId);
-		if (concurrentCode) {
-			await markPaperCardSent(supabase, qsoId);
-			return { code: formatVerificationCode(concurrentCode) };
 		}
 	}
 

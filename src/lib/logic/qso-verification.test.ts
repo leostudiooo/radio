@@ -12,23 +12,10 @@ interface QueryResult {
 	error: { code?: string; message?: string } | null;
 }
 
-class QueryMock {
-	upserts: unknown[] = [];
-
-	constructor(private readonly result: QueryResult) {}
-
-	upsert = vi.fn(async (value: unknown): Promise<QueryResult> => {
-		this.upserts.push(value);
-		return this.result;
-	});
-}
-
-function createSupabase(rpcResults: QueryResult[], queries: QueryMock[]): SupabaseClient {
+function createSupabase(rpcResults: QueryResult[]): SupabaseClient {
 	let rpcIndex = 0;
-	let queryIndex = 0;
 	return {
-		rpc: vi.fn(async () => rpcResults[rpcIndex++]),
-		from: vi.fn(() => queries[queryIndex++])
+		rpc: vi.fn(async () => rpcResults[rpcIndex++])
 	} as unknown as SupabaseClient;
 }
 
@@ -44,44 +31,30 @@ describe('QSO verification', () => {
 		expect(code).not.toMatch(/[ILOU]/);
 	});
 
-	it('retries after a verification code collision and creates a sent paper card', async () => {
-		const paperCard = new QueryMock({ data: null, error: null });
-		const supabase = createSupabase(
-			[
-				{ data: null, error: null },
-				{ data: null, error: { code: '23505', message: 'duplicate key' } },
-				{ data: '89ABCDEF', error: null }
-			],
-			[paperCard]
-		);
+	it('retries after a verification code collision', async () => {
+		const supabase = createSupabase([
+			{ data: null, error: { code: '23505', message: 'duplicate key' } },
+			{ data: '89ABCDEF', error: null }
+		]);
 		const generate = vi.fn().mockReturnValueOnce('0123-4567').mockReturnValueOnce('89AB-CDEF');
 
 		await expect(markQSOSentWithCode(supabase, 'qso-1', generate)).resolves.toEqual({
 			code: '89AB-CDEF'
 		});
 		expect(generate).toHaveBeenCalledTimes(2);
-		expect(supabase.rpc).toHaveBeenNthCalledWith(3, 'issue_qso_verification_code', {
+		expect(supabase.rpc).toHaveBeenNthCalledWith(2, 'issue_qso_verification_code', {
 			p_qso_id: 'qso-1',
 			p_code: '89ABCDEF'
 		});
-		expect(paperCard.upsert).toHaveBeenCalledWith(
-			expect.objectContaining({
-				qso_id: 'qso-1',
-				method: 'paper',
-				sent_status: 'sent'
-			}),
-			{ onConflict: 'qso_id,method' }
-		);
 	});
 
-	it('returns an already-issued code and still ensures the paper card is marked sent', async () => {
-		const paperCard = new QueryMock({ data: null, error: null });
-		const supabase = createSupabase([{ data: 'GHJKMNPQ', error: null }], [paperCard]);
+	it('returns an already-issued code from the atomic RPC', async () => {
+		const supabase = createSupabase([{ data: 'GHJKMNPQ', error: null }]);
 
 		await expect(markQSOSentWithCode(supabase, 'qso-1')).resolves.toEqual({
 			code: 'GHJK-MNPQ'
 		});
-		expect(paperCard.upsert).toHaveBeenCalledOnce();
+		expect(supabase.rpc).toHaveBeenCalledOnce();
 	});
 
 	it('normalizes codes for lookup and confirmation RPCs', async () => {

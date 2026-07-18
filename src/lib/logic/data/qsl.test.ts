@@ -12,7 +12,7 @@ import {
 
 type QueryResult<T> = { data: T; error: Error | null };
 
-type QslQuery<TList, TSingle> = PromiseLike<QueryResult<TList>> & {
+type QslQuery<TList> = PromiseLike<QueryResult<TList>> & {
 	select: ReturnType<typeof vi.fn>;
 	insert: ReturnType<typeof vi.fn>;
 	update: ReturnType<typeof vi.fn>;
@@ -31,9 +31,18 @@ function createQSLCardRow(overrides: Partial<QSLCard> = {}): QSLCard {
 		received_status: undefined,
 		sent_date: '2026-01-01',
 		received_date: undefined,
+		sent_via: 'D',
+		received_via: undefined,
 		notes: 'Test card',
 		image_url: undefined,
 		created_at: '2026-01-01T00:00:00.000Z',
+		qso: {
+			id: 'qso-1',
+			callsign: 'BA4VUN',
+			time_on: '2026-01-01T00:00:00.000Z',
+			band: '20m',
+			mode: 'SSB'
+		},
 		...overrides
 	};
 }
@@ -41,8 +50,8 @@ function createQSLCardRow(overrides: Partial<QSLCard> = {}): QSLCard {
 function createQslQuery<TList, TSingle>(options: {
 	listResult: QueryResult<TList>;
 	singleResult: QueryResult<TSingle>;
-}): QslQuery<TList, TSingle> {
-	const query: Partial<QslQuery<TList, TSingle>> = {};
+}): QslQuery<TList> {
+	const query: Partial<QslQuery<TList>> = {};
 
 	query.select = vi.fn(() => query);
 	query.insert = vi.fn(() => query);
@@ -52,12 +61,9 @@ function createQslQuery<TList, TSingle>(options: {
 	query.or = vi.fn(() => query);
 	query.single = vi.fn(async () => options.singleResult);
 	query.then = ((onfulfilled, onrejected) =>
-		Promise.resolve(options.listResult).then(onfulfilled, onrejected)) as QslQuery<
-		TList,
-		TSingle
-	>['then'];
+		Promise.resolve(options.listResult).then(onfulfilled, onrejected)) as QslQuery<TList>['then'];
 
-	return query as QslQuery<TList, TSingle>;
+	return query as QslQuery<TList>;
 }
 
 function createSupabase(fromMock: ReturnType<typeof vi.fn>): SupabaseClient {
@@ -114,6 +120,7 @@ describe('QSL logic helpers', () => {
 		});
 
 		await expect(getQSLCardsByQSO(supabase, 'qso-1')).resolves.toEqual([created]);
+		expect(listQuery.select).toHaveBeenCalledWith(expect.stringContaining('qso:qsos'));
 		expect(listQuery.eq).toHaveBeenCalledWith('qso_id', 'qso-1');
 
 		await expect(

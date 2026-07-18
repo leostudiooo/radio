@@ -6,6 +6,7 @@
 	import { BANDS, MODES, CONTINENTS, ADIF_QSL_STATUS } from '$lib/logic/types/qso';
 	import { validateQSO } from '$lib/logic/validation';
 	import { lookupCallsign } from '$lib/logic/data/callsign';
+	import { bandFromFrequency, canReplaceWithLookup } from '$lib/logic/utils';
 	import type { QSO, QSOInsert, ValidationResult } from '$lib/logic/types/qso';
 
 	import PageHeader from '$lib/ui/components/PageHeader.svelte';
@@ -76,31 +77,6 @@
 		'70cm': 435,
 		'23cm': 1295
 	};
-
-	const FREQ_BAND_RANGES: Array<{ min: number; max: number; band: string }> = [
-		{ min: 1.8, max: 2.0, band: '160m' },
-		{ min: 3.5, max: 4.0, band: '80m' },
-		{ min: 5.0, max: 5.5, band: '60m' },
-		{ min: 7.0, max: 7.3, band: '40m' },
-		{ min: 10.0, max: 10.15, band: '30m' },
-		{ min: 14.0, max: 14.35, band: '20m' },
-		{ min: 18.0, max: 18.17, band: '17m' },
-		{ min: 21.0, max: 21.45, band: '15m' },
-		{ min: 24.0, max: 24.99, band: '12m' },
-		{ min: 28.0, max: 29.7, band: '10m' },
-		{ min: 50.0, max: 54.0, band: '6m' },
-		{ min: 70.0, max: 71.0, band: '4m' },
-		{ min: 144.0, max: 148.0, band: '2m' },
-		{ min: 430.0, max: 440.0, band: '70cm' },
-		{ min: 1240.0, max: 1300.0, band: '23cm' }
-	];
-
-	function freqToBand(freqMhz: number): string {
-		for (const r of FREQ_BAND_RANGES) {
-			if (freqMhz >= r.min && freqMhz <= r.max) return r.band;
-		}
-		return '';
-	}
 
 	function utcNow(): string {
 		return new Date().toISOString().slice(0, 19) + 'Z';
@@ -311,19 +287,40 @@
 
 	let lookupTimer: ReturnType<typeof setTimeout> | null = null;
 	let lookingUp = $state(false);
+	let lookupRequestId = 0;
+	let lookupName: string | undefined;
+	let lookupGrid: string | undefined;
+	let lookupCountry: string | undefined;
 
 	function handleCallsignInput(value: string) {
 		callsign = value;
 		saved = false;
-		if (formMode !== 'create') return;
 		if (lookupTimer) clearTimeout(lookupTimer);
+		const requestId = ++lookupRequestId;
 		if (value.trim().length >= 3) {
 			lookingUp = true;
 			lookupTimer = setTimeout(async () => {
 				const info = await lookupCallsign(value);
+				if (requestId !== lookupRequestId) return;
 				if (info) {
-					if (info.name && !optName) optName = info.name;
-					if (info.grid_square && !optGrid) optGrid = info.grid_square;
+					if (info.name && canReplaceWithLookup(optName, initialData?.name, lookupName)) {
+						optName = info.name;
+						lookupName = info.name;
+					}
+					if (
+						info.grid_square &&
+						canReplaceWithLookup(optGrid, initialData?.grid_square, lookupGrid)
+					) {
+						optGrid = info.grid_square;
+						lookupGrid = info.grid_square;
+					}
+					if (
+						info.country &&
+						canReplaceWithLookup(optCountry, initialData?.country, lookupCountry)
+					) {
+						optCountry = info.country;
+						lookupCountry = info.country;
+					}
 				}
 				lookingUp = false;
 			}, 500);
@@ -343,13 +340,9 @@
 	function handleFreqInput(value: string) {
 		freq = value;
 		saved = false;
-		if (formMode === 'create') {
-			const num = parseFloat(value);
-			if (!isNaN(num) && !isEyeball) {
-				const detected = freqToBand(num);
-				if (detected) band = detected;
-			}
-		}
+		if (isEyeball) return;
+		const detected = bandFromFrequency(value);
+		if (detected) band = detected;
 	}
 
 	function handleModeChange(value: string) {
@@ -397,7 +390,7 @@
 
 	function useFrequency(value: string) {
 		freq = value;
-		const detected = freqToBand(parseFloat(value));
+		const detected = bandFromFrequency(value);
 		if (detected) band = detected;
 		if (!qsoMode) qsoMode = 'FM';
 		saved = false;
@@ -870,28 +863,19 @@
 		{:else}
 			<div class="grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
 				<div class="sm:col-span-2">
-					{#if formMode === 'create'}
-						<FormInput
-							label={t.qso.callsign}
-							value={callsign}
-							placeholder={t.common.placeholder.callsign}
-							required={true}
-							oninput={handleCallsignInput}
-						/>
-						{#if lookingUp}
-							<span
-								class="mt-[var(--space-1)] inline-flex items-center gap-[var(--space-1)] text-[var(--color-text-muted)] text-[var(--text-body)]"
-							>
-								<LoadingSpinner size="sm" />
-							</span>
-						{/if}
-					{:else}
-						<FormInput
-							label={t.qso.callsign}
-							bind:value={callsign}
-							placeholder={t.common.placeholder.callsign}
-							required={true}
-						/>
+					<FormInput
+						label={t.qso.callsign}
+						value={callsign}
+						placeholder={t.common.placeholder.callsign}
+						required={true}
+						oninput={handleCallsignInput}
+					/>
+					{#if lookingUp}
+						<span
+							class="mt-[var(--space-1)] inline-flex items-center gap-[var(--space-1)] text-[var(--color-text-muted)] text-[var(--text-body)]"
+						>
+							<LoadingSpinner size="sm" />
+						</span>
 					{/if}
 				</div>
 
@@ -933,7 +917,12 @@
 							required={true}
 						/>
 
-						<FormInput label={t.qso.freq} bind:value={freq} placeholder={t.common.placeholder.freq}>
+						<FormInput
+							label={t.qso.freq}
+							value={freq}
+							placeholder={t.common.placeholder.freq}
+							oninput={handleFreqInput}
+						>
 							{#snippet suffix()}
 								<span class="text-[var(--text-body)]">{t.common.unit.mhz}</span>
 							{/snippet}
