@@ -62,7 +62,9 @@ function createProfilesQuery<T>(result: QueryResult<T>) {
 		select: vi.fn(() => query),
 		update: vi.fn(() => query),
 		eq: vi.fn(() => query),
-		single: vi.fn(async () => result)
+		abortSignal: vi.fn(() => query),
+		single: vi.fn(async () => result),
+		maybeSingle: vi.fn(async () => result)
 	};
 
 	return query;
@@ -70,8 +72,7 @@ function createProfilesQuery<T>(result: QueryResult<T>) {
 
 describe('auth logic helpers', () => {
 	it('signs in with Passkey when the injected client supports it', async () => {
-		const originalPublicKeyCredential = (globalThis as any).PublicKeyCredential;
-		(globalThis as any).PublicKeyCredential = class {};
+		vi.stubGlobal('PublicKeyCredential', class {});
 
 		const session = createSession();
 		const signInWithPasskeyMock = vi.fn(async () => ({
@@ -89,12 +90,11 @@ describe('auth logic helpers', () => {
 		});
 		expect(signInWithPasskeyMock).toHaveBeenCalledOnce();
 
-		(globalThis as any).PublicKeyCredential = originalPublicKeyCredential;
+		vi.unstubAllGlobals();
 	});
 
 	it('returns a typed Passkey error when the browser does not support passkeys', async () => {
-		const originalPublicKeyCredential = (globalThis as any).PublicKeyCredential;
-		(globalThis as any).PublicKeyCredential = undefined;
+		vi.stubGlobal('PublicKeyCredential', undefined);
 		const supabase = createSupabase({ auth: {} } as unknown as SupabaseClient);
 
 		await expect(signInWithPasskey(supabase)).resolves.toEqual({
@@ -102,7 +102,7 @@ describe('auth logic helpers', () => {
 			errorCode: 'passkey_not_supported'
 		});
 
-		(globalThis as any).PublicKeyCredential = originalPublicKeyCredential;
+		vi.unstubAllGlobals();
 	});
 
 	it('requests a magic link for the given email', async () => {
@@ -162,14 +162,14 @@ describe('auth logic helpers', () => {
 		await expect(getSession(supabase)).resolves.toBe(session);
 	});
 
-	it('returns null when session lookup fails', async () => {
+	it('throws when session lookup fails', async () => {
 		const supabase = createSupabase({
 			auth: {
 				getSession: vi.fn(async () => ({ data: { session: null }, error: new Error('No session') }))
 			}
 		} as unknown as SupabaseClient);
 
-		await expect(getSession(supabase)).resolves.toBeNull();
+		await expect(getSession(supabase)).rejects.toThrow('No session');
 	});
 
 	it('subscribes to auth-state changes and forwards sessions only', () => {
@@ -222,8 +222,8 @@ describe('auth logic helpers', () => {
 		expect(query.eq).toHaveBeenCalledWith('id', 'user-1');
 	});
 
-	it('returns null when profile lookup fails', async () => {
-		const query = createProfilesQuery<Profile>({ data: null, error: new Error('Missing profile') });
+	it('returns null when a profile does not exist', async () => {
+		const query = createProfilesQuery<Profile>({ data: null, error: null });
 		const supabase = createSupabase({ from: vi.fn(() => query) } as unknown as SupabaseClient);
 
 		await expect(getProfile(supabase, 'missing-user')).resolves.toBeNull();
@@ -247,21 +247,21 @@ describe('auth logic helpers', () => {
 		const query = createProfilesQuery<Profile>({ data: null, error });
 		const supabase = createSupabase({ from: vi.fn(() => query) } as unknown as SupabaseClient);
 
-		await expect(updateProfile(supabase, 'user-1', { callsign: 'N0CALL' })).rejects.toThrow(error);
+		await expect(updateProfile(supabase, 'user-1', { callsign: 'N0CALL' })).rejects.toThrow(
+			'Update failed'
+		);
 	});
 
 	it('detects passkey support when PublicKeyCredential exists', () => {
-		const original = (globalThis as any).PublicKeyCredential;
-		(globalThis as any).PublicKeyCredential = class {};
+		vi.stubGlobal('PublicKeyCredential', class {});
 		expect(isPasskeySupported()).toBe(true);
-		(globalThis as any).PublicKeyCredential = original;
+		vi.unstubAllGlobals();
 	});
 
 	it('detects no passkey support when PublicKeyCredential is missing', () => {
-		const original = (globalThis as any).PublicKeyCredential;
-		(globalThis as any).PublicKeyCredential = undefined;
+		vi.stubGlobal('PublicKeyCredential', undefined);
 		expect(isPasskeySupported()).toBe(false);
-		(globalThis as any).PublicKeyCredential = original;
+		vi.unstubAllGlobals();
 	});
 
 	it('registers a passkey successfully', async () => {
@@ -274,11 +274,7 @@ describe('auth logic helpers', () => {
 			auth: { registerPasskey: registerPasskeyMock }
 		} as unknown as SupabaseClient);
 
-		await expect(registerPasskey(supabase)).resolves.toEqual({
-			success: true,
-			session,
-			user: session.user
-		});
+		await expect(registerPasskey(supabase)).resolves.toEqual({ success: true });
 		expect(registerPasskeyMock).toHaveBeenCalledOnce();
 	});
 
@@ -328,7 +324,7 @@ describe('auth logic helpers', () => {
 		} as unknown as SupabaseClient);
 
 		await expect(updatePasskey(supabase, 'pk-1', 'New Name')).resolves.toBeUndefined();
-		expect(updateMock).toHaveBeenCalledWith({ id: 'pk-1', name: 'New Name' });
+		expect(updateMock).toHaveBeenCalledWith({ passkeyId: 'pk-1', friendlyName: 'New Name' });
 	});
 
 	it('throws when updating a passkey fails', async () => {
@@ -348,7 +344,7 @@ describe('auth logic helpers', () => {
 		} as unknown as SupabaseClient);
 
 		await expect(deletePasskey(supabase, 'pk-1')).resolves.toBeUndefined();
-		expect(deleteMock).toHaveBeenCalledWith({ id: 'pk-1' });
+		expect(deleteMock).toHaveBeenCalledWith({ passkeyId: 'pk-1' });
 	});
 
 	it('throws when deleting a passkey fails', async () => {

@@ -6,6 +6,7 @@
 	import { toastStore } from '$lib/ui/stores/toast.svelte';
 	import { QSL_METHODS, QSL_STATUSES } from '$lib/logic/types/qsl';
 	import { getQSLCards, updateQSLCard, getQSLStats } from '$lib/logic/data/qsl';
+	import { runAuthenticated } from '$lib/logic/auth';
 	import type { QSLCard, QSLMethod, QSLStatus, QSLStats } from '$lib/logic/types/qsl';
 	import { nextQSLReceivedUpdate, nextQSLSentUpdate } from '$lib/logic/utils';
 	import { formatDate } from '$lib/ui/utils/format';
@@ -16,6 +17,7 @@
 	import FilterBar from '$lib/ui/components/FilterBar.svelte';
 	import FormSelect from '$lib/ui/components/FormSelect.svelte';
 	import EmptyState from '$lib/ui/components/EmptyState.svelte';
+	import Button from '$lib/ui/components/Button.svelte';
 	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
 	import { SITE_CONFIG } from '$lib/config';
 
@@ -50,9 +52,11 @@
 	let data = $state<QSLCard[]>([]);
 	let stats = $state<QSLStats | null>(null);
 	let initialLoaded = $state(false);
+	let loadError = $state(false);
 	let updatingId = $state<string | null>(null);
 
 	async function loadData() {
+		loadError = false;
 		try {
 			const filter: { method?: QSLMethod; status?: QSLStatus } = {};
 			if (filterMethod) filter.method = filterMethod as QSLMethod;
@@ -61,8 +65,7 @@
 			data = cards;
 			stats = s;
 		} catch {
-			data = [];
-			stats = null;
+			loadError = true;
 		} finally {
 			initialLoaded = true;
 		}
@@ -85,10 +88,12 @@
 	async function cycleSentStatus(card: QSLCard) {
 		updatingId = card.id;
 		try {
-			await updateQSLCard(
-				supabase,
-				card.id,
-				nextQSLSentUpdate(card, new Date().toISOString().slice(0, 10))
+			await runAuthenticated(supabase, 'update QSL card', () =>
+				updateQSLCard(
+					supabase,
+					card.id,
+					nextQSLSentUpdate(card, new Date().toISOString().slice(0, 10))
+				)
 			);
 			toastStore.success(t.qsl.statusUpdated);
 			await loadData();
@@ -102,10 +107,12 @@
 	async function cycleReceivedStatus(card: QSLCard) {
 		updatingId = card.id;
 		try {
-			await updateQSLCard(
-				supabase,
-				card.id,
-				nextQSLReceivedUpdate(card, new Date().toISOString().slice(0, 10))
+			await runAuthenticated(supabase, 'update QSL card', () =>
+				updateQSLCard(
+					supabase,
+					card.id,
+					nextQSLReceivedUpdate(card, new Date().toISOString().slice(0, 10))
+				)
 			);
 			toastStore.success(t.qsl.statusUpdated);
 			await loadData();
@@ -154,6 +161,12 @@
 	<div class="flex justify-center py-[var(--space-12)]">
 		<LoadingSpinner size="lg" />
 	</div>
+{:else if loadError && data.length === 0}
+	<EmptyState message={t.common.error}>
+		{#snippet cta()}
+			<Button variant="secondary" onclick={loadData}>{t.common.retry}</Button>
+		{/snippet}
+	</EmptyState>
 {:else}
 	<div class="flex flex-col gap-[var(--space-6)]">
 		<div class="grid grid-cols-2 gap-[var(--space-3)] lg:grid-cols-4">

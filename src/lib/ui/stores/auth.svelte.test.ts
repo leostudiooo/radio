@@ -19,6 +19,11 @@ vi.mock('$lib/supabase', () => ({
 
 vi.mock('$lib/logic/auth', () => ({
 	getProfile: mockGetProfile,
+	getSession: async () => {
+		const { data, error } = await mockGetSession();
+		if (error) throw error;
+		return data.session;
+	},
 	onAuthStateChange: mockOnAuthStateChange
 }));
 

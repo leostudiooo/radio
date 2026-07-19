@@ -1,13 +1,15 @@
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { supabase } from '$lib/supabase';
-import { signInWithPasskey, signInWithMagicLink, signOut } from '$lib/logic/auth';
+import { runAuthenticated, signInWithPasskey, signInWithMagicLink, signOut } from '$lib/logic/auth';
 import { getQSOs, getQSOById } from '$lib/logic/data/qso';
 import { getEquipment, getEquipmentById, updateEquipment } from '$lib/logic/data/equipment';
 import { authStore } from '$lib/ui/stores/auth.svelte';
 import operatorData from '$lib/logic/config/operator.json';
 import type { AuthCommandResult, AuthStatus, StationOSAdapters } from './types';
 import type { Pathname } from '$app/types';
+import { HTTP_DEADLINE_MS, withDeadline } from '$lib/logic/deadline';
+import { AppError } from '$lib/logic/errors';
 
 type ResolvablePath = Pathname;
 
@@ -35,6 +37,9 @@ async function waitForAuthStoreSettled(): Promise<void> {
 		if (authStore.isAuthenticated && authStore.callsign) return;
 		await new Promise((r) => setTimeout(r, AUTH_SETTLE_POLL_MS));
 	}
+	throw new AppError('timeout', 'settle authentication', 'Authentication did not settle in time', {
+		retryable: true
+	});
 }
 
 export function createBrowserStationOSAdapters(emit: (text: string) => void): StationOSAdapters {
@@ -90,14 +95,18 @@ export function createBrowserStationOSAdapters(emit: (text: string) => void): St
 				if (!item) throw new Error(`Equipment not found: ${id}`);
 				if (item.is_active) return item;
 
-				return updateEquipment(supabase, id, { is_active: true });
+				return runAuthenticated(supabase, 'activate equipment', () =>
+					updateEquipment(supabase, id, { is_active: true })
+				);
 			},
 			async deactivate(id) {
 				const item = await getEquipmentById(supabase, id);
 				if (!item) throw new Error(`Equipment not found: ${id}`);
 				if (!item.is_active) return item;
 
-				return updateEquipment(supabase, id, { is_active: false });
+				return runAuthenticated(supabase, 'deactivate equipment', () =>
+					updateEquipment(supabase, id, { is_active: false })
+				);
 			},
 			navigateList: () => goto(resolve('/equipment')),
 			navigateView: (id) => goto(resolve('/equipment/[id]', { id })),
@@ -109,7 +118,9 @@ export function createBrowserStationOSAdapters(emit: (text: string) => void): St
 		},
 		fs: {
 			read: async (path) => {
-				const response = await fetch(`/vfs${path}`);
+				const response = await withDeadline('read virtual file', HTTP_DEADLINE_MS, (signal) =>
+					fetch(`/vfs${path}`, { signal })
+				);
 				if (!response.ok) throw new Error(`${path}: no such file`);
 				return response.text();
 			}

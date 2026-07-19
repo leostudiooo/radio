@@ -5,6 +5,7 @@
 	import { authStore } from '$lib/ui/stores/auth.svelte';
 	import { toastStore } from '$lib/ui/stores/toast.svelte';
 	import { getEquipment, deleteEquipment, toggleEquipmentActive } from '$lib/logic/data/equipment';
+	import { runAuthenticated } from '$lib/logic/auth';
 	import type { Equipment } from '$lib/logic/types/equipment';
 	import type { Column } from '$lib/ui/components/DataTable';
 
@@ -22,6 +23,7 @@
 	let data = $state<Equipment[]>([]);
 	let loading = $state(true);
 	let initialLoaded = $state(false);
+	let loadError = $state(false);
 
 	let deleteTarget = $state<Equipment | null>(null);
 	let showDeleteConfirm = $state(false);
@@ -36,10 +38,11 @@
 
 	async function loadData() {
 		loading = true;
+		loadError = false;
 		try {
 			data = await getEquipment(supabase);
 		} catch {
-			data = [];
+			loadError = true;
 		} finally {
 			loading = false;
 			initialLoaded = true;
@@ -53,11 +56,14 @@
 	async function handleDelete() {
 		if (!deleteTarget?.id) return;
 		try {
-			await deleteEquipment(supabase, deleteTarget.id);
+			await runAuthenticated(supabase, 'delete equipment', () =>
+				deleteEquipment(supabase, deleteTarget!.id)
+			);
 			data = data.filter((d) => d.id !== deleteTarget!.id);
 			toastStore.success(t.common.success);
-		} catch {
+		} catch (error) {
 			toastStore.error(t.equipment.saveFailed);
+			throw error;
 		} finally {
 			deleteTarget = null;
 		}
@@ -66,7 +72,9 @@
 	async function handleToggleActive(item: Equipment) {
 		if (!item.id) return;
 		try {
-			const updated = await toggleEquipmentActive(supabase, item.id);
+			const updated = await runAuthenticated(supabase, 'toggle equipment', () =>
+				toggleEquipmentActive(supabase, item.id)
+			);
 			data = data.map((d) => (d.id === updated.id ? updated : d));
 		} catch {
 			toastStore.error(t.equipment.saveFailed);
@@ -92,6 +100,12 @@
 	<div class="flex justify-center py-[var(--space-12)]">
 		<LoadingSpinner size="lg" />
 	</div>
+{:else if loadError && data.length === 0}
+	<EmptyState message={t.common.error}>
+		{#snippet cta()}
+			<Button variant="secondary" onclick={loadData}>{t.common.retry}</Button>
+		{/snippet}
+	</EmptyState>
 {:else if data.length === 0}
 	<EmptyState icon="🔧" message={t.equipment.noEquipment}>
 		{#snippet cta()}

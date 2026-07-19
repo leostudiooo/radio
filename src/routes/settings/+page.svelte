@@ -8,6 +8,7 @@
 		updatePasskey,
 		deletePasskey
 	} from '$lib/logic/auth';
+	import { runAuthenticated } from '$lib/logic/auth';
 	import { authStore } from '$lib/ui/stores/auth.svelte';
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
 	import { toastStore } from '$lib/ui/stores/toast.svelte';
@@ -17,6 +18,8 @@
 	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
 	import { Save, KeyRound, Pencil, Trash2 } from '@lucide/svelte';
 	import { SITE_CONFIG } from '$lib/config';
+	import { WEBAUTHN_DEADLINE_MS } from '$lib/logic/deadline';
+	import type { PasskeyListItem } from '@supabase/auth-js';
 
 	const t = $derived(localeStore.translation);
 
@@ -25,18 +28,20 @@
 	let qth = $state('');
 	let saving = $state(false);
 	let loaded = $state(false);
-	let passkeys = $state<any[]>([]);
+	let passkeys = $state<PasskeyListItem[]>([]);
 	let passkeysLoading = $state(false);
+	let passkeysError = $state(false);
 	let registeringPasskey = $state(false);
 	let renamingId = $state<string | null>(null);
 	let renameValue = $state('');
 
 	async function loadPasskeys() {
 		passkeysLoading = true;
+		passkeysError = false;
 		try {
 			passkeys = await listPasskeys(supabase);
 		} catch {
-			passkeys = [];
+			passkeysError = true;
 		} finally {
 			passkeysLoading = false;
 		}
@@ -64,11 +69,13 @@
 
 		saving = true;
 		try {
-			await updateProfile(supabase, userId, {
-				callsign: callsign.trim(),
-				grid_square: gridSquare.trim() || undefined,
-				qth: qth.trim() || undefined
-			});
+			await runAuthenticated(supabase, 'update profile', () =>
+				updateProfile(supabase, userId, {
+					callsign: callsign.trim(),
+					grid_square: gridSquare.trim() || undefined,
+					qth: qth.trim() || undefined
+				})
+			);
 			await authStore.refreshProfile();
 			toastStore.success(t.auth.profileSaved);
 		} catch {
@@ -81,7 +88,12 @@
 	async function handleRegisterPasskey() {
 		registeringPasskey = true;
 		try {
-			const result = await registerPasskey(supabase);
+			const result = await runAuthenticated(
+				supabase,
+				'register passkey',
+				() => registerPasskey(supabase),
+				WEBAUTHN_DEADLINE_MS
+			);
 			if (result.success) {
 				toastStore.success(t.auth.passkeyRegistered);
 				await loadPasskeys();
@@ -98,7 +110,9 @@
 	async function handleRenamePasskey(id: string) {
 		if (!renameValue.trim()) return;
 		try {
-			await updatePasskey(supabase, id, renameValue.trim());
+			await runAuthenticated(supabase, 'rename passkey', () =>
+				updatePasskey(supabase, id, renameValue.trim())
+			);
 			toastStore.success(t.auth.passkeyRenamed);
 			renamingId = null;
 			renameValue = '';
@@ -111,7 +125,7 @@
 	async function handleDeletePasskey(id: string) {
 		if (!confirm(t.auth.passkeyDeleteConfirm)) return;
 		try {
-			await deletePasskey(supabase, id);
+			await runAuthenticated(supabase, 'delete passkey', () => deletePasskey(supabase, id));
 			toastStore.success(t.auth.passkeyDeleted);
 			await loadPasskeys();
 		} catch {
@@ -235,6 +249,11 @@
 					<LoadingSpinner size="sm" />
 					<span>{t.common.loading}</span>
 				</div>
+			{:else if passkeysError}
+				<div class="flex items-center gap-[var(--space-3)]">
+					<span class="text-[var(--color-status-invalid)]">{t.common.error}</span>
+					<Button variant="secondary" onclick={loadPasskeys}>{t.common.retry}</Button>
+				</div>
 			{:else if passkeys.length === 0}
 				<p class="text-[var(--color-text-secondary)]">{t.auth.noPasskeys}</p>
 			{:else}
@@ -272,7 +291,7 @@
 								<div class="flex items-center justify-between">
 									<div class="flex flex-col gap-[var(--space-1)]">
 										<span class="font-medium text-[var(--color-text-primary)]"
-											>{passkey.name ?? '-'}</span
+											>{passkey.friendly_name ?? '-'}</span
 										>
 										<div
 											class="flex gap-[var(--space-3)] text-[var(--color-text-secondary)] text-[var(--text-aux)]"
@@ -295,7 +314,7 @@
 											variant="ghost"
 											onclick={() => {
 												renamingId = passkey.id;
-												renameValue = passkey.name ?? '';
+												renameValue = passkey.friendly_name ?? '';
 											}}
 										>
 											<Pencil size={14} />

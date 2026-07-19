@@ -1,8 +1,9 @@
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '$lib/supabase';
-import { onAuthStateChange, getProfile } from '$lib/logic/auth';
+import { getProfile, getSession, onAuthStateChange } from '$lib/logic/auth';
 import type { Profile } from '$lib/logic/types/auth';
 import type { Subscription } from '@supabase/auth-js';
+import { toAppError, type AppError } from '$lib/logic/errors';
 
 let subscription: Subscription | null = null;
 let listenerRegistered = false;
@@ -12,35 +13,52 @@ function createAuthStore() {
 	let session = $state<Session | null>(null);
 	let user = $state<User | null>(null);
 	let profile = $state<Profile | null>(null);
+	let error = $state<AppError | null>(null);
+	let profileRequestId = 0;
 
-	let isAuthenticated = $derived(!!session && !!user);
-	let callsign = $derived(profile?.callsign ?? null);
-	let isAdmin = $derived(profile?.role === 'admin');
+	const isAuthenticated = $derived(!!session && !!user);
+	const callsign = $derived(profile?.callsign ?? null);
+	const isAdmin = $derived(profile?.role === 'admin');
 
 	async function refreshProfile() {
-		if (user?.id) {
-			const p = await getProfile(supabase, user.id);
-			profile = p;
-		} else {
+		const requestId = ++profileRequestId;
+		const userId = user?.id;
+		if (!userId) {
 			profile = null;
+			error = null;
+			return;
 		}
+
+		try {
+			const nextProfile = await getProfile(supabase, userId);
+			if (requestId !== profileRequestId) return;
+			profile = nextProfile;
+			error = null;
+		} catch (cause) {
+			if (requestId !== profileRequestId) return;
+			error = toAppError(cause, 'load profile');
+			throw error;
+		}
+	}
+
+	function applySession(newSession: Session | null) {
+		session = newSession;
+		user = newSession?.user ?? null;
+		void refreshProfile().catch(() => undefined);
 	}
 
 	async function initAuth() {
 		if (listenerRegistered) return;
 		listenerRegistered = true;
+		subscription = onAuthStateChange(supabase, applySession);
 
 		try {
-			const { data } = await supabase.auth.getSession();
-			session = data.session;
-			user = data.session?.user ?? null;
+			const nextSession = await getSession(supabase);
+			session = nextSession;
+			user = nextSession?.user ?? null;
 			await refreshProfile();
-
-			subscription = onAuthStateChange(supabase, (async (newSession) => {
-				session = newSession;
-				user = newSession?.user ?? null;
-				await refreshProfile();
-			}) as (session: Session | null) => void);
+		} catch (cause) {
+			error = toAppError(cause, 'initialize authentication');
 		} finally {
 			loading = false;
 		}
@@ -69,6 +87,9 @@ function createAuthStore() {
 		},
 		get profile() {
 			return profile;
+		},
+		get error() {
+			return error;
 		},
 		get isAuthenticated() {
 			return isAuthenticated;

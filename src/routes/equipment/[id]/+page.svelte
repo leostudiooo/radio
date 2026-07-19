@@ -7,6 +7,7 @@
 	import AdminGuard from '$lib/ui/components/AdminGuard.svelte';
 	import { EQUIPMENT_TYPES } from '$lib/logic/types/equipment';
 	import { getEquipmentById, updateEquipment, deleteEquipment } from '$lib/logic/data/equipment';
+	import { runAuthenticated } from '$lib/logic/auth';
 	import type { Equipment } from '$lib/logic/types/equipment';
 
 	import PageHeader from '$lib/ui/components/PageHeader.svelte';
@@ -17,6 +18,7 @@
 	import ConfirmDialog from '$lib/ui/components/ConfirmDialog.svelte';
 	import Button from '$lib/ui/components/Button.svelte';
 	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
+	import EmptyState from '$lib/ui/components/EmptyState.svelte';
 	import { SITE_CONFIG } from '$lib/config';
 
 	const typeOptions = EQUIPMENT_TYPES.map((t) => ({ value: t, label: t }));
@@ -27,6 +29,7 @@
 	let equipment: Equipment | null = $state(null);
 	let loading = $state(true);
 	let notFound = $state(false);
+	let loadError = $state(false);
 
 	let name = $state('');
 	let type = $state('');
@@ -53,6 +56,7 @@
 	async function loadEquipment() {
 		loading = true;
 		notFound = false;
+		loadError = false;
 		try {
 			const result = await getEquipmentById(supabase, id);
 			if (result) {
@@ -61,7 +65,7 @@
 				notFound = true;
 			}
 		} catch {
-			notFound = true;
+			loadError = true;
 		} finally {
 			loading = false;
 		}
@@ -76,18 +80,20 @@
 
 		submitting = true;
 		try {
-			await updateEquipment(supabase, id, {
-				name: name.trim(),
-				type: type as (typeof EQUIPMENT_TYPES)[number],
-				manufacturer: manufacturer.trim() || undefined,
-				model: model.trim() || undefined,
-				serial_number: serialNumber.trim() || undefined,
-				description: description.trim() || undefined,
-				is_active: isActive
-			});
+			await runAuthenticated(supabase, 'update equipment', () =>
+				updateEquipment(supabase, id, {
+					name: name.trim(),
+					type: type as (typeof EQUIPMENT_TYPES)[number],
+					manufacturer: manufacturer.trim() || undefined,
+					model: model.trim() || undefined,
+					serial_number: serialNumber.trim() || undefined,
+					description: description.trim() || undefined,
+					is_active: isActive
+				})
+			);
 			toastStore.success(t.equipment.equipmentSaved);
 			goto('/equipment');
-		} catch {
+		} catch (error) {
 			toastStore.error(t.equipment.saveFailed);
 		} finally {
 			submitting = false;
@@ -96,11 +102,12 @@
 
 	async function handleDelete() {
 		try {
-			await deleteEquipment(supabase, id);
+			await runAuthenticated(supabase, 'delete equipment', () => deleteEquipment(supabase, id));
 			toastStore.success(t.common.success);
 			goto('/equipment');
-		} catch {
+		} catch (error) {
 			toastStore.error(t.equipment.saveFailed);
+			throw error;
 		}
 	}
 </script>
@@ -116,6 +123,12 @@
 		</div>
 	{:else if notFound}
 		<p class="text-[var(--color-text-muted)] text-[var(--text-body)]">Equipment not found.</p>
+	{:else if loadError}
+		<EmptyState message={t.common.error}>
+			{#snippet cta()}
+				<Button variant="secondary" onclick={loadEquipment}>{t.common.retry}</Button>
+			{/snippet}
+		</EmptyState>
 	{:else}
 		<PageHeader title={t.equipment.editEquipment}>
 			{#snippet action()}

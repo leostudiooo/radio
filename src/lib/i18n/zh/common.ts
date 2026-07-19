@@ -21,6 +21,7 @@ const common = {
 	actions: '操作',
 	status: '状态',
 	error: '错误',
+	retry: '重试',
 	success: '成功',
 	useUtc: '使用 UTC',
 	useLocalTime: '使用本地时间',

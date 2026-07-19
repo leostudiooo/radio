@@ -19,7 +19,9 @@ type QslQuery<TList> = PromiseLike<QueryResult<TList>> & {
 	delete: ReturnType<typeof vi.fn>;
 	eq: ReturnType<typeof vi.fn>;
 	or: ReturnType<typeof vi.fn>;
+	abortSignal: ReturnType<typeof vi.fn>;
 	single: ReturnType<typeof vi.fn>;
+	maybeSingle: ReturnType<typeof vi.fn>;
 };
 
 function createQSLCardRow(overrides: Partial<QSLCard> = {}): QSLCard {
@@ -59,7 +61,9 @@ function createQslQuery<TList, TSingle>(options: {
 	query.delete = vi.fn(() => query);
 	query.eq = vi.fn(() => query);
 	query.or = vi.fn(() => query);
+	query.abortSignal = vi.fn(() => query);
 	query.single = vi.fn(async () => options.singleResult);
+	query.maybeSingle = vi.fn(async () => options.singleResult);
 	query.then = ((onfulfilled, onrejected) =>
 		Promise.resolve(options.listResult).then(onfulfilled, onrejected)) as QslQuery<TList>['then'];
 
@@ -93,8 +97,8 @@ describe('QSL logic helpers', () => {
 			singleResult: { data: updated, error: null }
 		});
 		const deleteQuery = createQslQuery({
-			listResult: { data: null, error: null },
-			singleResult: { data: null, error: null }
+			listResult: { data: { id: 'qsl-1' }, error: null },
+			singleResult: { data: { id: 'qsl-1' }, error: null }
 		});
 		const from = vi
 			.fn()
@@ -135,7 +139,7 @@ describe('QSL logic helpers', () => {
 		});
 		expect(updateQuery.eq).toHaveBeenCalledWith('id', 'qsl-1');
 
-		await expect(deleteQSLCard(supabase, 'qsl-1')).resolves.toBeUndefined();
+		await expect(deleteQSLCard(supabase, 'qsl-1')).resolves.toBe('qsl-1');
 		expect(deleteQuery.delete).toHaveBeenCalledOnce();
 		expect(deleteQuery.eq).toHaveBeenCalledWith('id', 'qsl-1');
 	});

@@ -7,6 +7,12 @@ import type {
 	QSLStats,
 	QSLStatus
 } from '$lib/logic/types/qsl';
+import { notFoundError, toAppError } from '$lib/logic/errors';
+import {
+	DATABASE_READ_DEADLINE_MS,
+	DATABASE_WRITE_DEADLINE_MS,
+	withDeadline
+} from '$lib/logic/deadline';
 
 const QSL_COLUMNS =
 	'*, qso:qsos!qsl_cards_qso_id_fkey(id, callsign, time_on, band, mode, verified_at)';
@@ -55,10 +61,14 @@ export async function createQSLCard(
 	supabase: SupabaseClient,
 	qsl: QSLCardInsert
 ): Promise<QSLCard> {
-	const { data, error } = await supabase.from('qsl_cards').insert(qsl).select('*').single();
+	const { data, error } = await withDeadline(
+		'create QSL card',
+		DATABASE_WRITE_DEADLINE_MS,
+		(signal) => supabase.from('qsl_cards').insert(qsl).select('*').abortSignal(signal).single()
+	);
 
 	if (error) {
-		throw error;
+		throw toAppError(error, 'create QSL card');
 	}
 
 	return data as QSLCard;
@@ -68,10 +78,15 @@ export async function getQSLCardsByQSO(
 	supabase: SupabaseClient,
 	qsoId: string
 ): Promise<QSLCard[]> {
-	const { data, error } = await supabase.from('qsl_cards').select(QSL_COLUMNS).eq('qso_id', qsoId);
+	const { data, error } = await withDeadline(
+		'list QSL cards by QSO',
+		DATABASE_READ_DEADLINE_MS,
+		(signal) =>
+			supabase.from('qsl_cards').select(QSL_COLUMNS).eq('qso_id', qsoId).abortSignal(signal)
+	);
 
 	if (error) {
-		return [];
+		throw toAppError(error, 'list QSL cards by QSO');
 	}
 
 	return (data ?? []) as QSLCard[];
@@ -91,10 +106,14 @@ export async function getQSLCards(
 		query = query.or(`sent_status.eq.${filter.status},received_status.eq.${filter.status}`);
 	}
 
-	const { data, error } = await query;
+	const { data, error } = await withDeadline(
+		'list QSL cards',
+		DATABASE_READ_DEADLINE_MS,
+		(signal) => query.abortSignal(signal)
+	);
 
 	if (error) {
-		return [];
+		throw toAppError(error, 'list QSL cards');
 	}
 
 	return (data ?? []) as QSLCard[];
@@ -105,26 +124,46 @@ export async function updateQSLCard(
 	id: string,
 	updates: QSLCardUpdate
 ): Promise<QSLCard> {
-	const { data, error } = await supabase
-		.from('qsl_cards')
-		.update(updates)
-		.eq('id', id)
-		.select('*')
-		.single();
+	const { data, error } = await withDeadline(
+		'update QSL card',
+		DATABASE_WRITE_DEADLINE_MS,
+		(signal) =>
+			supabase
+				.from('qsl_cards')
+				.update(updates)
+				.eq('id', id)
+				.select('*')
+				.abortSignal(signal)
+				.maybeSingle()
+	);
 
 	if (error) {
-		throw error;
+		throw toAppError(error, 'update QSL card');
 	}
+	if (!data) throw notFoundError('update QSL card');
 
 	return data as QSLCard;
 }
 
-export async function deleteQSLCard(supabase: SupabaseClient, id: string): Promise<void> {
-	const { error } = await supabase.from('qsl_cards').delete().eq('id', id);
+export async function deleteQSLCard(supabase: SupabaseClient, id: string): Promise<string> {
+	const { data, error } = await withDeadline(
+		'delete QSL card',
+		DATABASE_WRITE_DEADLINE_MS,
+		(signal) =>
+			supabase
+				.from('qsl_cards')
+				.delete()
+				.eq('id', id)
+				.select('id')
+				.abortSignal(signal)
+				.maybeSingle()
+	);
 
 	if (error) {
-		throw error;
+		throw toAppError(error, 'delete QSL card');
 	}
+	if (!data) throw notFoundError('delete QSL card');
+	return String(data.id);
 }
 
 export async function getQSLStats(supabase: SupabaseClient): Promise<QSLStats> {

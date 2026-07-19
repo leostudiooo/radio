@@ -21,10 +21,11 @@ class QueryMock<T> {
 	filters: Array<{ method: string; field: string; value: FilterValue }> = [];
 	ordered?: { field: string; ascending: boolean };
 	ranged?: { from: number; to: number };
+	signal?: AbortSignal;
 
 	constructor(private readonly response: QueryResult<T>) {}
 
-	select = vi.fn((_columns?: string, _options?: { count?: 'exact' }): this => this);
+	select = vi.fn((): this => this);
 	insert = vi.fn((value: QSOInsert | QSOInsert[]): this => {
 		this.inserted = value;
 		return this;
@@ -61,9 +62,13 @@ class QueryMock<T> {
 		this.ordered = { field, ascending: options.ascending };
 		return this;
 	});
-	range = vi.fn(async (from: number, to: number): Promise<QueryResult<T>> => {
+	range = vi.fn((from: number, to: number): this => {
 		this.ranged = { from, to };
-		return this.response;
+		return this;
+	});
+	abortSignal = vi.fn((signal: AbortSignal): this => {
+		this.signal = signal;
+		return this;
 	});
 	single = vi.fn(async (): Promise<QueryResult<T>> => this.response);
 	maybeSingle = vi.fn(async (): Promise<QueryResult<T>> => this.response);
@@ -181,13 +186,28 @@ describe('QSO data helpers', () => {
 		expect(query.eq).toHaveBeenCalledWith('id', 'qso-1');
 	});
 
+	it('rejects updates when no visible row was changed', async () => {
+		const query = new QueryMock<QSO>({ data: null, error: null });
+
+		await expect(
+			updateQSO(createSupabase(query), 'missing', { callsign: 'N0CALL' })
+		).rejects.toMatchObject({ kind: 'not-found' });
+	});
+
 	it('deletes a QSO by id', async () => {
-		const query = new QueryMock<null>({ data: null, error: null });
+		const query = new QueryMock<{ id: string }>({ data: { id: 'qso-1' }, error: null });
 		const supabase = createSupabase(query);
 
-		await expect(deleteQSO(supabase, 'qso-1')).resolves.toBeUndefined();
+		await expect(deleteQSO(supabase, 'qso-1')).resolves.toBe('qso-1');
 		expect(query.delete).toHaveBeenCalledOnce();
 		expect(query.eq).toHaveBeenCalledWith('id', 'qso-1');
+	});
+
+	it('rejects deletion when no visible row was deleted', async () => {
+		const query = new QueryMock<{ id: string }>({ data: null, error: null });
+		await expect(deleteQSO(createSupabase(query), 'missing')).rejects.toMatchObject({
+			kind: 'not-found'
+		});
 	});
 
 	it('bulk creates QSOs and reports per-record errors', async () => {
@@ -198,7 +218,7 @@ describe('QSO data helpers', () => {
 
 		await expect(bulkCreateQSOs(supabase, [createQSOInsert(), invalid])).resolves.toEqual({
 			success: [qso],
-			errors: [{ qso: invalid, error: 'Invalid QSO: callsign:INVALID_FORMAT' }]
+			errors: [{ qso: invalid, error: 'Invalid QSO: callsign:INVALID_FORMAT', kind: 'validation' }]
 		});
 	});
 
@@ -232,7 +252,9 @@ describe('QSO data helpers', () => {
 		const query = new QueryMock<QSO>({ data: null, error });
 		const supabase = createSupabase(query);
 
-		await expect(createQSO(supabase, createQSOInsert())).rejects.toThrow(error);
-		await expect(updateQSO(supabase, 'qso-1', { callsign: 'N0CALL' })).rejects.toThrow(error);
+		await expect(createQSO(supabase, createQSOInsert())).rejects.toThrow('Database failed');
+		await expect(updateQSO(supabase, 'qso-1', { callsign: 'N0CALL' })).rejects.toThrow(
+			'Database failed'
+		);
 	});
 });

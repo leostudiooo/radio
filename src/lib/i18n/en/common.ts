@@ -21,6 +21,7 @@ const common = {
 	actions: 'Actions',
 	status: 'Status',
 	error: 'Error',
+	retry: 'Retry',
 	success: 'Success',
 	useUtc: 'Use UTC',
 	useLocalTime: 'Use local time',

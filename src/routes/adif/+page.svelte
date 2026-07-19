@@ -5,6 +5,12 @@
 	import { toastStore } from '$lib/ui/stores/toast.svelte';
 	import { parseADIF, exportADIF } from '$lib/logic/adif';
 	import { bulkCreateQSOs, getQSOs } from '$lib/logic/data/qso';
+	import { runAuthenticated } from '$lib/logic/auth';
+	import {
+		DATABASE_WRITE_DEADLINE_MS,
+		FILE_READ_DEADLINE_MS,
+		withDeadline
+	} from '$lib/logic/deadline';
 	import { BANDS, MODES } from '$lib/logic/types/qso';
 	import type { QSOInsert, QSO } from '$lib/logic/types/qso';
 	import type { Column } from '$lib/ui/components/DataTable';
@@ -20,7 +26,6 @@
 	import FormSelect from '$lib/ui/components/FormSelect.svelte';
 	import FormDate from '$lib/ui/components/FormDate.svelte';
 	import CollapsibleSection from '$lib/ui/components/CollapsibleSection.svelte';
-	import LoadingSpinner from '$lib/ui/components/LoadingSpinner.svelte';
 	import { SITE_CONFIG } from '$lib/config';
 
 	const t = $derived(localeStore.translation);
@@ -42,7 +47,12 @@
 	let parsedQSOs = $state<QSOInsert[]>([]);
 	let importSuccess = $state(0);
 	let importErrors = $state(0);
+	let importErrorDetails = $state<string[]>([]);
 	let importing = $state(false);
+	let importProcessed = $state(0);
+	let importController: AbortController | null = null;
+	let parsingFile = $state(false);
+	const MAX_ADIF_FILE_SIZE = 10 * 1024 * 1024;
 
 	let filterCallsign = $state('');
 	let filterBand = $state('');
@@ -82,31 +92,71 @@
 		{ key: 'mode', header: t.qso.mode }
 	]);
 
-	function handleFile(file: File) {
-		const reader = new FileReader();
-		reader.onload = () => {
-			const text = reader.result as string;
-			try {
-				const qsos = parseADIF(text);
-				if (qsos.length === 0) {
-					toastStore.error(t.adif.parseError);
-					return;
-				}
-				parsedQSOs = qsos;
-				importStep = 'preview';
-			} catch {
+	function readFile(file: File): Promise<string> {
+		return withDeadline(
+			'read ADIF file',
+			FILE_READ_DEADLINE_MS,
+			(signal) =>
+				new Promise((resolve, reject) => {
+					const reader = new FileReader();
+					const abort = () => reader.abort();
+					signal.addEventListener('abort', abort, { once: true });
+					reader.onload = () => resolve(String(reader.result ?? ''));
+					reader.onerror = () => reject(reader.error ?? new Error('ADIF file read failed'));
+					reader.onabort = () => reject(signal.reason ?? new Error('ADIF file read aborted'));
+					reader.onloadend = () => signal.removeEventListener('abort', abort);
+					reader.readAsText(file);
+				})
+		);
+	}
+
+	async function handleFile(file: File) {
+		if (file.size > MAX_ADIF_FILE_SIZE) {
+			toastStore.error(t.adif.fileTooLarge);
+			return;
+		}
+
+		parsingFile = true;
+		try {
+			const qsos = parseADIF(await readFile(file));
+			if (qsos.length === 0) {
 				toastStore.error(t.adif.parseError);
+				return;
 			}
-		};
-		reader.readAsText(file);
+			parsedQSOs = qsos;
+			importStep = 'preview';
+		} catch {
+			toastStore.error(t.adif.readFailed);
+		} finally {
+			parsingFile = false;
+		}
 	}
 
 	async function handleImport() {
+		if (importing) return;
 		importing = true;
+		importProcessed = 0;
+		importController = new AbortController();
 		try {
-			const result = await bulkCreateQSOs(supabase, parsedQSOs);
+			const result = await runAuthenticated(
+				supabase,
+				'import ADIF',
+				(operationSignal) =>
+					bulkCreateQSOs(supabase, parsedQSOs, {
+						signal: operationSignal,
+						onProgress: (processed) => {
+							importProcessed = processed;
+						}
+					}),
+				Math.min(
+					30 * 60 * 1000,
+					Math.max(DATABASE_WRITE_DEADLINE_MS, parsedQSOs.length * DATABASE_WRITE_DEADLINE_MS)
+				),
+				importController.signal
+			);
 			importSuccess = result.success.length;
 			importErrors = result.errors.length;
+			importErrorDetails = result.errors.map(({ qso, kind }) => `${qso.callsign || '?'}: ${kind}`);
 			importStep = 'result';
 			toastStore.success(
 				t.adif.importResult
@@ -117,14 +167,22 @@
 			toastStore.error(t.common.error);
 		} finally {
 			importing = false;
+			importController = null;
 		}
 	}
 
+	function cancelImport() {
+		importController?.abort();
+	}
+
 	function resetImport() {
+		cancelImport();
 		importStep = 'upload';
 		parsedQSOs = [];
 		importSuccess = 0;
 		importErrors = 0;
+		importErrorDetails = [];
+		importProcessed = 0;
 	}
 
 	async function handleExport() {
@@ -223,7 +281,7 @@
 
 		{#if importStep === 'upload'}
 			<div class="max-w-lg">
-				<FileUpload accept=".adi,.adif" onfile={handleFile} />
+				<FileUpload accept=".adi,.adif" disabled={parsingFile} onfile={handleFile} />
 			</div>
 		{:else if importStep === 'preview'}
 			<div class="flex flex-col gap-[var(--space-4)]">
@@ -250,10 +308,17 @@
 					<Button variant="primary" onclick={handleImport} disabled={importing}>
 						{importing ? t.common.loading : t.adif.importAll}
 					</Button>
-					<Button variant="secondary" onclick={resetImport}>
-						{t.common.cancel}
+					<Button variant="secondary" onclick={importing ? cancelImport : resetImport}>
+						{importing ? t.adif.cancelImport : t.common.cancel}
 					</Button>
 				</div>
+				{#if importing}
+					<p class="text-[var(--color-text-secondary)] text-[var(--text-body)]">
+						{t.adif.importProgress
+							.replace('{processed}', String(importProcessed))
+							.replace('{total}', String(parsedQSOs.length))}
+					</p>
+				{/if}
 			</div>
 		{:else if importStep === 'result'}
 			<div class="flex flex-col gap-[var(--space-4)]">
@@ -275,6 +340,15 @@
 							>{t.adif.importedLabel}</span
 						>
 					</div>
+					{#if importErrorDetails.length > 0}
+						<ul
+							class="flex flex-col gap-[var(--space-1)] text-[var(--color-status-invalid)] text-[var(--text-body)]"
+						>
+							{#each importErrorDetails as detail}
+								<li>{detail}</li>
+							{/each}
+						</ul>
+					{/if}
 					{#if importErrors > 0}
 						<div
 							class="card-panel flex flex-col gap-[var(--space-1)] px-[var(--space-4)] py-[var(--space-3)]"

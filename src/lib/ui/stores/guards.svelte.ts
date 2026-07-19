@@ -6,10 +6,11 @@ export interface AuthStoreLike {
 	readonly loading: boolean;
 	readonly isAuthenticated: boolean;
 	readonly isAdmin: boolean;
+	readonly error?: unknown;
 }
 
 /** Status returned by useAdminRoute() */
-export type AdminGuardStatus = 'loading' | 'admin' | 'not-admin' | 'not-authenticated';
+export type AdminGuardStatus = 'loading' | 'admin' | 'not-admin' | 'not-authenticated' | 'error';
 
 /** Status returned by useAuthRoute() */
 export type AuthRouteStatus = 'loading' | 'authenticated' | 'not-authenticated';
@@ -20,6 +21,7 @@ export type AuthRouteStatus = 'loading' | 'authenticated' | 'not-authenticated';
  */
 export function useAdminRoute(store: AuthStoreLike): AdminGuardStatus {
 	if (store.loading) return 'loading';
+	if (store.error) return 'error';
 	if (!store.isAuthenticated) return 'not-authenticated';
 	if (!store.isAdmin) return 'not-admin';
 	return 'admin';

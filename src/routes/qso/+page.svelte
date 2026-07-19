@@ -5,8 +5,10 @@
 	import { localeStore } from '$lib/ui/stores/locale.svelte';
 	import { settingsStore } from '$lib/ui/stores/settings.svelte';
 	import { authStore } from '$lib/ui/stores/auth.svelte';
+	import { toastStore } from '$lib/ui/stores/toast.svelte';
 	import { BANDS, MODES } from '$lib/logic/types/qso';
 	import { getQSOs, deleteQSO } from '$lib/logic/data/qso';
+	import { runAuthenticated } from '$lib/logic/auth';
 	import type { QSO } from '$lib/logic/types/qso';
 	import type { Column } from '$lib/ui/components/DataTable';
 	import { buildQSOFilter } from '$lib/ui/utils/filters';
@@ -51,6 +53,7 @@
 	let currentPage = $state(1);
 	let loading = $state(true);
 	let initialLoaded = $state(false);
+	let loadError = $state(false);
 
 	let sortField = $state<keyof QSO>('time_on');
 	let sortDir = $state<'asc' | 'desc'>('desc');
@@ -96,6 +99,7 @@
 
 	async function loadData() {
 		loading = true;
+		loadError = false;
 		try {
 			const result = await getQSOs(
 				supabase,
@@ -114,9 +118,7 @@
 			total = result.total;
 			totalPages = result.totalPages;
 		} catch {
-			data = [];
-			total = 0;
-			totalPages = 0;
+			loadError = true;
 		} finally {
 			loading = false;
 			initialLoaded = true;
@@ -161,7 +163,11 @@
 	async function handleDeleteConfirm() {
 		if (!deleteTarget) return;
 		try {
-			await deleteQSO(supabase, deleteTarget);
+			await runAuthenticated(supabase, 'delete QSO', () => deleteQSO(supabase, deleteTarget!));
+			toastStore.success(t.common.success);
+		} catch (error) {
+			toastStore.error(t.common.error);
+			throw error;
 		} finally {
 			deleteTarget = null;
 			loadData();
@@ -187,6 +193,12 @@
 	<div class="flex justify-center py-[var(--space-12)]">
 		<LoadingSpinner size="lg" />
 	</div>
+{:else if loadError && data.length === 0}
+	<EmptyState message={t.common.error}>
+		{#snippet cta()}
+			<Button variant="secondary" onclick={loadData}>{t.common.retry}</Button>
+		{/snippet}
+	</EmptyState>
 {:else if total === 0 && !filterCallsign && !filterBand && !filterMode && !filterDateFrom && !filterDateTo}
 	<EmptyState icon="📻" message={t.qso.noQSOsYet}>
 		{#snippet cta()}

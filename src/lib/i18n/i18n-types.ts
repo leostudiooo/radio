@@ -29,6 +29,7 @@ export type BaseTranslation = {
 		actions: string;
 		status: string;
 		error: string;
+		retry: string;
 		success: string;
 		useUtc: string;
 		useLocalTime: string;
@@ -181,6 +182,9 @@ export type BaseTranslation = {
 		noQSOsYet: string;
 		logYourFirst: string;
 		qsoSaved: string;
+		draftRestored: string;
+		draftUnavailable: string;
+		requestTimedOut: string;
 		logAnother: string;
 		viewList: string;
 		saveFailed: string;
@@ -264,6 +268,10 @@ export type BaseTranslation = {
 		uploadFile: string;
 		downloadFile: string;
 		parseError: string;
+		fileTooLarge: string;
+		readFailed: string;
+		cancelImport: string;
+		importProgress: string;
 		importTitle: string;
 		exportTitle: string;
 		foundInFile: string;

@@ -7,6 +7,7 @@
 	import { settingsStore } from '$lib/ui/stores/settings.svelte';
 	import { getQSOById } from '$lib/logic/data/qso';
 	import { getQSOAdminVerificationCode, markQSOSentWithCode } from '$lib/logic/qso-verification';
+	import { runAuthenticated } from '$lib/logic/auth';
 	import type { QSO } from '$lib/logic/types/qso';
 	import { formatDate, formatTime } from '$lib/ui/utils/format';
 	import { createQsoDetailLoader } from '$lib/ui/utils/qso-detail-loader';
@@ -23,6 +24,7 @@
 	let qso: QSO | null = $state(null);
 	let loading = $state(true);
 	let notFound = $state(false);
+	let loadError = $state(false);
 	let verificationCode = $state<string | null>(null);
 	let sendingCard = $state(false);
 	let confirmationUrl = $state('');
@@ -37,6 +39,7 @@
 			if ('qso' in patch) qso = patch.qso ?? null;
 			if ('loading' in patch) loading = patch.loading ?? false;
 			if ('notFound' in patch) notFound = patch.notFound ?? false;
+			if ('error' in patch) loadError = patch.error ?? false;
 			if ('verificationCode' in patch) verificationCode = patch.verificationCode ?? null;
 			if ('confirmationUrl' in patch) confirmationUrl = patch.confirmationUrl ?? '';
 		}
@@ -51,7 +54,9 @@
 	async function handleSendQSLCard() {
 		sendingCard = true;
 		try {
-			const result = await markQSOSentWithCode(supabase, id);
+			const result = await runAuthenticated(supabase, 'issue QSO verification code', () =>
+				markQSOSentWithCode(supabase, id)
+			);
 			verificationCode = result.code;
 			toastStore.success(t.qso.qslCardSent);
 		} catch {
@@ -62,8 +67,12 @@
 	}
 
 	async function copyText(value: string) {
-		await navigator.clipboard.writeText(value);
-		toastStore.success(t.qso.copied);
+		try {
+			await navigator.clipboard.writeText(value);
+			toastStore.success(t.qso.copied);
+		} catch {
+			toastStore.error(t.common.error);
+		}
 	}
 
 	let subtitle: string = $derived.by(() => {
@@ -84,6 +93,14 @@
 	</div>
 {:else if notFound}
 	<EmptyState message={t.qso.notFound} />
+{:else if loadError}
+	<EmptyState message={t.common.error}>
+		{#snippet cta()}
+			<Button variant="secondary" onclick={() => detailLoader.load(id, authStore.isAdmin)}>
+				{t.common.retry}
+			</Button>
+		{/snippet}
+	</EmptyState>
 {:else if qso}
 	<PageHeader title={qso.callsign} {subtitle}>
 		{#snippet action()}

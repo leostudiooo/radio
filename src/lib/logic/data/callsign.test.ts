@@ -23,8 +23,8 @@ describe('lookupCallsign', () => {
 		);
 
 		const result = await lookupCallsign('BA4VUN');
-		expect(result).toEqual(mockData);
-		expect(fetch).toHaveBeenCalledWith('/api/callsign/BA4VUN');
+		expect(result).toEqual({ status: 'found', data: mockData });
+		expect(fetch).toHaveBeenCalledWith('/api/callsign/BA4VUN', { signal: expect.any(AbortSignal) });
 	});
 
 	it('returns null when callsign not found (404)', async () => {
@@ -37,19 +37,19 @@ describe('lookupCallsign', () => {
 		);
 
 		const result = await lookupCallsign('INVALID');
-		expect(result).toBeNull();
+		expect(result).toEqual({ status: 'not-found' });
 	});
 
 	it('returns null on network error', async () => {
 		vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
 
 		const result = await lookupCallsign('BA4VUN');
-		expect(result).toBeNull();
+		expect(result).toMatchObject({ status: 'unavailable' });
 	});
 
 	it('returns null for too-short callsign', async () => {
 		const result = await lookupCallsign('AB');
-		expect(result).toBeNull();
+		expect(result).toEqual({ status: 'invalid' });
 	});
 
 	it('returns null when response has no callsign', async () => {
@@ -62,7 +62,7 @@ describe('lookupCallsign', () => {
 		);
 
 		const result = await lookupCallsign('BA4VUN');
-		expect(result).toBeNull();
+		expect(result).toEqual({ status: 'not-found' });
 	});
 
 	it('normalizes callsign to uppercase', async () => {
@@ -75,6 +75,6 @@ describe('lookupCallsign', () => {
 		);
 
 		await lookupCallsign('ba4vun');
-		expect(fetch).toHaveBeenCalledWith('/api/callsign/BA4VUN');
+		expect(fetch).toHaveBeenCalledWith('/api/callsign/BA4VUN', { signal: expect.any(AbortSignal) });
 	});
 });

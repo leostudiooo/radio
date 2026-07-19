@@ -8,7 +8,7 @@
 		message: string;
 		confirmLabel?: string;
 		cancelLabel?: string;
-		onconfirm?: () => void;
+		onconfirm?: () => void | Promise<void>;
 		oncancel?: () => void;
 	}
 
@@ -26,6 +26,8 @@
 	const resolvedCancelLabel = $derived(cancelLabel ?? localeStore.translation.common.cancel);
 
 	let panelRef = $state<HTMLElement>();
+	let confirming = $state(false);
+	let confirmFailed = $state(false);
 
 	function getFocusable(): HTMLElement[] {
 		if (!panelRef) return [];
@@ -34,9 +36,18 @@
 		] as HTMLElement[];
 	}
 
-	function handleConfirm() {
-		open = false;
-		onconfirm?.();
+	async function handleConfirm() {
+		if (confirming) return;
+		confirming = true;
+		confirmFailed = false;
+		try {
+			await onconfirm?.();
+			open = false;
+		} catch {
+			confirmFailed = true;
+		} finally {
+			confirming = false;
+		}
 	}
 
 	function handleCancel() {
@@ -102,9 +113,16 @@
 			<p class="mb-[var(--space-6)] text-[var(--color-text-secondary)] text-[var(--text-body)]">
 				{message}
 			</p>
+			{#if confirmFailed}
+				<p class="mb-[var(--space-3)] text-[var(--color-status-invalid)] text-[var(--text-body)]">
+					{localeStore.translation.common.error}
+				</p>
+			{/if}
 			<div class="flex justify-end gap-[var(--space-3)]">
 				<Button variant="ghost" onclick={handleCancel}>{resolvedCancelLabel}</Button>
-				<Button variant="primary" onclick={handleConfirm}>{resolvedConfirmLabel}</Button>
+				<Button variant="primary" disabled={confirming} onclick={handleConfirm}>
+					{resolvedConfirmLabel}
+				</Button>
 			</div>
 		</div>
 	</div>

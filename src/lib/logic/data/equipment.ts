@@ -1,5 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Equipment, EquipmentInsert, EquipmentUpdate } from '$lib/logic/types/equipment';
+import { notFoundError, toAppError } from '$lib/logic/errors';
+import {
+	DATABASE_READ_DEADLINE_MS,
+	DATABASE_WRITE_DEADLINE_MS,
+	withDeadline
+} from '$lib/logic/deadline';
 
 const EQUIPMENT_SELECT_COLUMNS =
 	'id, profile_id, name, type, manufacturer, model, serial_number, description, is_active, created_at';
@@ -15,6 +21,7 @@ type EquipmentQueryResult = {
 
 type EquipmentCollectionQuery = {
 	eq: (column: string, value: string | boolean) => EquipmentCollectionQuery;
+	abortSignal: (signal: AbortSignal) => EquipmentCollectionQuery;
 	then: <TResult1 = EquipmentQueryResult, TResult2 = never>(
 		onfulfilled?: ((value: EquipmentQueryResult) => TResult1 | PromiseLike<TResult1>) | null,
 		onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
@@ -29,14 +36,20 @@ export async function createEquipment(
 	supabase: SupabaseClient,
 	item: EquipmentInsert
 ): Promise<Equipment> {
-	const { data, error } = await supabase
-		.from('equipment')
-		.insert(item)
-		.select(EQUIPMENT_SELECT_COLUMNS)
-		.single();
+	const { data, error } = await withDeadline(
+		'create equipment',
+		DATABASE_WRITE_DEADLINE_MS,
+		(signal) =>
+			supabase
+				.from('equipment')
+				.insert(item)
+				.select(EQUIPMENT_SELECT_COLUMNS)
+				.abortSignal(signal)
+				.single()
+	);
 
 	if (error) {
-		throw error;
+		throw toAppError(error, 'create equipment');
 	}
 
 	return data as Equipment;
@@ -59,10 +72,14 @@ export async function getEquipment(
 		query = query.eq('profile_id', profileId);
 	}
 
-	const { data, error } = await query;
+	const { data, error } = await withDeadline(
+		'list equipment',
+		DATABASE_READ_DEADLINE_MS,
+		(signal) => query.abortSignal(signal)
+	);
 
 	if (error) {
-		return [];
+		throw toAppError(error, 'list equipment');
 	}
 
 	return Array.isArray(data) ? data : [];
@@ -72,14 +89,20 @@ export async function getEquipmentById(
 	supabase: SupabaseClient,
 	id: string
 ): Promise<Equipment | null> {
-	const { data, error } = await supabase
-		.from('equipment')
-		.select(EQUIPMENT_SELECT_COLUMNS)
-		.eq('id', id)
-		.single();
+	const { data, error } = await withDeadline(
+		'load equipment',
+		DATABASE_READ_DEADLINE_MS,
+		(signal) =>
+			supabase
+				.from('equipment')
+				.select(EQUIPMENT_SELECT_COLUMNS)
+				.eq('id', id)
+				.abortSignal(signal)
+				.maybeSingle()
+	);
 
 	if (error) {
-		return null;
+		throw toAppError(error, 'load equipment');
 	}
 
 	return equipmentFromResult(data as Equipment | null);
@@ -90,26 +113,46 @@ export async function updateEquipment(
 	id: string,
 	updates: EquipmentUpdate
 ): Promise<Equipment> {
-	const { data, error } = await supabase
-		.from('equipment')
-		.update(updates)
-		.eq('id', id)
-		.select(EQUIPMENT_SELECT_COLUMNS)
-		.single();
+	const { data, error } = await withDeadline(
+		'update equipment',
+		DATABASE_WRITE_DEADLINE_MS,
+		(signal) =>
+			supabase
+				.from('equipment')
+				.update(updates)
+				.eq('id', id)
+				.select(EQUIPMENT_SELECT_COLUMNS)
+				.abortSignal(signal)
+				.maybeSingle()
+	);
 
 	if (error) {
-		throw error;
+		throw toAppError(error, 'update equipment');
 	}
+	if (!data) throw notFoundError('update equipment');
 
 	return data as Equipment;
 }
 
-export async function deleteEquipment(supabase: SupabaseClient, id: string): Promise<void> {
-	const { error } = await supabase.from('equipment').delete().eq('id', id);
+export async function deleteEquipment(supabase: SupabaseClient, id: string): Promise<string> {
+	const { data, error } = await withDeadline(
+		'delete equipment',
+		DATABASE_WRITE_DEADLINE_MS,
+		(signal) =>
+			supabase
+				.from('equipment')
+				.delete()
+				.eq('id', id)
+				.select('id')
+				.abortSignal(signal)
+				.maybeSingle()
+	);
 
 	if (error) {
-		throw error;
+		throw toAppError(error, 'delete equipment');
 	}
+	if (!data) throw notFoundError('delete equipment');
+	return String(data.id);
 }
 
 export async function toggleEquipmentActive(
@@ -119,7 +162,7 @@ export async function toggleEquipmentActive(
 	const current = await getEquipmentById(supabase, id);
 
 	if (!current) {
-		throw new Error(`Equipment not found: ${id}`);
+		throw notFoundError('toggle equipment');
 	}
 
 	return updateEquipment(supabase, id, { is_active: !current.is_active });

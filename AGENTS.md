@@ -237,6 +237,30 @@ supabase db diff      # Generate migration from schema changes
 
 ---
 
+## FAIL FAST (Locked)
+
+- **Every external async operation must have a finite deadline.** Network, Supabase, auth, file,
+  and browser API calls must not remain pending indefinitely. Use SDK timeouts or an abortable
+  application-level deadline appropriate to the operation.
+- **Reject invalid preconditions before changing UI state or sending requests.** Missing auth,
+  ownership, required identifiers, invalid input, and unsupported browser capabilities must fail
+  immediately with a specific error.
+- **User-triggered pending state must always recover.** Buttons and forms set to loading,
+  submitting, saving, importing, or exporting must return to an actionable state after success,
+  failure, timeout, cancellation, navigation, or page lifecycle interruption.
+- **Do not silently swallow actionable errors.** Preserve and surface the real error category and
+  context. Empty `catch {}` is forbidden unless the operation is explicitly documented as
+  best-effort and failure has no user-visible consequence (for example `handleLogout`).
+- **Do not convert failures into empty success states.** Returning `[]`, `null`, or “not found” after
+  transport, auth, timeout, or permission failures is only allowed when the UI explicitly presents
+  a degraded/error state and retry path.
+- **Timeouts are failures, not background work.** A timed-out operation must be aborted or ignored
+  with a stale-request guard so that it cannot later mutate state or create duplicate records.
+- **Tests must cover non-settling and failure paths.** Async submission and data-loading tests should
+  verify timeout behavior, state recovery, retryability, and prevention of stale late writes.
+
+---
+
 ## SUPABASE PATTERNS
 
 ### RLS Policies

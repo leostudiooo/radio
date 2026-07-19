@@ -6,6 +6,7 @@
 	import { authStore } from '$lib/ui/stores/auth.svelte';
 	import { createQSO, getQSOs } from '$lib/logic/data/qso';
 	import { getEquipment } from '$lib/logic/data/equipment';
+	import { runAuthenticated } from '$lib/logic/auth';
 	import type { QSO, QSOInsert } from '$lib/logic/types/qso';
 	import type { Equipment } from '$lib/logic/types/equipment';
 	import QSOForm from '$lib/ui/components/QSOForm.svelte';
@@ -58,9 +59,15 @@
 		void loadQuickLogHints(profileId);
 	});
 
-	async function handleSubmit(data: QSOInsert) {
+	async function handleSubmit(data: QSOInsert, signal?: AbortSignal) {
 		try {
-			await createQSO(supabase, data);
+			await runAuthenticated(
+				supabase,
+				'create QSO',
+				() => createQSO(supabase, data, signal),
+				undefined,
+				signal
+			);
 			toastStore.success(t.qso.qsoSaved);
 		} catch (err) {
 			toastStore.error(t.qso.saveFailed);

@@ -4,6 +4,7 @@ export type QsoDetailLoadPatch = Partial<{
 	qso: QSO | null;
 	loading: boolean;
 	notFound: boolean;
+	error: boolean;
 	verificationCode: string | null;
 	confirmationUrl: string;
 }>;
@@ -22,7 +23,7 @@ export function createQsoDetailLoader(
 
 	async function load(id: string, loadSecret: boolean) {
 		const currentRequestId = ++requestId;
-		apply({ loading: true, notFound: false });
+		apply({ loading: true, notFound: false, error: false });
 
 		try {
 			const result = await deps.getQSOById(id);
@@ -41,11 +42,12 @@ export function createQsoDetailLoader(
 				verificationCode,
 				confirmationUrl: `${deps.getConfirmationOrigin()}/qso/confirm`,
 				notFound: false,
+				error: false,
 				loading: false
 			});
 		} catch {
 			if (currentRequestId !== requestId) return;
-			apply({ qso: null, verificationCode: null, notFound: true, loading: false });
+			apply({ verificationCode: null, error: true, loading: false });
 		}
 	}
 

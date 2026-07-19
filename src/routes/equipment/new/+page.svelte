@@ -7,6 +7,7 @@
 	import AdminGuard from '$lib/ui/components/AdminGuard.svelte';
 	import { EQUIPMENT_TYPES } from '$lib/logic/types/equipment';
 	import { createEquipment } from '$lib/logic/data/equipment';
+	import { runAuthenticated } from '$lib/logic/auth';
 
 	import PageHeader from '$lib/ui/components/PageHeader.svelte';
 	import FormInput from '$lib/ui/components/FormInput.svelte';
@@ -35,16 +36,18 @@
 
 		submitting = true;
 		try {
-			await createEquipment(supabase, {
-				profile_id: authStore.user?.id ?? '',
-				name: name.trim(),
-				type: type as (typeof EQUIPMENT_TYPES)[number],
-				manufacturer: manufacturer.trim() || undefined,
-				model: model.trim() || undefined,
-				serial_number: serialNumber.trim() || undefined,
-				description: description.trim() || undefined,
-				is_active: isActive
-			});
+			await runAuthenticated(supabase, 'create equipment', () =>
+				createEquipment(supabase, {
+					profile_id: authStore.user?.id ?? '',
+					name: name.trim(),
+					type: type as (typeof EQUIPMENT_TYPES)[number],
+					manufacturer: manufacturer.trim() || undefined,
+					model: model.trim() || undefined,
+					serial_number: serialNumber.trim() || undefined,
+					description: description.trim() || undefined,
+					is_active: isActive
+				})
+			);
 			toastStore.success(t.equipment.equipmentSaved);
 			goto('/equipment');
 		} catch {

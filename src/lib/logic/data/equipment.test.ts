@@ -17,7 +17,9 @@ interface EquipmentQueryBuilder<T> {
 	insert: (item: unknown) => EquipmentQueryBuilder<T>;
 	update: (updates: unknown) => EquipmentQueryBuilder<T>;
 	eq: (column: string, value: string | boolean) => EquipmentQueryBuilder<T>;
+	abortSignal: (signal: AbortSignal) => EquipmentQueryBuilder<T>;
 	single: () => Promise<QueryResult<T>>;
+	maybeSingle: () => Promise<QueryResult<T>>;
 	then: <TResult1 = QueryResult<T>, TResult2 = never>(
 		onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | null,
 		onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
@@ -50,7 +52,9 @@ function createSelectQuery<T>(result: QueryResult<T>) {
 		insert: vi.fn(() => query),
 		update: vi.fn(() => query),
 		eq: vi.fn(() => query),
+		abortSignal: vi.fn(() => query),
 		single: vi.fn(async () => result),
+		maybeSingle: vi.fn(async () => result),
 		then: ((onfulfilled, onrejected) =>
 			Promise.resolve(result).then(onfulfilled, onrejected)) as EquipmentQueryBuilder<T>['then']
 	};
@@ -58,12 +62,15 @@ function createSelectQuery<T>(result: QueryResult<T>) {
 	return query as EquipmentQueryBuilder<T>;
 }
 
-function createDeleteQuery(result: QueryResult<null>) {
-	return {
-		delete: vi.fn(() => ({
-			eq: vi.fn(async () => result)
-		}))
+function createDeleteQuery(result: QueryResult<{ id: string }>) {
+	const query = {
+		delete: vi.fn(() => query),
+		eq: vi.fn(() => query),
+		select: vi.fn(() => query),
+		abortSignal: vi.fn(() => query),
+		maybeSingle: vi.fn(async () => result)
 	};
+	return query;
 }
 
 describe('equipment logic helpers', () => {
@@ -73,7 +80,7 @@ describe('equipment logic helpers', () => {
 		const insertQuery = createSelectQuery({ data: created, error: null });
 		const updateQuery = createSelectQuery({ data: updated, error: null });
 		const getByIdQuery = createSelectQuery({ data: created, error: null });
-		const deleteQuery = createDeleteQuery({ data: null, error: null });
+		const deleteQuery = createDeleteQuery({ data: { id: 'eq-1' }, error: null });
 		const from = vi
 			.fn()
 			.mockReturnValueOnce(insertQuery)
@@ -99,7 +106,7 @@ describe('equipment logic helpers', () => {
 		await expect(updateEquipment(supabase, 'eq-1', { name: 'FT-991A Mk2' })).resolves.toEqual(
 			updated
 		);
-		await expect(deleteEquipment(supabase, 'eq-1')).resolves.toBeUndefined();
+		await expect(deleteEquipment(supabase, 'eq-1')).resolves.toBe('eq-1');
 	});
 
 	it('filters active equipment when requested', async () => {

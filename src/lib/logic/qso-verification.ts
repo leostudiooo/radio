@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { toAppError } from '$lib/logic/errors';
 
 const CROCKFORD_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 const MAX_CODE_ATTEMPTS = 8;
@@ -74,7 +75,7 @@ export async function markQSOSentWithCode(
 		});
 
 		if (error?.code === '23505') continue;
-		if (error) throw error;
+		if (error) throw toAppError(error, 'issue QSO verification code');
 
 		const savedCode = typeof data === 'string' ? data : null;
 		if (savedCode) {
@@ -93,7 +94,7 @@ export async function getQSOAdminVerificationCode(
 		p_qso_id: qsoId
 	});
 
-	if (error) throw error;
+	if (error) throw toAppError(error, 'load QSO verification code');
 	const code = typeof data === 'string' ? data : null;
 	return code ? formatVerificationCode(code) : null;
 }
@@ -106,7 +107,7 @@ export async function getQSOByVerificationCode(
 		code_input: normalizeVerificationCode(code)
 	});
 
-	if (error) throw error;
+	if (error) throw toAppError(error, 'load QSO by verification code');
 	const row = firstRow(data);
 	return row ? publicQSOFromRow(row) : null;
 }
@@ -119,7 +120,7 @@ export async function confirmQSOByCode(
 		code_input: normalizeVerificationCode(code)
 	});
 
-	if (error) throw error;
+	if (error) throw toAppError(error, 'confirm QSO');
 	const row = firstRow(data);
 	if (!row) return null;
 
